@@ -1,7 +1,11 @@
-import React from "react";
+import Navbar from "@/components/layout/Navbar";
+import HeroSection from "@/components/sections/HeroSection";
 
-const page = () => {
-  return <div className="bg-red-600">hello world</div>;
-};
-
-export default page;
+export default function HomePage() {
+  return (
+    <main className="relative">
+      <Navbar />
+      <HeroSection />
+    </main>
+  );
+}
