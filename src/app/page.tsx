@@ -12,7 +12,7 @@ import Big from "@/components/sections/Big";
 export default function HomePage() {
   return (
     <main className="relative">
-      <Navbar />
+      {/* <Navbar />
       <HeroSection />
       <Features />
       <Small />
@@ -21,7 +21,9 @@ export default function HomePage() {
       <Kind />
 
       <FAQSection />
-      <Contact />
+      <Contact /> */}
+
+      <ChatWindow />
     </main>
   );
 }
