@@ -8,7 +8,7 @@ import screen2 from "../../../public/images/iPhone 15.png";
 const HeroSection = () => {
   return (
     <section className="relative flex flex-col items-center justify-center text-center text-white overflow-hidden">
-      <div className="absolute inset-0 -z-20 -mt-48">
+      <div className="absolute inset-0 -z-20 -mt-48 hidden md:block">
         <Image
           src="/images/Union.png"
           alt="Hero Background"
@@ -17,7 +17,7 @@ const HeroSection = () => {
         />
       </div>
 
-      <div className="relative z-10 flex justify-center items-center gap-6 mt-24 mb-10">
+      <div className="relative z-10 flex justify-center items-center gap-6 mt-24 mb-10 hidden md:flex">
         <Image
           src={screen}
           alt="Secure Login Screen"
@@ -35,7 +35,7 @@ const HeroSection = () => {
         />
       </div>
 
-      <div className="-mt-24 md:-mt-36  z-10 flex flex-col items-center justify-center px-6">
+      <div className="-mt-24 md:-mt-36  z-10 flex flex-col items-center justify-center px-6 sm:mt-12">
         <h1 className="text-2xl md:text-5xl font-bold leading-tight mb-4 text-center">
           Your virtual assistant <br />
           <span className="text-3xl md:text-6xl font-extrabold bg-gradient-to-b from-white to-[#2d9558] bg-clip-text text-transparent">
