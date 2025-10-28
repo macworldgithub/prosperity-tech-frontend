@@ -2,7 +2,7 @@ import Navbar from "@/components/layout/Navbar";
 import HeroSection from "@/components/sections/HeroSection";
 import FAQSection from "@/components/sections/FAQSection";
 import Features from "@/components/sections/Features";
-import ChatWindow from "@/components/ChatWindow";
+import ChatWindow from "@/ChatWindow";
 import Contact from "@/components/sections/Contact";
 
 import Kind from "@/components/sections/Kind";
@@ -12,7 +12,7 @@ import Big from "@/components/sections/Big";
 export default function HomePage() {
   return (
     <main className="relative">
-      {/* <Navbar />
+      <Navbar />
       <HeroSection />
       <Features />
       <Small />
@@ -20,9 +20,9 @@ export default function HomePage() {
       <Productive />
       <Kind />
       <FAQSection />
-      <Contact /> */}
+      <Contact />
 
-      <ChatWindow />
+      {/* <ChatWindow /> */}
     </main>
   );
 }

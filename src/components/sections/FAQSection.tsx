@@ -81,7 +81,7 @@ const FAQSection = () => {
             Have general questions? Please CONTACT our team!
           </p>
           <button className="px-8 py-3 bg-[#34a944] text-white font-semibold rounded-full shadow-[#0956e3] shadow-lg hover:bg-green-600 transition-colors">
-            Contact Our Team
+            Chat with AI
           </button>
         </div>
 
