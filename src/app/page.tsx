@@ -13,6 +13,8 @@ export default function HomePage() {
   return (
     <main className="relative">
       <Navbar />
+      <HeroSection />
+      <Features />
       <Small />
       <Big />
       <Productive />
