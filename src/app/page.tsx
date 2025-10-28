@@ -19,6 +19,8 @@ export default function HomePage() {
       <Big />
       <Productive />
       <Kind />
+
+      <FAQSection />
       <Contact />
     </main>
   );
