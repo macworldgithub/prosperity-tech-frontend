@@ -9,8 +9,8 @@ import screen2 from "../../../public/images/iPhone 15.png";
 const HeroSection = () => {
   const router = useRouter(); // ✅ Initialize router
 
-  const handleChatClick = () => {
-    router.push("/ChatWindow"); // ✅ Navigate to your chat page route (change if needed)
+   const handleChatClick = () => {
+    router.push("/chat-window"); // Modified route path to follow convention
   };
 
   return (

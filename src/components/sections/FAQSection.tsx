@@ -1,5 +1,6 @@
 "use client";
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 
 interface FAQItemProps {
   question: string;
@@ -41,6 +42,8 @@ const FAQItem: React.FC<FAQItemProps> = ({ question, answer }) => {
 };
 
 const FAQSection = () => {
+  const router = useRouter();
+
   const faqs = [
     {
       question: "How does prosperity app work?",
@@ -68,6 +71,9 @@ const FAQSection = () => {
         "Prosperity app offers servers in over 50 countries worldwide, giving you access to a vast network and allowing you to bypass geo-restrictions.",
     },
   ];
+  const handleChatClick = () => {
+    router.push("/chat-window"); // Modified route path to follow convention
+  };
 
   return (
     <section className="py-20 px-6 text-white">
@@ -80,7 +86,10 @@ const FAQSection = () => {
           <p className="text-gray-300 mb-8">
             Have general questions? Please CONTACT our team!
           </p>
-          <button className="px-8 py-3 bg-[#34a944] text-white font-semibold rounded-full shadow-[#0956e3] shadow-lg hover:bg-green-600 transition-colors">
+          <button
+            onClick={handleChatClick}
+            className="px-8 py-3 bg-[#34a944] text-white font-semibold rounded-full shadow-[#0956e3] shadow-lg hover:bg-green-600 transition-colors"
+          >
             Chat with AI
           </button>
         </div>
