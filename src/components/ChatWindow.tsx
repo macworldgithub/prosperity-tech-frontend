@@ -196,27 +196,7 @@ const ChatWindow = () => {
               </div>
             )}
 
-            {/* Quick Action Buttons */}
-            <div className="flex flex-wrap justify-center gap-3 mb-6">
-              <button
-                onClick={() => {
-                  setMessage("Get Technical Support");
-                  sendMessage();
-                }}
-                className="bg-white text-[#0E3B5C] rounded-full py-2.5 px-5 text-sm font-medium shadow-md hover:bg-white/90"
-              >
-                Get Technical Support
-              </button>
-              <button
-                onClick={() => {
-                  setMessage("Something else");
-                  sendMessage();
-                }}
-                className="bg-white text-[#0E3B5C] rounded-full py-2.5 px-5 text-sm font-medium shadow-md hover:bg-white/90"
-              >
-                Something else
-              </button>
-            </div>
+            
 
             {/* Input Bar */}
             <div className="mt-auto">
