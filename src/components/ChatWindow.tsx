@@ -217,9 +217,9 @@ const ChatWindow = () => {
     setLoading(true);
 
     try {
-      const payload = sessionId
-        ? { query: userMsg.text, session_id: sessionId }
-        : { query: userMsg.text };
+     const payload = sessionId
+      ? { query: userMsg.text, session_id: sessionId, brand: "prosperity-tech" }
+      : { query: userMsg.text, brand: "prosperity-tech" };
 
       const response = await fetch("/api", {
         method: "POST",
