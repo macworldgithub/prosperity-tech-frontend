@@ -16,6 +16,8 @@ const ChatWindow = () => {
     },
   ]);
 
+  const [plans, setPlans] = useState<any[]>([]); // for storing plans
+  const [showPlans, setShowPlans] = useState(false);
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
@@ -191,9 +193,10 @@ const ChatWindow = () => {
     });
   };
 
-  const handleNumberSelect = (number: string) => {
-    setShowNumberButtons(false);
-    handleSend(number);
+  // Add new handler for plan selection
+  const handlePlanSelect = (plan: any) => {
+    setShowPlans(false);
+    handleSend(`I would like to select the plan: ${plan.name}`);
   };
 
   const handleSend = async (msgText: string) => {
@@ -261,6 +264,33 @@ const ChatWindow = () => {
         const numbers = extractNumbers(botText);
         setNumberOptions(numbers);
         setShowNumberButtons(true);
+
+        // Fetch plans when numbers are suggested
+        try {
+          const plansResponse = await fetch(
+            "https://bele.omnisuiteai.com/api/v1/plans",
+            {
+              method: "GET",
+              headers: {
+                accept: "application/json",
+              },
+            }
+          );
+
+          if (!plansResponse.ok) {
+            throw new Error("Failed to fetch plans");
+          }
+
+          const plansData = await plansResponse.json();
+          // Fix: Set plans to the 'data' array from the API response
+          setPlans(plansData.data || []);
+          setShowPlans(true);
+        } catch (plansError) {
+          console.error("Error fetching plans:", plansError);
+          setPlans([]);
+          // Optionally set showPlans to false if fetch fails, or true with empty array
+          setShowPlans(true);
+        }
       }
     } catch (error: any) {
       console.error("Full Chat error:", error); // Enhanced logging
@@ -286,6 +316,12 @@ const ChatWindow = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleNumberSelect = async (number: string) => {
+    setShowNumberButtons(false);
+    handleSend(number);
+    // No longer fetch plans here; it's done when showing numbers
   };
 
   const sendMessage = () => {
@@ -568,6 +604,18 @@ const ChatWindow = () => {
                       className="bg-[#2bb673] text-white px-2 py-1 sm:px-3 sm:py-1 md:px-4 md:py-2 rounded hover:opacity-90 text-xs sm:text-xs md:text-sm"
                     >
                       {num}
+                    </button>
+                  ))}
+                </div>
+              ) : showPlans ? (
+                <div className="flex flex-wrap gap-1 sm:gap-2 p-3 sm:p-4 bg-white/10 backdrop-blur-sm rounded-lg border border-white/30 justify-center">
+                  {plans.map((plan, index) => (
+                    <button
+                      key={index}
+                      onClick={() => handlePlanSelect(plan)}
+                      className="bg-[#2bb673] text-white px-2 py-1 sm:px-3 sm:py-1 md:px-4 md:py-2 rounded hover:opacity-90 text-xs sm:text-xs md:text-sm"
+                    >
+                      {plan.planName} - ${plan.price}
                     </button>
                   ))}
                 </div>
