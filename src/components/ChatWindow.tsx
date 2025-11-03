@@ -1,5 +1,8 @@
 "use client";
 import React, { useState, useEffect } from "react";
+import { PaymentCard } from "./PaymentCard";
+import { TokenCard } from "./TokenCard";
+import { PaymentProcessCard } from "./PaymentProcessCard";
 
 const ChatWindow = () => {
   const [chat, setChat] = useState<
@@ -24,6 +27,12 @@ const ChatWindow = () => {
   const [showDetailsForm, setShowDetailsForm] = useState(false);
   const [showNumberButtons, setShowNumberButtons] = useState(false);
   const [numberOptions, setNumberOptions] = useState<string[]>([]);
+  const [showPayment, setShowPayment] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState<any>(null);
+  const [showTokenCard, setShowTokenCard] = useState(false);
+  const [paymentToken, setPaymentToken] = useState<string | null>(null);
+  const [showPaymentProcessCard, setShowPaymentProcessCard] = useState(false);
+
   const [formData, setFormData] = useState({
     firstName: "",
     surname: "",
@@ -195,8 +204,10 @@ const ChatWindow = () => {
 
   // Add new handler for plan selection
   const handlePlanSelect = (plan: any) => {
+    setSelectedPlan(plan);
     setShowPlans(false);
-    handleSend(`I would like to select the plan: ${plan.name}`);
+    setShowPayment(true); // Show payment form
+    handleSend(`I would like to select the plan: ${plan.planName}`);
   };
 
   const handleSend = async (msgText: string) => {
@@ -217,9 +228,13 @@ const ChatWindow = () => {
     setLoading(true);
 
     try {
-     const payload = sessionId
-      ? { query: userMsg.text, session_id: sessionId, brand: "prosperity-tech" }
-      : { query: userMsg.text, brand: "prosperity-tech" };
+      const payload = sessionId
+        ? {
+            query: userMsg.text,
+            session_id: sessionId,
+            brand: "prosperity-tech",
+          }
+        : { query: userMsg.text, brand: "prosperity-tech" };
 
       const response = await fetch("/api", {
         method: "POST",
@@ -619,6 +634,35 @@ const ChatWindow = () => {
                     </button>
                   ))}
                 </div>
+              ) : showPayment && selectedPlan ? (
+                <PaymentCard
+                  onTokenReceived={(token) => {
+                    setPaymentToken(token);
+                    setShowPayment(false);
+                    setShowTokenCard(true);
+                    handleSend(
+                      `Payment completed for plan ${selectedPlan.planName} with token: ${token}`
+                    );
+                    setSelectedPlan(null);
+                  }}
+                />
+              ) : showTokenCard && paymentToken ? (
+                <TokenCard
+                  token={paymentToken}
+                  onSuccess={() => {
+                    setShowTokenCard(false);
+                    setPaymentToken(null);
+                    handleSend("Payment method successfully added!");
+                    setShowPaymentProcessCard(true);
+                  }}
+                />
+              ) : showPaymentProcessCard ? (
+                <PaymentProcessCard
+                  onClose={() => {
+                    setShowPaymentProcessCard(false);
+                    handleSend("Payment processing completed!");
+                  }}
+                />
               ) : (
                 <div className="flex items-center gap-2 sm:gap-3 border border-white/30 rounded-full px-3 sm:px-4 py-2 sm:py-3 bg-white/10 backdrop-blur-sm text-white">
                   <input
