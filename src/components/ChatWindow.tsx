@@ -32,6 +32,9 @@ const ChatWindow = () => {
   const [showTokenCard, setShowTokenCard] = useState(false);
   const [paymentToken, setPaymentToken] = useState<string | null>(null);
   const [showPaymentProcessCard, setShowPaymentProcessCard] = useState(false);
+  const [selectedSim, setSelectedSim] = useState<string | null>(null);
+  const [custNo, setCustNo] = useState<string | null>(null);
+  const [planNo, setPlanNo] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     firstName: "",
@@ -176,35 +179,12 @@ const ChatWindow = () => {
       .join(", ");
     setShowDetailsForm(false);
     handleSend(formatted);
-    setFormData({
-      firstName: "",
-      surname: "",
-      email: "",
-      phone: "",
-      dob: "",
-      address: "",
-      suburb: "",
-      state: "",
-      postcode: "",
-      pin: "",
-    });
-    setFormErrors({
-      firstName: "",
-      surname: "",
-      email: "",
-      phone: "",
-      dob: "",
-      address: "",
-      suburb: "",
-      state: "",
-      postcode: "",
-      pin: "",
-    });
   };
 
   // Add new handler for plan selection
   const handlePlanSelect = (plan: any) => {
     setSelectedPlan(plan);
+    setPlanNo(plan.planNo || "PLAN001");
     setShowPlans(false);
     setShowPayment(true); // Show payment form
     handleSend(`I would like to select the plan: ${plan.planName}`);
@@ -230,10 +210,10 @@ const ChatWindow = () => {
     try {
       const payload = sessionId
         ? {
-            query: userMsg.text,
-            session_id: sessionId,
-            brand: "prosperity-tech",
-          }
+          query: userMsg.text,
+          session_id: sessionId,
+          brand: "prosperity-tech",
+        }
         : { query: userMsg.text, brand: "prosperity-tech" };
 
       const response = await fetch("/api", {
@@ -270,6 +250,18 @@ const ChatWindow = () => {
       };
 
       setChat((prev) => [...prev, botMsg]);
+
+      if (data?.custNo) setCustNo(data.custNo);
+
+      if (botText.toLowerCase().includes("please provide your first name")) {
+        setShowDetailsForm(true);
+      }
+
+      if (botText.match(/04\d{8}/g)?.length === 5) {
+        const numbers = botText.match(/04\d{8}/g);
+        setNumberOptions(numbers || []);
+        setShowNumberButtons(true);
+      }
 
       if (isDetailsRequest(botText)) {
         setShowDetailsForm(true);
@@ -334,9 +326,47 @@ const ChatWindow = () => {
   };
 
   const handleNumberSelect = async (number: string) => {
+    setSelectedSim(number);
     setShowNumberButtons(false);
     handleSend(number);
     // No longer fetch plans here; it's done when showing numbers
+  };
+
+  const handleActivateOrder = async () => {
+    try {
+      const body = {
+        number: "",
+        cust: {
+          custNo: custNo,
+          suburb: formData.suburb,
+          postcode: formData.postcode,
+          address: formData.address,
+          email: formData.email,
+        },
+        planNo: planNo,
+        simNo: selectedSim,
+      };
+
+      console.log("Activation payload:", body);
+
+      const response = await fetch("https://bele.omnisuiteai.com/api/v1/orders/activate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+
+      const result = await response.json();
+      console.log("Activation result:", result);
+
+      if (response.ok) {
+        handleSend("Order successfully activated!");
+      } else {
+        handleSend(`Activation failed: ${result.message || "Unknown error"}`);
+      }
+    } catch (err) {
+      console.error("Activation failed", err);
+      handleSend("Order activation failed. Please try again.");
+    }
   };
 
   const sendMessage = () => {
@@ -393,9 +423,8 @@ const ChatWindow = () => {
             {chat.map((msg) => (
               <div
                 key={msg.id}
-                className={`flex items-start gap-2 sm:gap-3 mb-3 sm:mb-4 md:mb-6 ${
-                  msg.type === "user" ? "justify-end" : "justify-start"
-                }`}
+                className={`flex items-start gap-2 sm:gap-3 mb-3 sm:mb-4 md:mb-6 ${msg.type === "user" ? "justify-end" : "justify-start"
+                  }`}
               >
                 {msg.type === "bot" && (
                   <div className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 bg-yellow-400 rounded-full flex-shrink-0 flex items-center justify-center overflow-hidden">
@@ -408,11 +437,10 @@ const ChatWindow = () => {
                 )}
 
                 <div
-                  className={`${
-                    msg.type === "user"
-                      ? "bg-white text-[#0E3B5C]"
-                      : "bg-white text-[#0E3B5C]"
-                  } rounded-2xl px-3 py-1.5 sm:px-4 sm:py-2 md:px-6 md:py-2 shadow-md max-w-[90%] sm:max-w-[80%] md:max-w-[70%]`}
+                  className={`${msg.type === "user"
+                    ? "bg-white text-[#0E3B5C]"
+                    : "bg-white text-[#0E3B5C]"
+                    } rounded-2xl px-3 py-1.5 sm:px-4 sm:py-2 md:px-6 md:py-2 shadow-md max-w-[90%] sm:max-w-[80%] md:max-w-[70%]`}
                 >
                   <p className="text-xs sm:text-xs md:text-sm leading-relaxed break-words">
                     {msg.text}
@@ -661,6 +689,7 @@ const ChatWindow = () => {
                   onClose={() => {
                     setShowPaymentProcessCard(false);
                     handleSend("Payment processing completed!");
+                    handleActivateOrder();
                   }}
                 />
               ) : (
