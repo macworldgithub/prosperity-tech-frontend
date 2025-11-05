@@ -9,7 +9,7 @@ import screen2 from "../../../public/images/iPhone 15.png";
 const HeroSection = () => {
   const router = useRouter(); // ✅ Initialize router
 
-   const handleChatClick = () => {
+  const handleChatClick = () => {
     router.push("/chat-window"); // Modified route path to follow convention
   };
 
@@ -30,17 +30,17 @@ const HeroSection = () => {
         <Image
           src={screen}
           alt="Secure Login Screen"
-          className="w-[160px] sm:w-[200px]"
+          className="w-40 sm:w-[200px]"
         />
         <Image
           src={screen1}
           alt="Chat with AI Screen"
-          className="w-[160px] sm:w-[200px]"
+          className="w-40 sm:w-[200px]"
         />
         <Image
           src={screen2}
           alt="AI Chat Interface Screen"
-          className="w-[160px] sm:w-[200px]"
+          className="w-40 sm:w-[200px]"
         />
       </div>
 
