@@ -184,7 +184,7 @@ const ChatWindow = () => {
   // Add new handler for plan selection
   const handlePlanSelect = (plan: any) => {
     setSelectedPlan(plan);
-    setPlanNo(plan.planNo || "PLAN001");
+    setPlanNo(String(plan.planNo || "PLAN001"));
     setShowPlans(false);
     setShowPayment(true); // Show payment form
     handleSend(`I would like to select the plan: ${plan.planName}`);
@@ -210,10 +210,10 @@ const ChatWindow = () => {
     try {
       const payload = sessionId
         ? {
-          query: userMsg.text,
-          session_id: sessionId,
-          brand: "prosperity-tech",
-        }
+            query: userMsg.text,
+            session_id: sessionId,
+            brand: "prosperity-tech",
+          }
         : { query: userMsg.text, brand: "prosperity-tech" };
 
       const response = await fetch("/api", {
@@ -343,17 +343,20 @@ const ChatWindow = () => {
           address: formData.address,
           email: formData.email,
         },
-        planNo: planNo,
+        planNo: String(planNo || ""),
         simNo: selectedSim,
       };
 
       console.log("Activation payload:", body);
 
-      const response = await fetch("https://bele.omnisuiteai.com/api/v1/orders/activate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
+      const response = await fetch(
+        "https://bele.omnisuiteai.com/api/v1/orders/activate",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        }
+      );
 
       const result = await response.json();
       console.log("Activation result:", result);
@@ -423,8 +426,9 @@ const ChatWindow = () => {
             {chat.map((msg) => (
               <div
                 key={msg.id}
-                className={`flex items-start gap-2 sm:gap-3 mb-3 sm:mb-4 md:mb-6 ${msg.type === "user" ? "justify-end" : "justify-start"
-                  }`}
+                className={`flex items-start gap-2 sm:gap-3 mb-3 sm:mb-4 md:mb-6 ${
+                  msg.type === "user" ? "justify-end" : "justify-start"
+                }`}
               >
                 {msg.type === "bot" && (
                   <div className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 bg-yellow-400 rounded-full flex-shrink-0 flex items-center justify-center overflow-hidden">
@@ -437,10 +441,11 @@ const ChatWindow = () => {
                 )}
 
                 <div
-                  className={`${msg.type === "user"
-                    ? "bg-white text-[#0E3B5C]"
-                    : "bg-white text-[#0E3B5C]"
-                    } rounded-2xl px-3 py-1.5 sm:px-4 sm:py-2 md:px-6 md:py-2 shadow-md max-w-[90%] sm:max-w-[80%] md:max-w-[70%]`}
+                  className={`${
+                    msg.type === "user"
+                      ? "bg-white text-[#0E3B5C]"
+                      : "bg-white text-[#0E3B5C]"
+                  } rounded-2xl px-3 py-1.5 sm:px-4 sm:py-2 md:px-6 md:py-2 shadow-md max-w-[90%] sm:max-w-[80%] md:max-w-[70%]`}
                 >
                   <p className="text-xs sm:text-xs md:text-sm leading-relaxed break-words">
                     {msg.text}
@@ -677,6 +682,7 @@ const ChatWindow = () => {
               ) : showTokenCard && paymentToken ? (
                 <TokenCard
                   token={paymentToken}
+                  custNo={custNo || ""}
                   onSuccess={() => {
                     setShowTokenCard(false);
                     setPaymentToken(null);

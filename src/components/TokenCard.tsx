@@ -4,10 +4,11 @@ import { useState } from "react";
 
 interface TokenCardProps {
   token: string;
+  custNo: string;
   onSuccess: () => void;
 }
 
-export const TokenCard = ({ token, onSuccess }: TokenCardProps) => {
+export const TokenCard = ({ token, custNo, onSuccess }: TokenCardProps) => {
   const [inputToken, setInputToken] = useState(token);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
@@ -23,7 +24,7 @@ export const TokenCard = ({ token, onSuccess }: TokenCardProps) => {
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ custNo: "526691", paymentTokenId: inputToken }),
+          body: JSON.stringify({ custNo, paymentTokenId: inputToken }),
         }
       );
 

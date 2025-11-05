@@ -8,7 +8,7 @@ interface PaymentProcessCardProps {
 
 export const PaymentProcessCard = ({ onClose }: PaymentProcessCardProps) => {
   const [formData, setFormData] = useState({
-    custNo: "526691",
+    custNo: "",
     amount: "",
     paymentId: "",
     email: "",
