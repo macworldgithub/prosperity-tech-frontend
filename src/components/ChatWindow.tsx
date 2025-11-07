@@ -335,7 +335,7 @@ const ChatWindow = () => {
   const handleActivateOrder = async () => {
     try {
       const body = {
-        number: "",
+        number: selectedSim,
         cust: {
           custNo: custNo,
           suburb: formData.suburb,
@@ -344,7 +344,7 @@ const ChatWindow = () => {
           email: formData.email,
         },
         planNo: String(planNo || ""),
-        simNo: selectedSim,
+        simNo: "",
       };
 
       console.log("Activation payload:", body);
