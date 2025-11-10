@@ -1,4 +1,3 @@
-import Navbar from "@/components/layout/Navbar";
 import HeroSection from "@/components/sections/HeroSection";
 import FAQSection from "@/components/sections/FAQSection";
 import Features from "@/components/sections/Features";

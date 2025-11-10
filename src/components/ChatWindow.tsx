@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import { PaymentCard } from "./PaymentCard";
 import { TokenCard } from "./TokenCard";
 import { PaymentProcessCard } from "./PaymentProcessCard";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 interface Plan {
   _id: string;
@@ -20,14 +20,14 @@ const ChatWindow = () => {
     {
       id: 1,
       type: "bot",
-      text: "Hi there, I would be glad to help. How can I help?",
+      text: "Hi there, I would be glad to help. Tap signup to get started.",
       time: new Date().toLocaleTimeString([], {
         hour: "2-digit",
         minute: "2-digit",
       }),
     },
   ]);
-
+  const router = useRouter();
   const [plans, setPlans] = useState<any[]>([]); // for storing plans
   const [showPlans, setShowPlans] = useState(false);
   const [message, setMessage] = useState("");
@@ -61,7 +61,7 @@ const ChatWindow = () => {
           const preselected = plansList.find((p) => p.planName === planParam);
           if (preselected) {
             setSelectedPlan(preselected);
-            handleSend(`You've selected the ${preselected.planName} plan.`);
+            handleSend(`You've selected the ${preselected.planName} plan. Tap signup if you want to continue.`);
           }
         }
       } catch (err) {
@@ -422,7 +422,7 @@ const ChatWindow = () => {
       />
 
       {/* Chat Modal */}
-      <div className="fixed inset-0 flex items-center justify-center z-50 p-2 sm:p-4 md:p-0 overflow-y-auto">
+      <div className="sticky inset-0 flex items-center justify-center z-50 p-2 sm:p-4 md:p-0 overflow-y-auto mt-10">
         <div className="w-full h-[95vh] sm:h-[90vh] md:h-auto md:max-h-[600px] max-w-[100vw] sm:max-w-5xl bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden">
           {/* Header */}
           <div className="flex justify-between items-center p-2 sm:p-3 bg-[#215988] rounded-t-2xl">
@@ -435,7 +435,10 @@ const ChatWindow = () => {
                 />
               </div>
             </div>
-            <button className="text-white text-lg sm:text-xl font-bold hover:text-gray-200 transition-colors">
+            <button
+              onClick={() => router.push("/")}
+              className="text-white text-lg sm:text-xl font-bold hover:text-gray-200 transition-colors"
+            >
               ×
             </button>
           </div>
