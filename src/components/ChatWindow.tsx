@@ -3,6 +3,15 @@ import React, { useState, useEffect } from "react";
 import { PaymentCard } from "./PaymentCard";
 import { TokenCard } from "./TokenCard";
 import { PaymentProcessCard } from "./PaymentProcessCard";
+import { useSearchParams } from "next/navigation";
+
+interface Plan {
+  _id: string;
+  planName: string;
+  price: number;
+  network: string;
+  isActive: boolean;
+}
 
 const ChatWindow = () => {
   const [chat, setChat] = useState<
@@ -28,13 +37,40 @@ const ChatWindow = () => {
   const [showNumberButtons, setShowNumberButtons] = useState(false);
   const [numberOptions, setNumberOptions] = useState<string[]>([]);
   const [showPayment, setShowPayment] = useState(false);
-  const [selectedPlan, setSelectedPlan] = useState<any>(null);
+  const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
+  console.log(selectedPlan, "SelectedPlan");
   const [showTokenCard, setShowTokenCard] = useState(false);
   const [paymentToken, setPaymentToken] = useState<string | null>(null);
   const [showPaymentProcessCard, setShowPaymentProcessCard] = useState(false);
   const [selectedSim, setSelectedSim] = useState<string | null>(null);
   const [custNo, setCustNo] = useState<string | null>(null);
   const [planNo, setPlanNo] = useState<string | null>(null);
+
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const fetchPlansAndCheckQuery = async () => {
+      try {
+        const res = await fetch("https://bele.omnisuiteai.com/api/v1/plans");
+        const data = await res.json();
+        const plansList: Plan[] = data.data || [];
+        setPlans(plansList);
+
+        const planParam = searchParams.get("plan");
+        if (planParam) {
+          const preselected = plansList.find((p) => p.planName === planParam);
+          if (preselected) {
+            setSelectedPlan(preselected);
+            handleSend(`You've selected the ${preselected.planName} plan.`);
+          }
+        }
+      } catch (err) {
+        console.error("Error fetching plans:", err);
+      }
+    };
+
+    fetchPlansAndCheckQuery();
+  }, [searchParams]);
 
   const [formData, setFormData] = useState({
     firstName: "",
@@ -272,31 +308,26 @@ const ChatWindow = () => {
         setNumberOptions(numbers);
         setShowNumberButtons(true);
 
-        // Fetch plans when numbers are suggested
-        try {
-          const plansResponse = await fetch(
-            "https://bele.omnisuiteai.com/api/v1/plans",
-            {
-              method: "GET",
-              headers: {
-                accept: "application/json",
-              },
-            }
-          );
+        if (!selectedPlan) {
+          try {
+            const plansResponse = await fetch(
+              "https://bele.omnisuiteai.com/api/v1/plans",
+              {
+                method: "GET",
+                headers: { accept: "application/json" },
+              }
+            );
 
-          if (!plansResponse.ok) {
-            throw new Error("Failed to fetch plans");
+            if (!plansResponse.ok) throw new Error("Failed to fetch plans");
+
+            const plansData = await plansResponse.json();
+            setPlans(plansData.data || []);
+            setShowPlans(true);
+          } catch (plansError) {
+            console.error("Error fetching plans:", plansError);
+            setPlans([]);
+            setShowPlans(true);
           }
-
-          const plansData = await plansResponse.json();
-          // Fix: Set plans to the 'data' array from the API response
-          setPlans(plansData.data || []);
-          setShowPlans(true);
-        } catch (plansError) {
-          console.error("Error fetching plans:", plansError);
-          setPlans([]);
-          // Optionally set showPlans to false if fetch fails, or true with empty array
-          setShowPlans(true);
         }
       }
     } catch (error: any) {
@@ -329,7 +360,11 @@ const ChatWindow = () => {
     setSelectedSim(number);
     setShowNumberButtons(false);
     handleSend(number);
-    // No longer fetch plans here; it's done when showing numbers
+    if (selectedPlan) {
+      setShowPayment(true); // proceed to payment if plan already selected
+    } else {
+      setShowPlans(true); // otherwise show plan options
+    }
   };
 
   const handleActivateOrder = async () => {
@@ -421,6 +456,13 @@ const ChatWindow = () => {
                 How can I help you today?
               </h2>
             </div>
+
+            {selectedPlan && (
+              <div className="mb-4 bg-white/20 border border-white/30 text-white text-center text-sm sm:text-base px-3 py-2 rounded-md shadow-md">
+                You selected <strong>{selectedPlan.planName}</strong> — $
+                {selectedPlan.price}. Let’s continue with your setup.
+              </div>
+            )}
 
             {/* Chat Messages */}
             {chat.map((msg) => (
@@ -642,7 +684,7 @@ const ChatWindow = () => {
                     Submit Details
                   </button>
                 </form>
-              ) : showNumberButtons ? (
+              ) : showNumberButtons && numberOptions.length > 0 ? (
                 <div className="flex flex-wrap gap-1 sm:gap-2 p-3 sm:p-4 bg-white/10 backdrop-blur-sm rounded-lg border border-white/30 justify-center">
                   {numberOptions.map((num, index) => (
                     <button
@@ -655,7 +697,7 @@ const ChatWindow = () => {
                     </button>
                   ))}
                 </div>
-              ) : showPlans ? (
+              ) : showPlans && !selectedPlan && plans.length > 0 ? (
                 <div className="flex flex-wrap gap-1 sm:gap-2 p-3 sm:p-4 bg-white/10 backdrop-blur-sm rounded-lg border border-white/30 justify-center">
                   {plans.map((plan, index) => (
                     <button
@@ -676,7 +718,6 @@ const ChatWindow = () => {
                     handleSend(
                       `Payment completed for plan ${selectedPlan.planName} with token: ${token}`
                     );
-                    setSelectedPlan(null);
                   }}
                 />
               ) : showTokenCard && paymentToken ? (

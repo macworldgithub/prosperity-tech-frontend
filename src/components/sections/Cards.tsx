@@ -1,56 +1,77 @@
+"use client";
 import React from "react";
-import { CiCircleCheck } from "react-icons/ci";
-type PlanCardProps = {
+import { useRouter } from "next/navigation";
+
+interface PlanCardProps {
   title: string;
   data: string;
   price: string;
-  frequency?: string;
-  features: string[];
+  features?: string[];
   highlight?: boolean;
-};
+  network?: string;
+}
 
 const PlanCard: React.FC<PlanCardProps> = ({
   title,
   data,
   price,
-  frequency = "/ month",
-  features,
+  features = [],
   highlight = false,
+  network,
 }) => {
+  const router = useRouter();
+
+  const handleClick = () => {
+    // Encode plan name to make it URL-safe
+    const encodedTitle = encodeURIComponent(title);
+    router.push(`/chat-window?plan=${encodedTitle}`);
+  };
+
   return (
-    <div className="group rounded-2xl bg-[#1720343D] text-white p-6 sm:p-8 shadow-xl border border-white/10 ">
-      <div className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold mb-4 bg-[#202C3C]">
-        {title}
+    <div
+      onClick={handleClick}
+      className={`cursor-pointer rounded-2xl shadow-lg p-6 sm:p-8 text-center transition-all duration-300 ${
+        highlight
+          ? "bg-gradient-to-b from-[#0f3046] to-[#1a5324] text-white scale-[1.02]"
+          : "bg-white text-gray-800 hover:shadow-2xl"
+      } hover:scale-[1.03]`}
+    >
+      <h3 className="text-xl font-semibold mb-2">{title}</h3>
+
+      <div className="flex justify-center items-center space-x-2 mb-4">
+        <span className="text-3xl font-bold">{data}</span>
+        {network && (
+          <span
+            className={`text-xs px-2 py-1 rounded-full ${
+              network === "5G"
+                ? "bg-green-600 text-white"
+                : "bg-blue-600 text-white"
+            }`}
+          >
+            {network}
+          </span>
+        )}
       </div>
 
-      <div className="text-sm opacity-80">{data}</div>
+      <p className="text-2xl font-semibold mb-4">{price}</p>
 
-      <div className="mt-1 flex items-end gap-2">
-        <div className="text-3xl sm:text-4xl font-bold">{price}</div>
-        <div className="text-sm opacity-80">{frequency}</div>
-      </div>
+      <ul className="text-sm space-y-2 mb-6">
+        {features.map((feature, i) => (
+          <li key={i} className="opacity-90">
+            {feature}
+          </li>
+        ))}
+      </ul>
 
-      <div className="mt-6">
-        <button
-          type="button"
-          className={`w-full sm:w-auto px-6 py-2 rounded-full font-semibold shadow-md transition bg-white text-[#0E3B5C] hover:bg-[#2bb673] hover:text-white group-hover:bg-[#2bb673] group-hover:text-white`}
-        >
-          Choose This Plan
-        </button>
-      </div>
-
-      <div className="mt-6">
-        <div className="text-sm font-semibold mb-3">Features include:</div>
-        <ul className="space-y-2 text-sm">
-          {features.map((f, idx) => (
-            <li key={idx} className="flex items-start gap-2">
-              {/* <span className="mt-1 inline-block h-2.5 w-2.5 rounded-full bg-[#2bb673]" /> */}
-              <CiCircleCheck className="mt-1 text-[#f5f8f7] flex-shrink-0 " />
-              <span className="opacity-90">{f}</span>
-            </li>
-          ))}
-        </ul>
-      </div>
+      <button
+        className={`w-full py-2 rounded-lg font-medium transition-all ${
+          highlight
+            ? "bg-white text-[#1a5324] hover:opacity-80"
+            : "bg-gradient-to-r from-[#0f3046] to-[#1a5324] text-white hover:opacity-90"
+        }`}
+      >
+        Choose this Plan
+      </button>
     </div>
   );
 };

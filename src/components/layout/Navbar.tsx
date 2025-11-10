@@ -20,7 +20,7 @@ const Navbar = () => {
   ];
 
   return (
-    <nav className="relative flex items-center justify-between bg-[#1d5e8e] px-6 sm:px-10 py-5 w-full z-50 shadow-md">
+    <nav className="fixed top-0 left-0 z-[100] flex items-center justify-between bg-[#1d5e8e] px-6 sm:px-10 py-5 w-full shadow-md">
       {/* Left Side - Nav Links (Desktop) */}
       <div className="hidden lg:flex items-center space-x-6">
         {navLinks.map((link) => (
