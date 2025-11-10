@@ -56,7 +56,7 @@ const Contact = () => {
               <div>
                 <p className="text-2xl font-semibold text-black">+0184185935</p>
                 <p className="mt-2 font-semibold tracking-wide text-black">
-                  prosperitytech@MAIL.COM
+                  prosperitytech@gmail.com
                 </p>
               </div>
 

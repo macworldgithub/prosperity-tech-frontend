@@ -65,7 +65,7 @@ const Features = () => {
                 </p>
 
                 <button className="mt-8 px-6 py-3 rounded-xl bg-white border border-gray-200 shadow-[0_6px_24px_rgba(43,182,115,0.25)] text-gray-900 font-semibold hover:bg-gray-50">
-                  GET YOUR ESIMM
+                  GET YOUR E-SIM
                 </button>
               </div>
 

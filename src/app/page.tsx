@@ -12,7 +12,6 @@ import Big from "@/components/sections/Big";
 export default function HomePage() {
   return (
     <main className="relative">
-      <Navbar />
       <HeroSection />
       <Features />
       <Small />

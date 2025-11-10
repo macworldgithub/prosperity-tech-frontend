@@ -84,7 +84,7 @@ const FAQSection = () => {
             Asked Questions
           </h2>
           <p className="text-gray-300 mb-8">
-            Have general questions? Please CONTACT our team!
+            Have general questions? Please contact our team!
           </p>
           <button
             onClick={handleChatClick}
