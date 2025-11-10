@@ -5,7 +5,7 @@ import { useState } from "react";
 interface TokenCardProps {
   token: string;
   custNo: string;
-  onSuccess: () => void;
+  onSuccess: (apiResponse: any) => void;
 }
 
 export const TokenCard = ({ token, custNo, onSuccess }: TokenCardProps) => {
@@ -33,7 +33,7 @@ export const TokenCard = ({ token, custNo, onSuccess }: TokenCardProps) => {
         throw new Error(data.message || "Failed to add payment method");
 
       alert("✅ Payment method added successfully!");
-      onSuccess();
+      onSuccess(data);
     } catch (error: any) {
       setMessage("❌ " + (error.message || "Something went wrong"));
     } finally {

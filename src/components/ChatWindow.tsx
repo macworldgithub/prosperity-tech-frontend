@@ -28,6 +28,8 @@ const ChatWindow = () => {
     },
   ]);
   const router = useRouter();
+  const searchParams = useSearchParams();
+
   const [plans, setPlans] = useState<any[]>([]); // for storing plans
   const [showPlans, setShowPlans] = useState(false);
   const [message, setMessage] = useState("");
@@ -38,15 +40,12 @@ const ChatWindow = () => {
   const [numberOptions, setNumberOptions] = useState<string[]>([]);
   const [showPayment, setShowPayment] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
-  console.log(selectedPlan, "SelectedPlan");
   const [showTokenCard, setShowTokenCard] = useState(false);
   const [paymentToken, setPaymentToken] = useState<string | null>(null);
   const [showPaymentProcessCard, setShowPaymentProcessCard] = useState(false);
   const [selectedSim, setSelectedSim] = useState<string | null>(null);
   const [custNo, setCustNo] = useState<string | null>(null);
-  const [planNo, setPlanNo] = useState<string | null>(null);
-
-  const searchParams = useSearchParams();
+  const [paymentId, setPaymentId] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchPlansAndCheckQuery = async () => {
@@ -61,7 +60,9 @@ const ChatWindow = () => {
           const preselected = plansList.find((p) => p.planName === planParam);
           if (preselected) {
             setSelectedPlan(preselected);
-            handleSend(`You've selected the ${preselected.planName} plan. Tap signup if you want to continue.`);
+            handleSend(
+              `You've selected the ${preselected.planName} plan. Tap signup if you want to continue.`
+            );
           }
         }
       } catch (err) {
@@ -220,7 +221,6 @@ const ChatWindow = () => {
   // Add new handler for plan selection
   const handlePlanSelect = (plan: any) => {
     setSelectedPlan(plan);
-    setPlanNo(String(plan.planNo || "PLAN001"));
     setShowPlans(false);
     setShowPayment(true); // Show payment form
     handleSend(`I would like to select the plan: ${plan.planName}`);
@@ -361,9 +361,9 @@ const ChatWindow = () => {
     setShowNumberButtons(false);
     handleSend(number);
     if (selectedPlan) {
-      setShowPayment(true); // proceed to payment if plan already selected
+      setShowPayment(true);
     } else {
-      setShowPlans(true); // otherwise show plan options
+      setShowPlans(true);
     }
   };
 
@@ -378,7 +378,7 @@ const ChatWindow = () => {
           address: formData.address,
           email: formData.email,
         },
-        planNo: String(planNo || ""),
+        planNo: selectedPlan?._id || "",
         simNo: "",
       };
 
@@ -727,9 +727,11 @@ const ChatWindow = () => {
                 <TokenCard
                   token={paymentToken}
                   custNo={custNo || ""}
-                  onSuccess={() => {
+                  onSuccess={(apiResponse) => {
                     setShowTokenCard(false);
                     setPaymentToken(null);
+                    setPaymentId(apiResponse.data.paymentId);
+                    setCustNo(custNo || "");
                     handleSend("Payment method successfully added!");
                     setShowPaymentProcessCard(true);
                   }}
@@ -741,6 +743,8 @@ const ChatWindow = () => {
                     handleSend("Payment processing completed!");
                     handleActivateOrder();
                   }}
+                  defaultCustNo={custNo || ""}
+                  defaultPaymentId={paymentId || ""}
                 />
               ) : (
                 <div className="flex items-center gap-2 sm:gap-3 border border-white/30 rounded-full px-3 sm:px-4 py-2 sm:py-3 bg-white/10 backdrop-blur-sm text-white">

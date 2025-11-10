@@ -47,6 +47,7 @@ export const PaymentCard = ({ onTokenReceived }: PaymentCardProps) => {
           config: { supplierBusinessCode: "TIABREST" },
           iframe: {
             width: "100%",
+            height: "350px",
             scrolling: "no",
             style: { border: "none", background: "#fff", borderRadius: "12px" },
           },
@@ -91,7 +92,7 @@ export const PaymentCard = ({ onTokenReceived }: PaymentCardProps) => {
           }
 
           const token = data?.singleUseToken?.singleUseTokenId;
-          alert("✅ Token created: " + token);
+          alert("Token created: " + token);
           onTokenReceived(token);
         });
       };
@@ -107,7 +108,7 @@ export const PaymentCard = ({ onTokenReceived }: PaymentCardProps) => {
         <div
           id="creditCardContainer"
           data-quickstream-api="creditCardContainer"
-          className="w-full h-[250px] mb-3 bg-gray-100 rounded-lg"
+          className="w-full h-[350px] mb-3 bg-gray-100 rounded-lg"
         />
         <button
           type="submit"
