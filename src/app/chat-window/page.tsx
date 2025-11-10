@@ -1,9 +1,10 @@
 import ChatWindow from "@/components/ChatWindow";
+import React from "react";
 
 export default function ChatPage() {
   return (
-    <main className="min-h-screen">
+    <React.Suspense fallback={<div>Loading chat...</div>}>
       <ChatWindow />
-    </main>
+    </React.Suspense>
   );
 }
