@@ -14,7 +14,7 @@ const About = () => {
           communication software to empower local businesses.
         </p>
         <p className="mt-6 text-gray-600">
-          Through our partnership with <strong>JUSTmobile.ai</strong>, we now
+          Through our partnership with <strong>bele</strong>, we now
           offer the <strong>Prosperity Tech Service</strong> — a plug-and-play
           MVNO solution that enhances business mobility and integrates seamlessly
           with your existing IT ecosystem.

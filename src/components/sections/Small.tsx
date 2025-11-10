@@ -18,7 +18,9 @@ const PlansSection: React.FC = () => {
   useEffect(() => {
     const fetchPlans = async () => {
       try {
-        const response = await fetch("https://bele.omnisuiteai.com/api/v1/plans");
+        const response = await fetch(
+          "https://bele.omnisuiteai.com/api/v1/plans"
+        );
         if (!response.ok) throw new Error("Failed to fetch plans");
         const data = await response.json();
         setPlans(data.data || []);
@@ -39,8 +41,8 @@ const PlansSection: React.FC = () => {
   };
 
   // Categorize
-  const smallPlans = plans.filter(p => extractGB(p.planName) <= 40);
-  const bigPlans = plans.filter(p => extractGB(p.planName) > 40);
+  const smallPlans = plans.filter((p) => extractGB(p.planName) <= 40);
+  const bigPlans = plans.filter((p) => extractGB(p.planName) > 40);
 
   if (loading)
     return (
@@ -59,7 +61,7 @@ const PlansSection: React.FC = () => {
       {/* Small Plans Section */}
       {smallPlans.length > 0 && (
         <section className="w-full py-16 sm:py-20 bg-[#1D5E8E]">
-          <div className="max-w-6xl mx-auto px-6">
+          <div className="mx-auto px-6">
             <div className="text-center mb-10">
               <h2 className="text-3xl sm:text-4xl font-semibold text-white">
                 Small Plans
@@ -69,8 +71,8 @@ const PlansSection: React.FC = () => {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {smallPlans.map(plan => {
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 justify-center">
+              {smallPlans.map((plan) => {
                 const dataMatch = plan.planName.match(/(\d+GB)/i);
                 const dataAmount = dataMatch ? dataMatch[0] : "N/A";
 
@@ -98,18 +100,19 @@ const PlansSection: React.FC = () => {
       {/* Big Plans Section */}
       {bigPlans.length > 0 && (
         <section className="w-full py-16 sm:py-20 bg-[#f2f7fb]">
-          <div className="max-w-6xl mx-auto px-6">
+          <div className="mx-auto px-6">
             <div className="text-center mb-10">
               <h2 className="text-3xl sm:text-4xl font-semibold text-[#1D5E8E]">
                 Big Plans
               </h2>
               <p className="mt-3 text-sm sm:text-base text-gray-700">
-                Ideal for heavy users, remote teams, and data-intensive workloads.
+                Ideal for heavy users, remote teams, and data-intensive
+                workloads.
               </p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {bigPlans.map(plan => {
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+              {bigPlans.map((plan) => {
                 const dataMatch = plan.planName.match(/(\d+GB)/i);
                 const dataAmount = dataMatch ? dataMatch[0] : "N/A";
 

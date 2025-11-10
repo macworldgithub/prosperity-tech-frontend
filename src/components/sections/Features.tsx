@@ -65,16 +65,16 @@ const Features = () => {
                 </p>
 
                 <button className="mt-8 px-6 py-3 rounded-xl bg-white border border-gray-200 shadow-[0_6px_24px_rgba(43,182,115,0.25)] text-gray-900 font-semibold hover:bg-gray-50">
-                  GET YOUR E-SIM
+                  Get your E-sim
                 </button>
               </div>
 
               <div className="flex justify-center">
                 <div className="relative">
                   <img
-                    src="/images/iPhone 15.png"
+                    src="/images/IPhone15.png"
                     alt="App chat preview on phone"
-                    className="w-[260px] sm:w-[300px] lg:w-[360px] drop-shadow-[0_60px_100px_rgba(43,182,115,0.35)] rounded-[42px]"
+                    className="w-[60px] sm:w-[300px] lg:w-[260px] drop-shadow-[0_60px_100px_rgba(43,182,115,0.35)] rounded-[42px]"
                   />
                   <div className="absolute -z-10 inset-0 mx-auto blur-3xl rounded-full bg-[#2bb673]/30 translate-y-24 w-64 h-64" />
                 </div>

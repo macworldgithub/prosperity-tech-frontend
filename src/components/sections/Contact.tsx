@@ -51,30 +51,6 @@ const Contact = () => {
                 </button>
               </div>
             </form>
-
-            <div className="mt-10 grid grid-cols-1 md:grid-cols-2 gap-8 items-start max-w-3xl mx-auto">
-              <div>
-                <p className="text-2xl font-semibold text-black">+0184185935</p>
-                <p className="mt-2 font-semibold tracking-wide text-black">
-                  prosperitytech@gmail.com
-                </p>
-              </div>
-
-              <div>
-                <div className="h-40 rounded-xl bg-gray-200" />
-                <div className="mt-2 flex items-center gap-2 text-sm text-gray-600">
-                  {/* <span className="inline-block h-2 w-2 rounded-full bg-[#2bb673]" /> */}
-                  <img src="/images/arrow.png" className="" />
-
-                  <span>21 Jump ST, Australia</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-[#eaf4ff] text-center text-xs text-gray-500 py-4">
-            ©Copyright 2020 Prosperity Technology Solutions Pty Ltd ABN 48 636
-            939 912
           </div>
         </div>
       </div>
