@@ -7,6 +7,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 
 interface Plan {
   _id: string;
+  planNo: number;
   planName: string;
   price: number;
   network: string;
@@ -378,7 +379,7 @@ const ChatWindow = () => {
           address: formData.address,
           email: formData.email,
         },
-        planNo: selectedPlan?._id || "",
+        planNo: String(selectedPlan?.planNo) || "",
         simNo: "",
       };
 
