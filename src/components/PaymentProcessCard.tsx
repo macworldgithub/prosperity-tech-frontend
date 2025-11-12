@@ -34,7 +34,7 @@ export const PaymentProcessCard = ({
 
     try {
       const response = await fetch(
-        "https://bele.omnisuiteai.com/api/v1/payments/process",
+        "https://prosperity.omnisuiteai.com/api/v1/payments/process",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -45,7 +45,7 @@ export const PaymentProcessCard = ({
       const data = await response.json();
       if (!response.ok) throw new Error(data.message || "Payment failed");
 
-      alert("✅ Payment processed successfully!");
+      alert("Payment processed successfully!");
       onClose();
     } catch (error: any) {
       setMessage("❌ " + (error.message || "Something went wrong"));

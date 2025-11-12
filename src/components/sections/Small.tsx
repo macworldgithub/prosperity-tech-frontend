@@ -19,7 +19,7 @@ const PlansSection: React.FC = () => {
     const fetchPlans = async () => {
       try {
         const response = await fetch(
-          "https://bele.omnisuiteai.com/api/v1/plans"
+          "https://prosperity.omnisuiteai.com/api/v1/plans"
         );
         if (!response.ok) throw new Error("Failed to fetch plans");
         const data = await response.json();

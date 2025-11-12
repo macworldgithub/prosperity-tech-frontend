@@ -10,14 +10,17 @@ export async function POST(request: NextRequest) {
       brand: body?.brand ?? "prosperity-tech",
     };
 
-    const response = await fetch("https://bele.omnisuiteai.com/chat/query", {
-      method: "POST",
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(proxiedBody),
-    });
+    const response = await fetch(
+      "https://prosperity.omnisuiteai.com/chat/query",
+      {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(proxiedBody),
+      }
+    );
 
     if (!response.ok) {
       return NextResponse.json(

@@ -1,7 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { PaymentCard } from "./PaymentCard";
-import { TokenCard } from "./TokenCard";
 import { PaymentProcessCard } from "./PaymentProcessCard";
 import { useRouter, useSearchParams } from "next/navigation";
 
@@ -41,7 +40,9 @@ const ChatWindow = () => {
   useEffect(() => {
     const fetchPlansAndCheckQuery = async () => {
       try {
-        const res = await fetch("https://bele.omnisuiteai.com/api/v1/plans");
+        const res = await fetch(
+          "https://prosperity.omnisuiteai.com/api/v1/plans"
+        );
         const data = await res.json();
         const plansList: Plan[] = data.data || [];
         setPlans(plansList);
@@ -268,11 +269,16 @@ const ChatWindow = () => {
       const botText =
         data?.message || data?.response || "Sorry, I couldn’t understand that.";
 
-      if (!isNumberSelection(botText)) {
+      const isPlanConfirmation =
+        botText.toLowerCase().includes("i’ve noted your interest") ||
+        botText.toLowerCase().includes("customer id") ||
+        botText.toLowerCase().includes("your account is set up");
+
+      if (!isPlanConfirmation && !isNumberSelection(botText)) {
         const botMsg = {
           id: chat.length + 2,
           type: "bot" as const,
-          text: "Perfect! Let’s continue with the payment.",
+          text: botText,
           time: new Date().toLocaleTimeString([], {
             hour: "2-digit",
             minute: "2-digit",
@@ -315,7 +321,7 @@ const ChatWindow = () => {
         if (!selectedPlan) {
           try {
             const plansResponse = await fetch(
-              "https://bele.omnisuiteai.com/api/v1/plans",
+              "https://prosperity.omnisuiteai.com/api/v1/plans",
               {
                 method: "GET",
                 headers: { accept: "application/json" },
@@ -401,7 +407,7 @@ const ChatWindow = () => {
       console.log("Activation payload:", body);
 
       const response = await fetch(
-        "https://bele.omnisuiteai.com/api/v1/orders/activate",
+        "https://prosperity.omnisuiteai.com/api/v1/orders/activate",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -438,8 +444,8 @@ const ChatWindow = () => {
       />
 
       {/* Chat Modal */}
-      <div className="sticky inset-0 flex items-center justify-center z-50 p-2 sm:p-4 md:p-0 overflow-y-auto mt-10">
-        <div className="w-full h-[95vh] sm:h-[90vh] md:h-auto md:max-h-[600px] max-w-[100vw] sm:max-w-5xl bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden">
+      <div className="fixed inset-0 flex items-center justify-center z-50 p-2 sm:p-4 md:p-0 overflow-y-auto">
+        <div className="w-full sm:w-[50%] h-[80vh] sm:h-[75vh] md:max-h-[600px] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden">
           {/* Header */}
           <div className="flex justify-between items-center p-2 sm:p-3 bg-[#215988] rounded-t-2xl">
             <div className="flex items-center gap-1 sm:gap-2">
@@ -730,26 +736,15 @@ const ChatWindow = () => {
                 </div>
               ) : showPayment && selectedPlan ? (
                 <PaymentCard
-                  onTokenReceived={(token) => {
-                    setPaymentToken(token);
-                    setShowPayment(false);
-                    setShowTokenCard(true);
-                    handleSend(
-                      `Payment completed for plan ${selectedPlan.planName} with token: ${token}`
-                    );
-                  }}
-                />
-              ) : showTokenCard && paymentToken ? (
-                <TokenCard
-                  token={paymentToken}
                   custNo={custNo || ""}
-                  onSuccess={(apiResponse) => {
-                    setShowTokenCard(false);
-                    setPaymentToken(null);
-                    setPaymentId(apiResponse.data.paymentId);
-                    setCustNo(custNo || "");
-                    handleSend("Payment method successfully added!");
+                  planName={selectedPlan.planName}
+                  onPaymentProcessed={(paymentId) => {
+                    setPaymentId(paymentId);
+                    setShowPayment(false);
                     setShowPaymentProcessCard(true);
+                    handleSend(
+                      `Payment completed for plan ${selectedPlan.planName}`
+                    );
                   }}
                 />
               ) : showPaymentProcessCard ? (
