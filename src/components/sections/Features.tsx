@@ -75,7 +75,7 @@ const Features = () => {
                 <div className="relative">
                   {/* Phone image – responsive */}
                   <Image
-                    src="/images/IPhone15.png"
+                    src="/images/Iphone15.png"
                     alt="App chat preview on phone"
                     width={520}
                     height={1040}
