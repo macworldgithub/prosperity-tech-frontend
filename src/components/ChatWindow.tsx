@@ -222,8 +222,8 @@ const ChatWindow = () => {
     if (!text.trim()) return null;
 
     const payload = sessionId
-      ? { query: text, session_id: sessionId, brand: "flying-kiwi" }
-      : { query: text, brand: "flying-kiwi" };
+      ? { query: text, session_id: sessionId, brand: "prosperity-tech" }
+      : { query: text, brand: "prosperity-tech" };
 
     try {
       const response = await fetch("/api", {
