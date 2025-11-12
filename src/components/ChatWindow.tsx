@@ -30,8 +30,6 @@ const ChatWindow = () => {
   const [numberOptions, setNumberOptions] = useState<string[]>([]);
   const [showPayment, setShowPayment] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
-  const [showTokenCard, setShowTokenCard] = useState(false);
-  const [paymentToken, setPaymentToken] = useState<string | null>(null);
   const [showPaymentProcessCard, setShowPaymentProcessCard] = useState(false);
   const [selectedSim, setSelectedSim] = useState<string | null>(null);
   const [custNo, setCustNo] = useState<string | null>(null);
@@ -220,6 +218,37 @@ const ChatWindow = () => {
     handleSend(`I would like to select the plan: ${plan.planName}`);
   };
 
+  const sendToAPI = async (text: string) => {
+    if (!text.trim()) return null;
+
+    const payload = sessionId
+      ? { query: text, session_id: sessionId, brand: "flying-kiwi" }
+      : { query: text, brand: "flying-kiwi" };
+
+    try {
+      const response = await fetch("/api", {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok)
+        throw new Error(`HTTP error! status: ${response.status}`);
+      const data = await response.json();
+
+      if (!sessionId && data.session_id) setSessionId(data.session_id);
+      if (data?.custNo) setCustNo(data.custNo);
+
+      return data;
+    } catch (error) {
+      console.error("API call error:", error);
+      return null;
+    }
+  };
+
   const handleSend = async (msgText: string) => {
     if (!msgText.trim() || loading) return;
 
@@ -259,8 +288,8 @@ const ChatWindow = () => {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      const data = await response.json();
-      console.log("API Response:", data);
+      const data = await sendToAPI(userMsg.text);
+      if (!data) throw new Error("No data from API");
 
       if (!sessionId && data.session_id) {
         setSessionId(data.session_id);
@@ -369,6 +398,10 @@ const ChatWindow = () => {
   const handleNumberSelect = async (number: string) => {
     setSelectedSim(number);
     setShowNumberButtons(false);
+    // Call API but do NOT show bot response
+    await sendToAPI(number);
+
+    // Now manually add the next bot message for your UI flow
     const botMsg = {
       id: chat.length + 2,
       type: "bot" as const,
