@@ -17,17 +17,7 @@ interface Plan {
 const ChatWindow = () => {
   const [chat, setChat] = useState<
     { id: number; type: "user" | "bot"; text: string; time: string }[]
-  >([
-    {
-      id: 1,
-      type: "bot",
-      text: "Hi there, I would be glad to help. Tap signup to get started.",
-      time: new Date().toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-      }),
-    },
-  ]);
+  >([]);
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -61,10 +51,12 @@ const ChatWindow = () => {
           const preselected = plansList.find((p) => p.planName === planParam);
           if (preselected) {
             setSelectedPlan(preselected);
-            handleSend(
-              `You've selected the ${preselected.planName} plan. Tap signup if you want to continue.`
-            );
+            setShowDetailsForm(true);
+          } else {
+            setShowDetailsForm(true);
           }
+        } else {
+          setShowDetailsForm(true);
         }
       } catch (err) {
         console.error("Error fetching plans:", err);
@@ -276,17 +268,18 @@ const ChatWindow = () => {
       const botText =
         data?.message || data?.response || "Sorry, I couldn’t understand that.";
 
-      const botMsg = {
-        id: chat.length + 2,
-        type: "bot" as const,
-        text: botText,
-        time: new Date().toLocaleTimeString([], {
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
-      };
-
-      setChat((prev) => [...prev, botMsg]);
+      if (!isNumberSelection(botText)) {
+        const botMsg = {
+          id: chat.length + 2,
+          type: "bot" as const,
+          text: "Perfect! Let’s continue with the payment.",
+          time: new Date().toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+        };
+        setChat((prev) => [...prev, botMsg]);
+      }
 
       if (data?.custNo) setCustNo(data.custNo);
 
@@ -308,6 +301,16 @@ const ChatWindow = () => {
         const numbers = extractNumbers(botText);
         setNumberOptions(numbers);
         setShowNumberButtons(true);
+        const botMsg = {
+          id: chat.length + 2,
+          type: "bot" as const,
+          text: "Choose from the numbers below:",
+          time: new Date().toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+        };
+        setChat((prev) => [...prev, botMsg]);
 
         if (!selectedPlan) {
           try {
@@ -360,7 +363,19 @@ const ChatWindow = () => {
   const handleNumberSelect = async (number: string) => {
     setSelectedSim(number);
     setShowNumberButtons(false);
-    handleSend(number);
+    const botMsg = {
+      id: chat.length + 2,
+      type: "bot" as const,
+      text: selectedPlan
+        ? "Perfect! Let’s continue with the payment."
+        : "Choose from the Plans below:",
+      time: new Date().toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
+    };
+    setChat((prev) => [...prev, botMsg]);
+
     if (selectedPlan) {
       setShowPayment(true);
     } else {

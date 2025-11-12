@@ -98,7 +98,7 @@ export const PaymentProcessCard = ({
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-green-600 text-black py-2 rounded-lg"
+          className="w-full bg-green-600 text-white py-2 rounded-lg"
         >
           {loading ? "Processing..." : "Submit Payment"}
         </button>

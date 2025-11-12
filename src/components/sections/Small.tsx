@@ -41,8 +41,8 @@ const PlansSection: React.FC = () => {
   };
 
   // Categorize
-  const smallPlans = plans.filter((p) => extractGB(p.planName) <= 40);
-  const bigPlans = plans.filter((p) => extractGB(p.planName) > 40);
+  const smallPlans = plans.filter((p) => extractGB(p.planName) <= 65);
+  const bigPlans = plans.filter((p) => extractGB(p.planName) > 65);
 
   if (loading)
     return (

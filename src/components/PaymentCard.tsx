@@ -114,7 +114,7 @@ export const PaymentCard = ({ onTokenReceived }: PaymentCardProps) => {
           type="submit"
           id="submitBtn"
           disabled
-          className="w-full bg-green-600 text-black py-2 rounded-lg"
+          className="w-full bg-green-600 text-white py-2 rounded-lg"
         >
           Submit
         </button>
