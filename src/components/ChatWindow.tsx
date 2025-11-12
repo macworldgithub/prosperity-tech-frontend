@@ -34,6 +34,26 @@ const ChatWindow = () => {
   const [selectedSim, setSelectedSim] = useState<string | null>(null);
   const [custNo, setCustNo] = useState<string | null>(null);
   const [paymentId, setPaymentId] = useState<string | null>(null);
+  const [simType, setSimType] = useState<"esim" | "physical" | null>(null);
+  const [physicalSimNo, setPhysicalSimNo] = useState("");
+  const [showSimTypeSelection, setShowSimTypeSelection] = useState(false);
+  const [showPhysicalSimInput, setShowPhysicalSimInput] = useState(false);
+
+  const fromBanner = searchParams.get("fromBanner");
+  useEffect(() => {
+    if (fromBanner) {
+      const initialBotMsg = {
+        id: 1,
+        type: "bot" as const,
+        text: "Let me help you switch to an E-sim and ask you to fill out the form below.",
+        time: new Date().toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+      };
+      setChat([initialBotMsg]);
+    }
+  }, [fromBanner]);
 
   useEffect(() => {
     const fetchPlansAndCheckQuery = async () => {
@@ -214,8 +234,23 @@ const ChatWindow = () => {
   const handlePlanSelect = (plan: any) => {
     setSelectedPlan(plan);
     setShowPlans(false);
-    setShowPayment(true); // Show payment form
+    setSimType(null);
+    setPhysicalSimNo("");
+    localStorage.removeItem("physicalSimNo");
+    // setShowPayment(true); // Show payment form
     handleSend(`I would like to select the plan: ${plan.planName}`);
+    const botMsg = {
+      id: chat.length + 2,
+      type: "bot" as const,
+      text: "Would you like an **eSIM** or **Physical SIM**?",
+      time: new Date().toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
+    };
+    setChat((prev) => [...prev, botMsg]);
+    // setChat((prev) => [...prev, botMsg]);
+    setShowSimTypeSelection(true); // New flag
   };
 
   const sendToAPI = async (text: string) => {
@@ -424,6 +459,10 @@ const ChatWindow = () => {
 
   const handleActivateOrder = async () => {
     try {
+      const simNo =
+        simType === "physical"
+          ? localStorage.getItem("physicalSimNo") || ""
+          : "";
       const body = {
         number: selectedSim,
         cust: {
@@ -434,7 +473,7 @@ const ChatWindow = () => {
           email: formData.email,
         },
         planNo: String(selectedPlan?.planNo) || "",
-        simNo: "",
+        simNo,
       };
 
       console.log("Activation payload:", body);
@@ -766,6 +805,61 @@ const ChatWindow = () => {
                       {plan.planName} - ${plan.price}
                     </button>
                   ))}
+                </div>
+              ) : showSimTypeSelection ? (
+                <div className="flex gap-2 justify-center p-3 bg-white/10 backdrop-blur-sm rounded-lg border border-white/30">
+                  <button
+                    onClick={() => {
+                      setSimType("esim");
+                      setShowSimTypeSelection(false);
+                      setShowPayment(true);
+                      handleSend("I want an eSIM");
+                    }}
+                    className="bg-[#2bb673] text-white px-4 py-2 rounded hover:opacity-90 text-sm"
+                  >
+                    eSIM
+                  </button>
+                  <button
+                    onClick={() => {
+                      setSimType("physical");
+                      setShowSimTypeSelection(false);
+                      setShowPhysicalSimInput(true);
+                    }}
+                    className="bg-[#2bb673] text-white px-4 py-2 rounded hover:opacity-90 text-sm"
+                  >
+                    Physical SIM
+                  </button>
+                </div>
+              ) : showPhysicalSimInput ? (
+                <div className="bg-white/10 backdrop-blur-sm p-3 rounded-lg border border-white/30">
+                  <input
+                    type="text"
+                    maxLength={13}
+                    value={physicalSimNo}
+                    onChange={(e) => {
+                      const val = e.target.value
+                        .replace(/\D/g, "")
+                        .slice(0, 13);
+                      setPhysicalSimNo(val);
+                    }}
+                    placeholder="Enter 13-digit SIM number"
+                    className="w-full p-2 rounded bg-transparent text-white border border-white/50 text-sm mb-2"
+                  />
+                  <button
+                    onClick={() => {
+                      if (physicalSimNo.length !== 13) {
+                        alert("Please enter a valid 13-digit SIM number");
+                        return;
+                      }
+                      localStorage.setItem("physicalSimNo", physicalSimNo);
+                      setShowPhysicalSimInput(false);
+                      setShowPayment(true);
+                      handleSend(`Physical SIM: ${physicalSimNo}`);
+                    }}
+                    className="w-full bg-[#2bb673] text-white py-2 rounded hover:opacity-90 text-sm"
+                  >
+                    Continue
+                  </button>
                 </div>
               ) : showPayment && selectedPlan ? (
                 <PaymentCard
