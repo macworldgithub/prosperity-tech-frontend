@@ -1,931 +1,4 @@
-// "use client";
-// import React, { useState, useEffect } from "react";
-// import { PaymentCard } from "./PaymentCard";
-// import { PaymentProcessCard } from "./PaymentProcessCard";
-// import { useRouter, useSearchParams } from "next/navigation";
-
-// interface Plan {
-//   _id: string;
-//   planNo: number;
-//   planName: string;
-//   price: number;
-//   network: string;
-//   isActive: boolean;
-// }
-
-// const ChatWindow = () => {
-//   const [chat, setChat] = useState<
-//     { id: number; type: "user" | "bot"; text: string; time: string }[]
-//   >([]);
-//   const router = useRouter();
-//   const searchParams = useSearchParams();
-
-//   const [plans, setPlans] = useState<any[]>([]); // for storing plans
-//   const [showPlans, setShowPlans] = useState(false);
-//   const [message, setMessage] = useState("");
-//   const [loading, setLoading] = useState(false);
-//   const [sessionId, setSessionId] = useState<string | null>(null);
-//   const [showDetailsForm, setShowDetailsForm] = useState(false);
-//   const [showNumberButtons, setShowNumberButtons] = useState(false);
-//   const [numberOptions, setNumberOptions] = useState<string[]>([]);
-//   const [showPayment, setShowPayment] = useState(false);
-//   const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
-//   const [showPaymentProcessCard, setShowPaymentProcessCard] = useState(false);
-//   const [selectedSim, setSelectedSim] = useState<string | null>(null);
-//   const [custNo, setCustNo] = useState<string | null>(null);
-//   const [paymentId, setPaymentId] = useState<string | null>(null);
-//   const [simType, setSimType] = useState<"esim" | "physical" | null>(null);
-//   const [physicalSimNo, setPhysicalSimNo] = useState("");
-//   const [showSimTypeSelection, setShowSimTypeSelection] = useState(false);
-//   const [showPhysicalSimInput, setShowPhysicalSimInput] = useState(false);
-
-//   const fromBanner = searchParams.get("fromBanner");
-//   useEffect(() => {
-//     if (fromBanner) {
-//       const initialBotMsg = {
-//         id: 1,
-//         type: "bot" as const,
-//         text: "Let me help you switch to an E-sim and ask you to fill out the form below.",
-//         time: new Date().toLocaleTimeString([], {
-//           hour: "2-digit",
-//           minute: "2-digit",
-//         }),
-//       };
-//       setChat([initialBotMsg]);
-//     }
-//   }, [fromBanner]);
-
-//   useEffect(() => {
-//     const fetchPlansAndCheckQuery = async () => {
-//       try {
-//         const res = await fetch(
-//           "https://prosperity.omnisuiteai.com/api/v1/plans"
-//         );
-//         const data = await res.json();
-//         const plansList: Plan[] = data.data || [];
-//         setPlans(plansList);
-
-//         const planParam = searchParams.get("plan");
-//         if (planParam) {
-//           const preselected = plansList.find((p) => p.planName === planParam);
-//           if (preselected) {
-//             setSelectedPlan(preselected);
-//             setShowDetailsForm(true);
-//           } else {
-//             setShowDetailsForm(true);
-//           }
-//         } else {
-//           setShowDetailsForm(true);
-//         }
-//       } catch (err) {
-//         console.error("Error fetching plans:", err);
-//       }
-//     };
-
-//     fetchPlansAndCheckQuery();
-//   }, [searchParams]);
-
-//   const [formData, setFormData] = useState({
-//     firstName: "",
-//     surname: "",
-//     email: "",
-//     phone: "",
-//     dob: "",
-//     address: "",
-//     suburb: "",
-//     state: "",
-//     postcode: "",
-//     pin: "",
-//   });
-//   const [formErrors, setFormErrors] = useState({
-//     firstName: "",
-//     surname: "",
-//     email: "",
-//     phone: "",
-//     dob: "",
-//     address: "",
-//     suburb: "",
-//     state: "",
-//     postcode: "",
-//     pin: "",
-//   });
-
-//   const isDetailsRequest = (text: string): boolean => {
-//     const lowerText = text.toLowerCase();
-//     return (
-//       lowerText.includes("first name") &&
-//       lowerText.includes("surname") &&
-//       lowerText.includes("email") &&
-//       lowerText.includes("phone") &&
-//       lowerText.includes("date of birth") &&
-//       lowerText.includes("address") &&
-//       lowerText.includes("suburb") &&
-//       lowerText.includes("state") &&
-//       lowerText.includes("postcode") &&
-//       lowerText.includes("pin")
-//     );
-//   };
-
-//   const isNumberSelection = (text: string): boolean => {
-//     const matches = text.match(/04\d{8}/g);
-//     return matches ? matches.length === 5 : false;
-//   };
-
-//   const extractNumbers = (text: string): string[] => {
-//     const matches = text.match(/04\d{8}/g);
-//     return matches || [];
-//   };
-
-//   const validateForm = (): boolean => {
-//     let isValid = true;
-//     const errors = {
-//       firstName: "",
-//       surname: "",
-//       email: "",
-//       phone: "",
-//       dob: "",
-//       address: "",
-//       suburb: "",
-//       state: "",
-//       postcode: "",
-//       pin: "",
-//     };
-
-//     if (!formData.firstName.trim()) {
-//       errors.firstName = "First Name is required";
-//       isValid = false;
-//     }
-//     if (!formData.surname.trim()) {
-//       errors.surname = "Surname is required";
-//       isValid = false;
-//     }
-//     if (!formData.email.trim()) {
-//       errors.email = "Email is required";
-//       isValid = false;
-//     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-//       errors.email = "Invalid email format";
-//       isValid = false;
-//     }
-//     if (!formData.phone.trim()) {
-//       errors.phone = "Phone is required";
-//       isValid = false;
-//     } else if (!/^04\d{8}$/.test(formData.phone)) {
-//       errors.phone =
-//         "Phone must be a valid Australian mobile number (e.g., 0412345678)";
-//       isValid = false;
-//     }
-//     if (!formData.dob.trim()) {
-//       errors.dob = "Date of Birth is required";
-//       isValid = false;
-//     } else if (!/^\d{4}-\d{2}-\d{2}$/.test(formData.dob)) {
-//       errors.dob = "Date of Birth must be in YYYY-MM-DD format";
-//       isValid = false;
-//     }
-//     if (!formData.address.trim()) {
-//       errors.address = "Address is required";
-//       isValid = false;
-//     }
-//     if (!formData.suburb.trim()) {
-//       errors.suburb = "Suburb is required";
-//       isValid = false;
-//     }
-//     if (!formData.state.trim()) {
-//       errors.state = "State is required";
-//       isValid = false;
-//     }
-//     if (!formData.postcode.trim()) {
-//       errors.postcode = "Postcode is required";
-//       isValid = false;
-//     } else if (!/^\d{4}$/.test(formData.postcode)) {
-//       errors.postcode = "Postcode must be 4 digits";
-//       isValid = false;
-//     }
-//     if (!formData.pin.trim()) {
-//       errors.pin = "PIN is required";
-//       isValid = false;
-//     } else if (!/^\d{4}$/.test(formData.pin)) {
-//       errors.pin = "PIN must be exactly 4 digits";
-//       isValid = false;
-//     }
-
-//     setFormErrors(errors);
-//     return isValid;
-//   };
-
-//   const handleFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-//     const { name, value } = e.target;
-//     setFormData((prev) => ({ ...prev, [name]: value }));
-//     setFormErrors((prev) => ({ ...prev, [name]: "" }));
-//   };
-
-//   const handleFormSubmit = (e: React.FormEvent) => {
-//     e.preventDefault();
-//     if (!validateForm()) {
-//       return;
-//     }
-//     const formatted = Object.entries(formData)
-//       .map(([key, value]) => `${key}: ${value}`)
-//       .join(", ");
-//     setShowDetailsForm(false);
-//     handleSend(formatted);
-//   };
-
-//   // Add new handler for plan selection
-//   const handlePlanSelect = (plan: any) => {
-//     setSelectedPlan(plan);
-//     setShowPlans(false);
-//     setSimType(null);
-//     setPhysicalSimNo("");
-//     localStorage.removeItem("physicalSimNo");
-//     // setShowPayment(true); // Show payment form
-//     handleSend(`I would like to select the plan: ${plan.planName}`);
-//     const botMsg = {
-//       id: chat.length + 2,
-//       type: "bot" as const,
-//       text: "Would you like an **eSIM** or **Physical SIM**?",
-//       time: new Date().toLocaleTimeString([], {
-//         hour: "2-digit",
-//         minute: "2-digit",
-//       }),
-//     };
-//     setChat((prev) => [...prev, botMsg]);
-//     // setChat((prev) => [...prev, botMsg]);
-//     setShowSimTypeSelection(true); // New flag
-//   };
-
-//   const sendToAPI = async (text: string) => {
-//     if (!text.trim()) return null;
-
-//     const payload = sessionId
-//       ? { query: text, session_id: sessionId, brand: "prosperity-tech" }
-//       : { query: text, brand: "prosperity-tech" };
-
-//     try {
-//       const response = await fetch("/api", {
-//         method: "POST",
-//         headers: {
-//           Accept: "application/json",
-//           "Content-Type": "application/json",
-//         },
-//         body: JSON.stringify(payload),
-//       });
-
-//       if (!response.ok)
-//         throw new Error(`HTTP error! status: ${response.status}`);
-//       const data = await response.json();
-
-//       if (!sessionId && data.session_id) setSessionId(data.session_id);
-//       if (data?.custNo) setCustNo(data.custNo);
-
-//       return data;
-//     } catch (error) {
-//       console.error("API call error:", error);
-//       return null;
-//     }
-//   };
-
-//   const handleSend = async (msgText: string) => {
-//     if (!msgText.trim() || loading) return;
-
-//     const userMsg = {
-//       id: chat.length + 1,
-//       type: "user" as const,
-//       text: msgText.trim(),
-//       time: new Date().toLocaleTimeString([], {
-//         hour: "2-digit",
-//         minute: "2-digit",
-//       }),
-//     };
-
-//     setChat((prev) => [...prev, userMsg]);
-//     setMessage("");
-//     setLoading(true);
-
-//     try {
-//       const payload = sessionId
-//         ? {
-//             query: userMsg.text,
-//             session_id: sessionId,
-//             brand: "prosperity-tech",
-//           }
-//         : { query: userMsg.text, brand: "prosperity-tech" };
-
-//       const response = await fetch("/api", {
-//         method: "POST",
-//         headers: {
-//           Accept: "application/json",
-//           "Content-Type": "application/json",
-//         },
-//         body: JSON.stringify(payload),
-//       });
-
-//       if (!response.ok) {
-//         throw new Error(`HTTP error! status: ${response.status}`);
-//       }
-
-//       const data = await sendToAPI(userMsg.text);
-//       if (!data) throw new Error("No data from API");
-
-//       if (!sessionId && data.session_id) {
-//         setSessionId(data.session_id);
-//       }
-
-//       const botText =
-//         data?.message || data?.response || "Sorry, I couldn’t understand that.";
-
-//       const isPlanConfirmation =
-//         botText.toLowerCase().includes("i’ve noted your interest") ||
-//         botText.toLowerCase().includes("customer id") ||
-//         botText.toLowerCase().includes("your account is set up");
-
-//       if (!isPlanConfirmation && !isNumberSelection(botText)) {
-//         const botMsg = {
-//           id: chat.length + 2,
-//           type: "bot" as const,
-//           text: botText,
-//           time: new Date().toLocaleTimeString([], {
-//             hour: "2-digit",
-//             minute: "2-digit",
-//           }),
-//         };
-//         setChat((prev) => [...prev, botMsg]);
-//       }
-
-//       if (data?.custNo) setCustNo(data.custNo);
-
-//       if (botText.toLowerCase().includes("please provide your first name")) {
-//         setShowDetailsForm(true);
-//       }
-
-//       if (botText.match(/04\d{8}/g)?.length === 5) {
-//         const numbers = botText.match(/04\d{8}/g);
-//         setNumberOptions(numbers || []);
-//         setShowNumberButtons(true);
-//       }
-
-//       if (isDetailsRequest(botText)) {
-//         setShowDetailsForm(true);
-//       }
-
-//       if (isNumberSelection(botText)) {
-//         const numbers = extractNumbers(botText);
-//         setNumberOptions(numbers);
-//         setShowNumberButtons(true);
-//         const botMsg = {
-//           id: chat.length + 2,
-//           type: "bot" as const,
-//           text: "Choose from the numbers below:",
-//           time: new Date().toLocaleTimeString([], {
-//             hour: "2-digit",
-//             minute: "2-digit",
-//           }),
-//         };
-//         setChat((prev) => [...prev, botMsg]);
-
-//         if (!selectedPlan) {
-//           try {
-//             const plansResponse = await fetch(
-//               "https://prosperity.omnisuiteai.com/api/v1/plans",
-//               {
-//                 method: "GET",
-//                 headers: { accept: "application/json" },
-//               }
-//             );
-
-//             if (!plansResponse.ok) throw new Error("Failed to fetch plans");
-
-//             const plansData = await plansResponse.json();
-//             setPlans(plansData.data || []);
-//             setShowPlans(true);
-//           } catch (plansError) {
-//             console.error("Error fetching plans:", plansError);
-//             setPlans([]);
-//             setShowPlans(true);
-//           }
-//         }
-//       }
-//     } catch (error: any) {
-//       console.error("Full Chat error:", error); // Enhanced logging
-//       let errorMsg = "Oops! Something went wrong. Please try again.";
-//       if (
-//         error.name === "TypeError" &&
-//         error.message.includes("Failed to fetch")
-//       ) {
-//         errorMsg = "Network error (CORS?). Check console and try refreshing.";
-//       } else if (error.message.includes("401")) {
-//         errorMsg = "Session expired. Please log in again.";
-//       }
-//       const errorResponse = {
-//         id: chat.length + 2,
-//         type: "bot" as const,
-//         text: errorMsg,
-//         time: new Date().toLocaleTimeString([], {
-//           hour: "2-digit",
-//           minute: "2-digit",
-//         }),
-//       };
-//       setChat((prev) => [...prev, errorResponse]);
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
-
-//   const handleNumberSelect = async (number: string) => {
-//     setSelectedSim(number);
-//     setShowNumberButtons(false);
-//     // Call API but do NOT show bot response
-//     await sendToAPI(number);
-
-//     // Now manually add the next bot message for your UI flow
-//     const botMsg = {
-//       id: chat.length + 2,
-//       type: "bot" as const,
-//       text: selectedPlan
-//         ? "Perfect! Let’s continue with the payment."
-//         : "Choose from the Plans below:",
-//       time: new Date().toLocaleTimeString([], {
-//         hour: "2-digit",
-//         minute: "2-digit",
-//       }),
-//     };
-//     setChat((prev) => [...prev, botMsg]);
-
-//     if (selectedPlan) {
-//       setShowPayment(true);
-//     } else {
-//       setShowPlans(true);
-//     }
-//   };
-
-//   const handleActivateOrder = async () => {
-//     try {
-//       const simNo =
-//         simType === "physical"
-//           ? localStorage.getItem("physicalSimNo") || ""
-//           : "";
-//       const body = {
-//         number: selectedSim,
-//         cust: {
-//           custNo: custNo,
-//           suburb: formData.suburb,
-//           postcode: formData.postcode,
-//           address: formData.address,
-//           email: formData.email,
-//         },
-//         planNo: String(selectedPlan?.planNo) || "",
-//         simNo,
-//       };
-
-//       console.log("Activation payload:", body);
-
-//       const response = await fetch(
-//         "https://prosperity.omnisuiteai.com/api/v1/orders/activate",
-//         {
-//           method: "POST",
-//           headers: { "Content-Type": "application/json" },
-//           body: JSON.stringify(body),
-//         }
-//       );
-
-//       const result = await response.json();
-//       console.log("Activation result:", result);
-
-//       if (response.ok) {
-//         handleSend("Order successfully activated!");
-//       } else {
-//         handleSend(`Activation failed: ${result.message || "Unknown error"}`);
-//       }
-//     } catch (err) {
-//       console.error("Activation failed", err);
-//       handleSend("Order activation failed. Please try again.");
-//     }
-//   };
-
-//   const sendMessage = () => {
-//     handleSend(message);
-//   };
-
-//   return (
-//     <>
-//       {/* Background with image */}
-//       <div
-//         className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 bg-cover bg-center"
-//         style={{
-//           backgroundImage: "url('/images/bg.png')",
-//         }}
-//       />
-
-//       {/* Chat Modal */}
-//       <div className="fixed inset-0 flex items-center justify-center z-50 p-2 sm:p-4 md:p-0 overflow-y-auto">
-//         <div className="w-full sm:w-[50%] h-[80vh] sm:h-[75vh] md:max-h-[600px] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden">
-//           {/* Header */}
-//           <div className="flex justify-between items-center p-2 sm:p-3 bg-[#215988] rounded-t-2xl">
-//             <div className="flex items-center gap-1 sm:gap-2">
-//               <div className="relative w-8 h-8 sm:w-12 sm:h-12">
-//                 <img
-//                   src="/images/logo.png"
-//                   alt="Prosperity Tech Logo"
-//                   className="w-full h-full object-contain"
-//                 />
-//               </div>
-//             </div>
-//             <button
-//               onClick={() => router.push("/")}
-//               className="text-white text-lg sm:text-xl font-bold hover:text-gray-200 transition-colors"
-//             >
-//               ×
-//             </button>
-//           </div>
-
-//           <div className="h-0.5 sm:h-1 w-full bg-gradient-to-r from-[#215988] via-[#2bb673] to-[#215988]" />
-
-//           {/* Chat Body */}
-//           <div className="flex-1 flex flex-col bg-gradient-to-b from-[#33a748] via-[#257773] to-[#1e608c] p-2 sm:p-4 md:p-6 overflow-y-auto rounded-b-2xl ring-1 ring-white/20 shadow-[inset_0_8px_24px_rgba(0,0,0,0.25)]">
-//             <div className="text-center mb-2 sm:mb-4 md:mb-6 mt-2 sm:mt-4 md:mt-8">
-//               <div className="mx-auto mb-1 sm:mb-2 w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20">
-//                 <img
-//                   src="/images/logo.png"
-//                   alt="Prosperity Tech Logo"
-//                   className="w-full h-full object-contain"
-//                 />
-//               </div>
-//               <h2 className="text-white font-bold text-sm sm:text-base md:text-lg mb-0.5 sm:mb-1">
-//                 How can I help you today?
-//               </h2>
-//             </div>
-
-//             {selectedPlan && (
-//               <div className="mb-4 bg-white/20 border border-white/30 text-white text-center text-sm sm:text-base px-3 py-2 rounded-md shadow-md">
-//                 You selected <strong>{selectedPlan.planName}</strong> — $
-//                 {selectedPlan.price}. Let’s continue with your setup.
-//               </div>
-//             )}
-
-//             {/* Chat Messages */}
-//             {chat.map((msg) => (
-//               <div
-//                 key={msg.id}
-//                 className={`flex items-start gap-2 sm:gap-3 mb-3 sm:mb-4 md:mb-6 ${
-//                   msg.type === "user" ? "justify-end" : "justify-start"
-//                 }`}
-//               >
-//                 {msg.type === "bot" && (
-//                   <div className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 bg-yellow-400 rounded-full flex-shrink-0 flex items-center justify-center overflow-hidden">
-//                     <img
-//                       src="/images/bot.png"
-//                       alt="Bot Avatar"
-//                       className="w-full h-full rounded-full object-cover"
-//                     />
-//                   </div>
-//                 )}
-
-//                 <div
-//                   className={`${
-//                     msg.type === "user"
-//                       ? "bg-white text-[#0E3B5C]"
-//                       : "bg-white text-[#0E3B5C]"
-//                   } rounded-2xl px-3 py-1.5 sm:px-4 sm:py-2 md:px-6 md:py-2 shadow-md max-w-[90%] sm:max-w-[80%] md:max-w-[70%]`}
-//                 >
-//                   <p className="text-xs sm:text-xs md:text-sm leading-relaxed break-words">
-//                     {msg.text}
-//                   </p>
-//                 </div>
-//               </div>
-//             ))}
-
-//             {/* Loading indicator */}
-//             {loading && (
-//               <div className="flex items-start gap-2 sm:gap-3 mb-3 sm:mb-4 md:mb-6">
-//                 <div className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 bg-yellow-400 rounded-full flex items-center justify-center overflow-hidden">
-//                   <img
-//                     src="/images/bot.png"
-//                     alt="Loading Avatar"
-//                     className="w-full h-full rounded-full object-cover"
-//                   />
-//                 </div>
-//                 <div className="bg-white rounded-2xl px-3 py-1.5 sm:px-4 sm:py-2 md:px-6 md:py-2 shadow-md max-w-[90%] sm:max-w-[80%] md:max-w-[70%]">
-//                   <p className="text-[#0E3B5C] text-xs sm:text-xs md:text-sm leading-relaxed">
-//                     Typing...
-//                   </p>
-//                 </div>
-//               </div>
-//             )}
-
-//             {/* Input Bar */}
-//             <div className="mt-auto">
-//               {showDetailsForm ? (
-//                 <form
-//                   onSubmit={handleFormSubmit}
-//                   className="bg-white/10 backdrop-blur-sm p-3 sm:p-4 rounded-lg border border-white/30 overflow-y-auto max-h-[40vh] sm:max-h-[50vh]"
-//                 >
-//                   <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
-//                     <div>
-//                       <input
-//                         name="firstName"
-//                         value={formData.firstName}
-//                         onChange={handleFormChange}
-//                         placeholder="First Name"
-//                         className="w-full p-1.5 sm:p-2 rounded bg-transparent text-white border border-white/50 text-xs sm:text-sm"
-//                         required
-//                       />
-//                       {formErrors.firstName && (
-//                         <p className="text-red-300 text-xs mt-0.5 sm:mt-1">
-//                           {formErrors.firstName}
-//                         </p>
-//                       )}
-//                     </div>
-//                     <div>
-//                       <input
-//                         name="surname"
-//                         value={formData.surname}
-//                         onChange={handleFormChange}
-//                         placeholder="Surname"
-//                         className="w-full p-1.5 sm:p-2 rounded bg-transparent text-white border border-white/50 text-xs sm:text-sm"
-//                         required
-//                       />
-//                       {formErrors.surname && (
-//                         <p className="text-red-300 text-xs mt-0.5 sm:mt-1">
-//                           {formErrors.surname}
-//                         </p>
-//                       )}
-//                     </div>
-//                     <div>
-//                       <input
-//                         name="email"
-//                         value={formData.email}
-//                         onChange={handleFormChange}
-//                         placeholder="Email"
-//                         type="email"
-//                         className="w-full p-1.5 sm:p-2 rounded bg-transparent text-white border border-white/50 text-xs sm:text-sm"
-//                         required
-//                       />
-//                       {formErrors.email && (
-//                         <p className="text-red-300 text-xs mt-0.5 sm:mt-1">
-//                           {formErrors.email}
-//                         </p>
-//                       )}
-//                     </div>
-//                     <div>
-//                       <input
-//                         name="phone"
-//                         value={formData.phone}
-//                         onChange={handleFormChange}
-//                         placeholder="Phone (e.g., 0412345678)"
-//                         className="w-full p-1.5 sm:p-2 rounded bg-transparent text-white border border-white/50 text-xs sm:text-sm"
-//                         required
-//                       />
-//                       {formErrors.phone && (
-//                         <p className="text-red-300 text-xs mt-0.5 sm:mt-1">
-//                           {formErrors.phone}
-//                         </p>
-//                       )}
-//                     </div>
-//                     <div>
-//                       <input
-//                         name="dob"
-//                         type="date"
-//                         value={formData.dob}
-//                         onChange={handleFormChange}
-//                         placeholder="Date of Birth"
-//                         className="w-full p-1.5 sm:p-2 rounded bg-transparent text-white border border-white/50 text-xs sm:text-sm"
-//                         required
-//                       />
-//                       {formErrors.dob && (
-//                         <p className="text-red-300 text-xs mt-0.5 sm:mt-1">
-//                           {formErrors.dob}
-//                         </p>
-//                       )}
-//                     </div>
-//                     <div>
-//                       <input
-//                         name="address"
-//                         value={formData.address}
-//                         onChange={handleFormChange}
-//                         placeholder="Address"
-//                         className="w-full p-1.5 sm:p-2 rounded bg-transparent text-white border border-white/50 text-xs sm:text-sm"
-//                         required
-//                       />
-//                       {formErrors.address && (
-//                         <p className="text-red-300 text-xs mt-0.5 sm:mt-1">
-//                           {formErrors.address}
-//                         </p>
-//                       )}
-//                     </div>
-//                     <div>
-//                       <input
-//                         name="suburb"
-//                         value={formData.suburb}
-//                         onChange={handleFormChange}
-//                         placeholder="Suburb"
-//                         className="w-full p-1.5 sm:p-2 rounded bg-transparent text-white border border-white/50 text-xs sm:text-sm"
-//                         required
-//                       />
-//                       {formErrors.suburb && (
-//                         <p className="text-red-300 text-xs mt-0.5 sm:mt-1">
-//                           {formErrors.suburb}
-//                         </p>
-//                       )}
-//                     </div>
-//                     <div>
-//                       <input
-//                         name="state"
-//                         value={formData.state}
-//                         onChange={handleFormChange}
-//                         placeholder="State (e.g., VIC)"
-//                         className="w-full p-1.5 sm:p-2 rounded bg-transparent text-white border border-white/50 text-xs sm:text-sm"
-//                         required
-//                       />
-//                       {formErrors.state && (
-//                         <p className="text-red-300 text-xs mt-0.5 sm:mt-1">
-//                           {formErrors.state}
-//                         </p>
-//                       )}
-//                     </div>
-//                     <div>
-//                       <input
-//                         name="postcode"
-//                         value={formData.postcode}
-//                         onChange={handleFormChange}
-//                         placeholder="Postcode (4 digits)"
-//                         className="w-full p-1.5 sm:p-2 rounded bg-transparent text-white border border-white/50 text-xs sm:text-sm"
-//                         required
-//                       />
-//                       {formErrors.postcode && (
-//                         <p className="text-red-300 text-xs mt-0.5 sm:mt-1">
-//                           {formErrors.postcode}
-//                         </p>
-//                       )}
-//                     </div>
-//                     <div>
-//                       <input
-//                         name="pin"
-//                         value={formData.pin}
-//                         onChange={handleFormChange}
-//                         placeholder="4-digit PIN"
-//                         maxLength={4}
-//                         className="w-full p-1.5 sm:p-2 rounded bg-transparent text-white border border-white/50 text-xs sm:text-sm"
-//                         required
-//                       />
-//                       {formErrors.pin && (
-//                         <p className="text-red-300 text-xs mt-0.5 sm:mt-1">
-//                           {formErrors.pin}
-//                         </p>
-//                       )}
-//                     </div>
-//                   </div>
-//                   <button
-//                     type="submit"
-//                     disabled={loading}
-//                     className="mt-3 sm:mt-4 w-full bg-[#2bb673] text-white py-1.5 sm:py-2 rounded hover:opacity-90 text-xs sm:text-sm"
-//                   >
-//                     Submit Details
-//                   </button>
-//                 </form>
-//               ) : showNumberButtons && numberOptions.length > 0 ? (
-//                 <div className="flex flex-wrap gap-1 sm:gap-2 p-3 sm:p-4 bg-white/10 backdrop-blur-sm rounded-lg border border-white/30 justify-center">
-//                   {numberOptions.map((num, index) => (
-//                     <button
-//                       key={index}
-//                       onClick={() => handleNumberSelect(num)}
-//                       disabled={loading}
-//                       className="bg-[#2bb673] text-white px-2 py-1 sm:px-3 sm:py-1 md:px-4 md:py-2 rounded hover:opacity-90 text-xs sm:text-xs md:text-sm"
-//                     >
-//                       {num}
-//                     </button>
-//                   ))}
-//                 </div>
-//               ) : showPlans && !selectedPlan && plans.length > 0 ? (
-//                 <div className="flex flex-wrap gap-1 sm:gap-2 p-3 sm:p-4 bg-white/10 backdrop-blur-sm rounded-lg border border-white/30 justify-center">
-//                   {plans.map((plan, index) => (
-//                     <button
-//                       key={index}
-//                       onClick={() => handlePlanSelect(plan)}
-//                       className="bg-[#2bb673] text-white px-2 py-1 sm:px-3 sm:py-1 md:px-4 md:py-2 rounded hover:opacity-90 text-xs sm:text-xs md:text-sm"
-//                     >
-//                       {plan.planName} - ${plan.price}
-//                     </button>
-//                   ))}
-//                 </div>
-//               ) : showSimTypeSelection ? (
-//                 <div className="flex gap-2 justify-center p-3 bg-white/10 backdrop-blur-sm rounded-lg border border-white/30">
-//                   <button
-//                     onClick={() => {
-//                       setSimType("esim");
-//                       setShowSimTypeSelection(false);
-//                       setShowPayment(true);
-//                       handleSend("I want an eSIM");
-//                     }}
-//                     className="bg-[#2bb673] text-white px-4 py-2 rounded hover:opacity-90 text-sm"
-//                   >
-//                     eSIM
-//                   </button>
-//                   <button
-//                     onClick={() => {
-//                       setSimType("physical");
-//                       setShowSimTypeSelection(false);
-//                       setShowPhysicalSimInput(true);
-//                     }}
-//                     className="bg-[#2bb673] text-white px-4 py-2 rounded hover:opacity-90 text-sm"
-//                   >
-//                     Physical SIM
-//                   </button>
-//                 </div>
-//               ) : showPhysicalSimInput ? (
-//                 <div className="bg-white/10 backdrop-blur-sm p-3 rounded-lg border border-white/30">
-//                   <input
-//                     type="text"
-//                     maxLength={13}
-//                     value={physicalSimNo}
-//                     onChange={(e) => {
-//                       const val = e.target.value
-//                         .replace(/\D/g, "")
-//                         .slice(0, 13);
-//                       setPhysicalSimNo(val);
-//                     }}
-//                     placeholder="Enter 13-digit SIM number"
-//                     className="w-full p-2 rounded bg-transparent text-white border border-white/50 text-sm mb-2"
-//                   />
-//                   <button
-//                     onClick={() => {
-//                       if (physicalSimNo.length !== 13) {
-//                         alert("Please enter a valid 13-digit SIM number");
-//                         return;
-//                       }
-//                       localStorage.setItem("physicalSimNo", physicalSimNo);
-//                       setShowPhysicalSimInput(false);
-//                       setShowPayment(true);
-//                       handleSend(`Physical SIM: ${physicalSimNo}`);
-//                     }}
-//                     className="w-full bg-[#2bb673] text-white py-2 rounded hover:opacity-90 text-sm"
-//                   >
-//                     Continue
-//                   </button>
-//                 </div>
-//               ) : showPayment && selectedPlan ? (
-//                 <PaymentCard
-//                   custNo={custNo || ""}
-//                   planName={selectedPlan.planName}
-//                   onPaymentProcessed={(paymentId) => {
-//                     setPaymentId(paymentId);
-//                     setShowPayment(false);
-//                     setShowPaymentProcessCard(true);
-//                     handleSend(
-//                       `Payment completed for plan ${selectedPlan.planName}`
-//                     );
-//                   }}
-//                 />
-//               ) : showPaymentProcessCard ? (
-//                 <PaymentProcessCard
-//                   onClose={() => {
-//                     setShowPaymentProcessCard(false);
-//                     handleSend("Payment processing completed!");
-//                     handleActivateOrder();
-//                   }}
-//                   defaultCustNo={custNo || ""}
-//                   defaultPaymentId={paymentId || ""}
-//                 />
-//               ) : (
-//                 <div className="flex items-center gap-2 sm:gap-3 border border-white/30 rounded-full px-3 sm:px-4 py-2 sm:py-3 bg-white/10 backdrop-blur-sm text-white">
-//                   <input
-//                     type="text"
-//                     value={message}
-//                     onChange={(e) => setMessage(e.target.value)}
-//                     onKeyDown={(e) => e.key === "Enter" && sendMessage()}
-//                     placeholder="Message..."
-//                     className="flex-1 bg-transparent text-white placeholder-white/70 text-xs sm:text-sm focus:outline-none"
-//                   />
-
-//                   <button
-//                     onClick={sendMessage}
-//                     disabled={loading}
-//                     className="inline-flex items-center justify-center w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-[#2bb673] hover:opacity-90 disabled:opacity-50"
-//                   >
-//                     <svg
-//                       xmlns="http://www.w3.org/2000/svg"
-//                       viewBox="0 0 24 24"
-//                       fill="none"
-//                       stroke="white"
-//                       strokeWidth="2"
-//                       className="w-3 h-3 sm:w-4 sm:h-4"
-//                     >
-//                       <path d="M22 2L11 13" />
-//                       <path d="M22 2l-7 20-4-9-9-4 20-7z" />
-//                     </svg>
-//                   </button>
-//                 </div>
-//               )}
-//             </div>
-//           </div>
-//         </div>
-//       </div>
-//     </>
-//   );
-// };
-
-// export default ChatWindow;
-
 "use client";
-
 import React, { useState, useEffect } from "react";
 import { PaymentCard } from "./PaymentCard";
 import { PaymentProcessCard } from "./PaymentProcessCard";
@@ -944,7 +17,6 @@ const ChatWindow = () => {
   const [chat, setChat] = useState<
     { id: number; type: "user" | "bot"; text: string; time: string }[]
   >([]);
-
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -962,14 +34,12 @@ const ChatWindow = () => {
   const [selectedSim, setSelectedSim] = useState<string | null>(null);
   const [custNo, setCustNo] = useState<string | null>(null);
   const [paymentId, setPaymentId] = useState<string | null>(null);
-  const [simType, setSimType] = useState<"esim" | "physical" | null>(null);
-  const [physicalSimNo, setPhysicalSimNo] = useState("");
   const [showSimTypeSelection, setShowSimTypeSelection] = useState(false);
-  const [showPhysicalSimInput, setShowPhysicalSimInput] = useState(false);
+  const [simType, setSimType] = useState<"esim" | "physical" | null>(null);
+  const [simNumber, setSimNumber] = useState("");
+  const [showSimNumberInput, setShowSimNumberInput] = useState(false);
 
   const fromBanner = searchParams.get("fromBanner");
-  const planQuery = searchParams.get("plan");
-
   useEffect(() => {
     if (fromBanner) {
       const initialBotMsg = {
@@ -995,22 +65,17 @@ const ChatWindow = () => {
         const plansList: Plan[] = data.data || [];
         setPlans(plansList);
 
-        // Only show details form at start if there's a plan query param or fromBanner param.
-        // If no query params (plain /chat-window) do not show the details form automatically.
-        const planParam = planQuery;
+        const planParam = searchParams.get("plan");
         if (planParam) {
           const preselected = plansList.find((p) => p.planName === planParam);
           if (preselected) {
             setSelectedPlan(preselected);
+            setShowDetailsForm(true);
+          } else {
+            setShowDetailsForm(true);
           }
-          // Show details form if a plan param exists (we want user to fill their details)
-          setShowDetailsForm(true);
-        } else if (fromBanner) {
-          // Banner flow still shows the form at start
-          setShowDetailsForm(true);
         } else {
-          // No query params — do not show details form at start
-          setShowDetailsForm(false);
+          setShowDetailsForm(true);
         }
       } catch (err) {
         console.error("Error fetching plans:", err);
@@ -1018,7 +83,7 @@ const ChatWindow = () => {
     };
 
     fetchPlansAndCheckQuery();
-  }, [searchParams, planQuery, fromBanner]);
+  }, [searchParams]);
 
   const [formData, setFormData] = useState({
     firstName: "",
@@ -1032,7 +97,6 @@ const ChatWindow = () => {
     postcode: "",
     pin: "",
   });
-
   const [formErrors, setFormErrors] = useState({
     firstName: "",
     surname: "",
@@ -1162,80 +226,45 @@ const ChatWindow = () => {
     const formatted = Object.entries(formData)
       .map(([key, value]) => `${key}: ${value}`)
       .join(", ");
-
-    // Hide the form UI
     setShowDetailsForm(false);
-
-    // Send the filled details message to the API / chat
     handleSend(formatted);
-
-    // If a plan is already selected (e.g., user chose a plan before filling details or plan param provided),
-    // we should now ask sim type (eSIM vs Physical) before proceeding to number selection / payment.
-    if (selectedPlan) {
-      setTimeout(() => {
-        setShowSimTypeSelection(true);
-      }, 400); // small delay for UI flow
-    }
   };
 
   // Add new handler for plan selection
   const handlePlanSelect = (plan: any) => {
     setSelectedPlan(plan);
     setShowPlans(false);
-    setSimType(null);
-    setPhysicalSimNo("");
-    localStorage.removeItem("physicalSimNo");
-
+    setShowSimTypeSelection(true); // Show SIM type selection next
     handleSend(`I would like to select the plan: ${plan.planName}`);
+  };
 
-    // If user hasn't filled details yet, show the details form first.
-    const isFormFilled =
-      formData.firstName.trim() &&
-      formData.surname.trim() &&
-      formData.email.trim() &&
-      formData.phone.trim() &&
-      formData.dob.trim() &&
-      formData.address.trim() &&
-      formData.suburb.trim() &&
-      formData.state.trim() &&
-      formData.postcode.trim() &&
-      formData.pin.trim();
+  const handleSimTypeSelect = (type: "esim" | "physical") => {
+    setSimType(type);
+    setShowSimTypeSelection(false);
+    if (type === "esim") {
+      setShowPayment(true);
+    } else {
+      setShowSimNumberInput(true);
+    }
+  };
 
-    if (!isFormFilled) {
-      // Ask user to fill details first
-      const botMsg = {
-        id: chat.length + 2,
-        type: "bot" as const,
-        text: "Before we continue, please fill your details below.",
-        time: new Date().toLocaleTimeString([], {
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
-      };
-      setChat((prev) => [...prev, botMsg]);
-      setShowDetailsForm(true);
+  const handleSimNumberContinue = () => {
+    if (simNumber.trim().length !== 13) {
+      alert("SIM number must be exactly 13 digits.");
       return;
     }
-
-    // If form already filled, ask SIM type next (before number selection)
-    const botMsg = {
-      id: chat.length + 2,
-      type: "bot" as const,
-      text: "Would you like an **eSIM** or **Physical SIM**?",
-      time: new Date().toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-      }),
-    };
-    setChat((prev) => [...prev, botMsg]);
-    setShowSimTypeSelection(true);
+    localStorage.setItem("physicalSimNumber", simNumber.trim());
+    setShowSimNumberInput(false);
+    setShowPayment(true);
   };
 
   const sendToAPI = async (text: string) => {
     if (!text.trim()) return null;
+
     const payload = sessionId
       ? { query: text, session_id: sessionId, brand: "prosperity-tech" }
       : { query: text, brand: "prosperity-tech" };
+
     try {
       const response = await fetch("/api", {
         method: "POST",
@@ -1245,11 +274,14 @@ const ChatWindow = () => {
         },
         body: JSON.stringify(payload),
       });
+
       if (!response.ok)
         throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
+
       if (!sessionId && data.session_id) setSessionId(data.session_id);
       if (data?.custNo) setCustNo(data.custNo);
+
       return data;
     } catch (error) {
       console.error("API call error:", error);
@@ -1275,13 +307,12 @@ const ChatWindow = () => {
     setLoading(true);
 
     try {
-      // keep prior behavior (original code did both direct fetch and sendToAPI)
       const payload = sessionId
         ? {
-            query: userMsg.text,
-            session_id: sessionId,
-            brand: "prosperity-tech",
-          }
+          query: userMsg.text,
+          session_id: sessionId,
+          brand: "prosperity-tech",
+        }
         : { query: userMsg.text, brand: "prosperity-tech" };
 
       const response = await fetch("/api", {
@@ -1299,6 +330,7 @@ const ChatWindow = () => {
 
       const data = await sendToAPI(userMsg.text);
       if (!data) throw new Error("No data from API");
+
       if (!sessionId && data.session_id) {
         setSessionId(data.session_id);
       }
@@ -1326,12 +358,10 @@ const ChatWindow = () => {
 
       if (data?.custNo) setCustNo(data.custNo);
 
-      // If bot requests details, show the form
       if (botText.toLowerCase().includes("please provide your first name")) {
         setShowDetailsForm(true);
       }
 
-      // If bot returned a set of numbers (5 numbers), show number buttons
       if (botText.match(/04\d{8}/g)?.length === 5) {
         const numbers = botText.match(/04\d{8}/g);
         setNumberOptions(numbers || []);
@@ -1357,7 +387,6 @@ const ChatWindow = () => {
         };
         setChat((prev) => [...prev, botMsg]);
 
-        // If no plan selected, show plans; otherwise number selection will lead to payment
         if (!selectedPlan) {
           try {
             const plansResponse = await fetch(
@@ -1367,7 +396,9 @@ const ChatWindow = () => {
                 headers: { accept: "application/json" },
               }
             );
+
             if (!plansResponse.ok) throw new Error("Failed to fetch plans");
+
             const plansData = await plansResponse.json();
             setPlans(plansData.data || []);
             setShowPlans(true);
@@ -1407,11 +438,10 @@ const ChatWindow = () => {
   const handleNumberSelect = async (number: string) => {
     setSelectedSim(number);
     setShowNumberButtons(false);
-
-    // Call API but do NOT show bot response (send only)
+    // Call API but do NOT show bot response
     await sendToAPI(number);
 
-    // Provide a small bot message in UI and progress to payment if plan selected
+    // Now manually add the next bot message for your UI flow
     const botMsg = {
       id: chat.length + 2,
       type: "bot" as const,
@@ -1425,9 +455,8 @@ const ChatWindow = () => {
     };
     setChat((prev) => [...prev, botMsg]);
 
-    // If the user selected a plan previously, proceed to payment step
     if (selectedPlan) {
-      setShowPayment(true);
+      setShowSimTypeSelection(true);
     } else {
       setShowPlans(true);
     }
@@ -1435,10 +464,6 @@ const ChatWindow = () => {
 
   const handleActivateOrder = async () => {
     try {
-      const simNo =
-        simType === "physical"
-          ? localStorage.getItem("physicalSimNo") || ""
-          : "";
       const body = {
         number: selectedSim,
         cust: {
@@ -1449,9 +474,11 @@ const ChatWindow = () => {
           email: formData.email,
         },
         planNo: String(selectedPlan?.planNo) || "",
-        simNo,
+        simNo: simType === "physical" ? localStorage.getItem("physicalSimNumber") || "" : "",
       };
+
       console.log("Activation payload:", body);
+
       const response = await fetch(
         "https://prosperity.omnisuiteai.com/api/v1/orders/activate",
         {
@@ -1460,8 +487,10 @@ const ChatWindow = () => {
           body: JSON.stringify(body),
         }
       );
+
       const result = await response.json();
       console.log("Activation result:", result);
+
       if (response.ok) {
         handleSend("Order successfully activated!");
       } else {
@@ -1472,10 +501,6 @@ const ChatWindow = () => {
       handleSend("Order activation failed. Please try again.");
     }
   };
-
-  // UI flow notes:
-  // - When sim type is chosen, we just send that choice to the API and wait for bot numbers
-  // - We do NOT immediately jump to payment on sim-type selection. Payment only shows once number is selected or when Payment flow is triggered.
 
   const sendMessage = () => {
     handleSend(message);
@@ -1505,7 +530,6 @@ const ChatWindow = () => {
                 />
               </div>
             </div>
-
             <button
               onClick={() => router.push("/")}
               className="text-white text-lg sm:text-xl font-bold hover:text-gray-200 transition-colors"
@@ -1542,9 +566,8 @@ const ChatWindow = () => {
             {chat.map((msg) => (
               <div
                 key={msg.id}
-                className={`flex items-start gap-2 sm:gap-3 mb-3 sm:mb-4 md:mb-6 ${
-                  msg.type === "user" ? "justify-end" : "justify-start"
-                }`}
+                className={`flex items-start gap-2 sm:gap-3 mb-3 sm:mb-4 md:mb-6 ${msg.type === "user" ? "justify-end" : "justify-start"
+                  }`}
               >
                 {msg.type === "bot" && (
                   <div className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 bg-yellow-400 rounded-full flex-shrink-0 flex items-center justify-center overflow-hidden">
@@ -1557,11 +580,10 @@ const ChatWindow = () => {
                 )}
 
                 <div
-                  className={`${
-                    msg.type === "user"
-                      ? "bg-white text-[#0E3B5C]"
-                      : "bg-white text-[#0E3B5C]"
-                  } rounded-2xl px-3 py-1.5 sm:px-4 sm:py-2 md:px-6 md:py-2 shadow-md max-w-[90%] sm:max-w-[80%] md:max-w-[70%]`}
+                  className={`${msg.type === "user"
+                    ? "bg-white text-[#0E3B5C]"
+                    : "bg-white text-[#0E3B5C]"
+                    } rounded-2xl px-3 py-1.5 sm:px-4 sm:py-2 md:px-6 md:py-2 shadow-md max-w-[90%] sm:max-w-[80%] md:max-w-[70%]`}
                 >
                   <p className="text-xs sm:text-xs md:text-sm leading-relaxed break-words">
                     {msg.text}
@@ -1611,7 +633,6 @@ const ChatWindow = () => {
                         </p>
                       )}
                     </div>
-
                     <div>
                       <input
                         name="surname"
@@ -1627,7 +648,6 @@ const ChatWindow = () => {
                         </p>
                       )}
                     </div>
-
                     <div>
                       <input
                         name="email"
@@ -1644,7 +664,6 @@ const ChatWindow = () => {
                         </p>
                       )}
                     </div>
-
                     <div>
                       <input
                         name="phone"
@@ -1660,7 +679,6 @@ const ChatWindow = () => {
                         </p>
                       )}
                     </div>
-
                     <div>
                       <input
                         name="dob"
@@ -1677,7 +695,6 @@ const ChatWindow = () => {
                         </p>
                       )}
                     </div>
-
                     <div>
                       <input
                         name="address"
@@ -1693,7 +710,6 @@ const ChatWindow = () => {
                         </p>
                       )}
                     </div>
-
                     <div>
                       <input
                         name="suburb"
@@ -1709,7 +725,6 @@ const ChatWindow = () => {
                         </p>
                       )}
                     </div>
-
                     <div>
                       <input
                         name="state"
@@ -1725,7 +740,6 @@ const ChatWindow = () => {
                         </p>
                       )}
                     </div>
-
                     <div>
                       <input
                         name="postcode"
@@ -1741,7 +755,6 @@ const ChatWindow = () => {
                         </p>
                       )}
                     </div>
-
                     <div>
                       <input
                         name="pin"
@@ -1759,7 +772,6 @@ const ChatWindow = () => {
                       )}
                     </div>
                   </div>
-
                   <button
                     type="submit"
                     disabled={loading}
@@ -1794,62 +806,37 @@ const ChatWindow = () => {
                   ))}
                 </div>
               ) : showSimTypeSelection ? (
-                <div className="flex gap-2 justify-center p-3 bg-white/10 backdrop-blur-sm rounded-lg border border-white/30">
-                  <button
-                    onClick={() => {
-                      setSimType("esim");
-                      setShowSimTypeSelection(false);
-                      // send sim type choice to the backend/chat and WAIT for the bot to respond with numbers or next steps
-                      handleSend("I want an eSIM");
-                      // Do NOT move to payment immediately — wait for numbers or bot direction
-                    }}
-                    className="bg-[#2bb673] text-white px-4 py-2 rounded hover:opacity-90 text-sm"
-                  >
-                    eSIM
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      setSimType("physical");
-                      setShowSimTypeSelection(false);
-                      setShowPhysicalSimInput(true);
-                      handleSend("I want a Physical SIM");
-                      // We'll request the 13-digit SIM next from the user and store it in localStorage.
-                    }}
-                    className="bg-[#2bb673] text-white px-4 py-2 rounded hover:opacity-90 text-sm"
-                  >
-                    Physical SIM
-                  </button>
+                <div className="flex flex-col items-center gap-3 p-4 bg-white/10 rounded-lg border border-white/30 text-white">
+                  <p className="text-sm sm:text-base">Please choose SIM type:</p>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handleSimTypeSelect("esim")}
+                      className="bg-[#2bb673] text-white px-3 py-1 rounded hover:opacity-90 text-xs sm:text-sm"
+                    >
+                      E-SIM
+                    </button>
+                    <button
+                      onClick={() => handleSimTypeSelect("physical")}
+                      className="bg-[#215988] text-white px-3 py-1 rounded hover:opacity-90 text-xs sm:text-sm"
+                    >
+                      Physical SIM
+                    </button>
+                  </div>
                 </div>
-              ) : showPhysicalSimInput ? (
-                <div className="bg-white/10 backdrop-blur-sm p-3 rounded-lg border border-white/30">
+              ) : showSimNumberInput ? (
+                <div className="flex flex-col items-center gap-3 p-4 bg-white/10 rounded-lg border border-white/30 text-white">
+                  <p className="text-sm sm:text-base">Enter your 13-digit SIM number:</p>
                   <input
                     type="text"
                     maxLength={13}
-                    value={physicalSimNo}
-                    onChange={(e) => {
-                      const val = e.target.value
-                        .replace(/\D/g, "")
-                        .slice(0, 13);
-                      setPhysicalSimNo(val);
-                    }}
+                    value={simNumber}
+                    onChange={(e) => setSimNumber(e.target.value.replace(/\D/g, ""))}
+                    className="w-full p-2 rounded bg-transparent border border-white/50 text-center text-white text-sm sm:text-base tracking-widest"
                     placeholder="Enter 13-digit SIM number"
-                    className="w-full p-2 rounded bg-transparent text-white border border-white/50 text-sm mb-2"
                   />
                   <button
-                    onClick={() => {
-                      if (physicalSimNo.length !== 13) {
-                        alert("Please enter a valid 13-digit SIM number");
-                        return;
-                      }
-                      localStorage.setItem("physicalSimNo", physicalSimNo);
-                      setShowPhysicalSimInput(false);
-                      // Instead of jumping straight to payment, send this physical SIM info to the chat/API
-                      // and wait for the bot to respond (which might provide numbers or next instructions).
-                      handleSend(`Physical SIM: ${physicalSimNo}`);
-                      // Do NOT setShowPayment(true) here; wait for number selection or bot confirmation.
-                    }}
-                    className="w-full bg-[#2bb673] text-white py-2 rounded hover:opacity-90 text-sm"
+                    onClick={handleSimNumberContinue}
+                    className="bg-[#2bb673] text-white px-4 py-1 rounded hover:opacity-90 text-xs sm:text-sm"
                   >
                     Continue
                   </button>
@@ -1887,6 +874,7 @@ const ChatWindow = () => {
                     placeholder="Message..."
                     className="flex-1 bg-transparent text-white placeholder-white/70 text-xs sm:text-sm focus:outline-none"
                   />
+
                   <button
                     onClick={sendMessage}
                     disabled={loading}
