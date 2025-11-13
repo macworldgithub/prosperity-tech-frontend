@@ -1,12 +1,20 @@
 "use client";
-
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 interface PaymentCardProps {
-  onTokenReceived: (token: string) => void;
+  custNo: string;
+  planName: string;
+  onPaymentProcessed: (paymentId: string) => void; // returns paymentId for process card
 }
 
-export const PaymentCard = ({ onTokenReceived }: PaymentCardProps) => {
+export const PaymentCard = ({
+  custNo,
+  planName,
+  onPaymentProcessed,
+}: PaymentCardProps) => {
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
+
   useEffect(() => {
     const loadQuickstream = () => {
       if (typeof window === "undefined") return;
@@ -47,6 +55,7 @@ export const PaymentCard = ({ onTokenReceived }: PaymentCardProps) => {
           config: { supplierBusinessCode: "TIABREST" },
           iframe: {
             width: "100%",
+            height: "350px",
             scrolling: "no",
             style: { border: "none", background: "#fff", borderRadius: "12px" },
           },
@@ -64,7 +73,7 @@ export const PaymentCard = ({ onTokenReceived }: PaymentCardProps) => {
         },
         function (errors, data) {
           if (errors) {
-            alert("Failed to load credit card form");
+            setMessage("Failed to load credit card form");
             return;
           }
           trustedFrame = data.trustedFrame;
@@ -72,33 +81,55 @@ export const PaymentCard = ({ onTokenReceived }: PaymentCardProps) => {
         }
       );
 
-      form.onsubmit = (e) => {
+      form.onsubmit = async (e) => {
         e.preventDefault();
-        if (!trustedFrame) {
-          alert("Frame not ready yet");
-          return;
-        }
+        if (!trustedFrame) return;
 
+        setLoading(true);
         submitBtn.disabled = true;
         submitBtn.textContent = "Processing...";
 
-        trustedFrame.submitForm(function (errors: any, data: any) {
+        trustedFrame.submitForm(async (errors: any, data: any) => {
           submitBtn.disabled = false;
           submitBtn.textContent = "Submit";
+
           if (errors) {
-            alert("Error: " + (errors.message || "Unknown error"));
+            setMessage(errors.message || "Error submitting card");
+            setLoading(false);
             return;
           }
 
-          const token = data?.singleUseToken?.singleUseTokenId;
-          alert("✅ Token created: " + token);
-          onTokenReceived(token);
+          try {
+            const token = data?.singleUseToken?.singleUseTokenId;
+            if (!token) throw new Error("No token returned");
+
+            // Immediately call backend to save payment method
+            const response = await fetch(
+              "https://prosperity.omnisuiteai.com/api/v1/payments/methods",
+              {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ custNo, paymentTokenId: token }),
+              }
+            );
+
+            const result = await response.json();
+            if (!response.ok)
+              throw new Error(result.message || "Payment method failed");
+
+            // Call parent callback with paymentId to show PaymentProcessCard
+            onPaymentProcessed(result.data.paymentId);
+          } catch (err: any) {
+            setMessage("❌ " + (err.message || "Something went wrong"));
+          } finally {
+            setLoading(false);
+          }
         });
       };
     };
 
     loadQuickstream();
-  }, []);
+  }, [custNo, planName, onPaymentProcessed]);
 
   return (
     <div className="bg-white/90 rounded-2xl p-3 w-full shadow-md">
@@ -107,17 +138,18 @@ export const PaymentCard = ({ onTokenReceived }: PaymentCardProps) => {
         <div
           id="creditCardContainer"
           data-quickstream-api="creditCardContainer"
-          className="w-full h-[250px] mb-3 bg-gray-100 rounded-lg"
+          className="w-full h-[350px] mb-3 bg-gray-100 rounded-lg"
         />
         <button
           type="submit"
           id="submitBtn"
-          disabled
-          className="w-full bg-green-600 text-black py-2 rounded-lg"
+          disabled={loading}
+          className="w-full bg-green-600 text-white py-2 rounded-lg"
         >
-          Submit
+          {loading ? "Processing..." : "Submit"}
         </button>
       </form>
+      {message && <p className="mt-2 text-sm text-red-500">{message}</p>}
     </div>
   );
 };

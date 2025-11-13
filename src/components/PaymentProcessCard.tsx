@@ -4,13 +4,19 @@ import { useState } from "react";
 
 interface PaymentProcessCardProps {
   onClose: () => void;
+  defaultCustNo?: string;
+  defaultPaymentId?: string;
 }
 
-export const PaymentProcessCard = ({ onClose }: PaymentProcessCardProps) => {
+export const PaymentProcessCard = ({
+  onClose,
+  defaultCustNo = "",
+  defaultPaymentId = "",
+}: PaymentProcessCardProps) => {
   const [formData, setFormData] = useState({
-    custNo: "526691",
+    custNo: defaultCustNo,
     amount: "",
-    paymentId: "",
+    paymentId: defaultPaymentId,
     email: "",
     comment: "",
   });
@@ -28,7 +34,7 @@ export const PaymentProcessCard = ({ onClose }: PaymentProcessCardProps) => {
 
     try {
       const response = await fetch(
-        "https://bele.omnisuiteai.com/api/v1/payments/process",
+        "https://prosperity.omnisuiteai.com/api/v1/payments/process",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -39,7 +45,7 @@ export const PaymentProcessCard = ({ onClose }: PaymentProcessCardProps) => {
       const data = await response.json();
       if (!response.ok) throw new Error(data.message || "Payment failed");
 
-      alert("✅ Payment processed successfully!");
+      alert("Payment processed successfully!");
       onClose();
     } catch (error: any) {
       setMessage("❌ " + (error.message || "Something went wrong"));
@@ -92,7 +98,7 @@ export const PaymentProcessCard = ({ onClose }: PaymentProcessCardProps) => {
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-green-600 text-black py-2 rounded-lg"
+          className="w-full bg-green-600 text-white py-2 rounded-lg"
         >
           {loading ? "Processing..." : "Submit Payment"}
         </button>
