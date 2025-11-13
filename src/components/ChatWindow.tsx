@@ -988,7 +988,9 @@ const ChatWindow = () => {
   useEffect(() => {
     const fetchPlansAndCheckQuery = async () => {
       try {
-        const res = await fetch("https://prosperity.omnisuiteai.com/api/v1/plans");
+        const res = await fetch(
+          "https://prosperity.omnisuiteai.com/api/v1/plans"
+        );
         const data = await res.json();
         const plansList: Plan[] = data.data || [];
         setPlans(plansList);
@@ -1104,7 +1106,8 @@ const ChatWindow = () => {
       errors.phone = "Phone is required";
       isValid = false;
     } else if (!/^04\d{8}$/.test(formData.phone)) {
-      errors.phone = "Phone must be a valid Australian mobile number (e.g., 0412345678)";
+      errors.phone =
+        "Phone must be a valid Australian mobile number (e.g., 0412345678)";
       isValid = false;
     }
     if (!formData.dob.trim()) {
@@ -1242,7 +1245,8 @@ const ChatWindow = () => {
         },
         body: JSON.stringify(payload),
       });
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      if (!response.ok)
+        throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
       if (!sessionId && data.session_id) setSessionId(data.session_id);
       if (data?.custNo) setCustNo(data.custNo);
@@ -1273,7 +1277,11 @@ const ChatWindow = () => {
     try {
       // keep prior behavior (original code did both direct fetch and sendToAPI)
       const payload = sessionId
-        ? { query: userMsg.text, session_id: sessionId, brand: "prosperity-tech" }
+        ? {
+            query: userMsg.text,
+            session_id: sessionId,
+            brand: "prosperity-tech",
+          }
         : { query: userMsg.text, brand: "prosperity-tech" };
 
       const response = await fetch("/api", {
@@ -1295,7 +1303,8 @@ const ChatWindow = () => {
         setSessionId(data.session_id);
       }
 
-      const botText = data?.message || data?.response || "Sorry, I couldn’t understand that.";
+      const botText =
+        data?.message || data?.response || "Sorry, I couldn’t understand that.";
 
       const isPlanConfirmation =
         botText.toLowerCase().includes("i’ve noted your interest") ||
@@ -1351,10 +1360,13 @@ const ChatWindow = () => {
         // If no plan selected, show plans; otherwise number selection will lead to payment
         if (!selectedPlan) {
           try {
-            const plansResponse = await fetch("https://prosperity.omnisuiteai.com/api/v1/plans", {
-              method: "GET",
-              headers: { accept: "application/json" },
-            });
+            const plansResponse = await fetch(
+              "https://prosperity.omnisuiteai.com/api/v1/plans",
+              {
+                method: "GET",
+                headers: { accept: "application/json" },
+              }
+            );
             if (!plansResponse.ok) throw new Error("Failed to fetch plans");
             const plansData = await plansResponse.json();
             setPlans(plansData.data || []);
@@ -1369,7 +1381,10 @@ const ChatWindow = () => {
     } catch (error: any) {
       console.error("Full Chat error:", error); // Enhanced logging
       let errorMsg = "Oops! Something went wrong. Please try again.";
-      if (error.name === "TypeError" && error.message.includes("Failed to fetch")) {
+      if (
+        error.name === "TypeError" &&
+        error.message.includes("Failed to fetch")
+      ) {
         errorMsg = "Network error (CORS?). Check console and try refreshing.";
       } else if (error.message.includes("401")) {
         errorMsg = "Session expired. Please log in again.";
@@ -1400,7 +1415,9 @@ const ChatWindow = () => {
     const botMsg = {
       id: chat.length + 2,
       type: "bot" as const,
-      text: selectedPlan ? "Perfect! Let’s continue with the payment." : "Choose from the Plans below:",
+      text: selectedPlan
+        ? "Perfect! Let’s continue with the payment."
+        : "Choose from the Plans below:",
       time: new Date().toLocaleTimeString([], {
         hour: "2-digit",
         minute: "2-digit",
@@ -1418,7 +1435,10 @@ const ChatWindow = () => {
 
   const handleActivateOrder = async () => {
     try {
-      const simNo = simType === "physical" ? localStorage.getItem("physicalSimNo") || "" : "";
+      const simNo =
+        simType === "physical"
+          ? localStorage.getItem("physicalSimNo") || ""
+          : "";
       const body = {
         number: selectedSim,
         cust: {
@@ -1432,11 +1452,14 @@ const ChatWindow = () => {
         simNo,
       };
       console.log("Activation payload:", body);
-      const response = await fetch("https://prosperity.omnisuiteai.com/api/v1/orders/activate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
+      const response = await fetch(
+        "https://prosperity.omnisuiteai.com/api/v1/orders/activate",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        }
+      );
       const result = await response.json();
       console.log("Activation result:", result);
       if (response.ok) {
@@ -1475,7 +1498,11 @@ const ChatWindow = () => {
           <div className="flex justify-between items-center p-2 sm:p-3 bg-[#215988] rounded-t-2xl">
             <div className="flex items-center gap-1 sm:gap-2">
               <div className="relative w-8 h-8 sm:w-12 sm:h-12">
-                <img src="/images/logo.png" alt="Prosperity Tech Logo" className="w-full h-full object-contain" />
+                <img
+                  src="/images/logo.png"
+                  alt="Prosperity Tech Logo"
+                  className="w-full h-full object-contain"
+                />
               </div>
             </div>
 
@@ -1493,14 +1520,21 @@ const ChatWindow = () => {
           <div className="flex-1 flex flex-col bg-gradient-to-b from-[#33a748] via-[#257773] to-[#1e608c] p-2 sm:p-4 md:p-6 overflow-y-auto rounded-b-2xl ring-1 ring-white/20 shadow-[inset_0_8px_24px_rgba(0,0,0,0.25)]">
             <div className="text-center mb-2 sm:mb-4 md:mb-6 mt-2 sm:mt-4 md:mt-8">
               <div className="mx-auto mb-1 sm:mb-2 w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20">
-                <img src="/images/logo.png" alt="Prosperity Tech Logo" className="w-full h-full object-contain" />
+                <img
+                  src="/images/logo.png"
+                  alt="Prosperity Tech Logo"
+                  className="w-full h-full object-contain"
+                />
               </div>
-              <h2 className="text-white font-bold text-sm sm:text-base md:text-lg mb-0.5 sm:mb-1">How can I help you today?</h2>
+              <h2 className="text-white font-bold text-sm sm:text-base md:text-lg mb-0.5 sm:mb-1">
+                How can I help you today?
+              </h2>
             </div>
 
             {selectedPlan && (
               <div className="mb-4 bg-white/20 border border-white/30 text-white text-center text-sm sm:text-base px-3 py-2 rounded-md shadow-md">
-                You selected <strong>{selectedPlan.planName}</strong> — ${selectedPlan.price}. Let’s continue with your setup.
+                You selected <strong>{selectedPlan.planName}</strong> — $
+                {selectedPlan.price}. Let’s continue with your setup.
               </div>
             )}
 
@@ -1514,16 +1548,24 @@ const ChatWindow = () => {
               >
                 {msg.type === "bot" && (
                   <div className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 bg-yellow-400 rounded-full flex-shrink-0 flex items-center justify-center overflow-hidden">
-                    <img src="/images/bot.png" alt="Bot Avatar" className="w-full h-full rounded-full object-cover" />
+                    <img
+                      src="/images/bot.png"
+                      alt="Bot Avatar"
+                      className="w-full h-full rounded-full object-cover"
+                    />
                   </div>
                 )}
 
                 <div
                   className={`${
-                    msg.type === "user" ? "bg-white text-[#0E3B5C]" : "bg-white text-[#0E3B5C]"
+                    msg.type === "user"
+                      ? "bg-white text-[#0E3B5C]"
+                      : "bg-white text-[#0E3B5C]"
                   } rounded-2xl px-3 py-1.5 sm:px-4 sm:py-2 md:px-6 md:py-2 shadow-md max-w-[90%] sm:max-w-[80%] md:max-w-[70%]`}
                 >
-                  <p className="text-xs sm:text-xs md:text-sm leading-relaxed break-words">{msg.text}</p>
+                  <p className="text-xs sm:text-xs md:text-sm leading-relaxed break-words">
+                    {msg.text}
+                  </p>
                 </div>
               </div>
             ))}
@@ -1532,10 +1574,16 @@ const ChatWindow = () => {
             {loading && (
               <div className="flex items-start gap-2 sm:gap-3 mb-3 sm:mb-4 md:mb-6">
                 <div className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 bg-yellow-400 rounded-full flex items-center justify-center overflow-hidden">
-                  <img src="/images/bot.png" alt="Loading Avatar" className="w-full h-full rounded-full object-cover" />
+                  <img
+                    src="/images/bot.png"
+                    alt="Loading Avatar"
+                    className="w-full h-full rounded-full object-cover"
+                  />
                 </div>
                 <div className="bg-white rounded-2xl px-3 py-1.5 sm:px-4 sm:py-2 md:px-6 md:py-2 shadow-md max-w-[90%] sm:max-w-[80%] md:max-w-[70%]">
-                  <p className="text-[#0E3B5C] text-xs sm:text-xs md:text-sm leading-relaxed">Typing...</p>
+                  <p className="text-[#0E3B5C] text-xs sm:text-xs md:text-sm leading-relaxed">
+                    Typing...
+                  </p>
                 </div>
               </div>
             )}
@@ -1557,7 +1605,11 @@ const ChatWindow = () => {
                         className="w-full p-1.5 sm:p-2 rounded bg-transparent text-white border border-white/50 text-xs sm:text-sm"
                         required
                       />
-                      {formErrors.firstName && <p className="text-red-300 text-xs mt-0.5 sm:mt-1">{formErrors.firstName}</p>}
+                      {formErrors.firstName && (
+                        <p className="text-red-300 text-xs mt-0.5 sm:mt-1">
+                          {formErrors.firstName}
+                        </p>
+                      )}
                     </div>
 
                     <div>
@@ -1569,7 +1621,11 @@ const ChatWindow = () => {
                         className="w-full p-1.5 sm:p-2 rounded bg-transparent text-white border border-white/50 text-xs sm:text-sm"
                         required
                       />
-                      {formErrors.surname && <p className="text-red-300 text-xs mt-0.5 sm:mt-1">{formErrors.surname}</p>}
+                      {formErrors.surname && (
+                        <p className="text-red-300 text-xs mt-0.5 sm:mt-1">
+                          {formErrors.surname}
+                        </p>
+                      )}
                     </div>
 
                     <div>
@@ -1582,7 +1638,11 @@ const ChatWindow = () => {
                         className="w-full p-1.5 sm:p-2 rounded bg-transparent text-white border border-white/50 text-xs sm:text-sm"
                         required
                       />
-                      {formErrors.email && <p className="text-red-300 text-xs mt-0.5 sm:mt-1">{formErrors.email}</p>}
+                      {formErrors.email && (
+                        <p className="text-red-300 text-xs mt-0.5 sm:mt-1">
+                          {formErrors.email}
+                        </p>
+                      )}
                     </div>
 
                     <div>
@@ -1594,7 +1654,11 @@ const ChatWindow = () => {
                         className="w-full p-1.5 sm:p-2 rounded bg-transparent text-white border border-white/50 text-xs sm:text-sm"
                         required
                       />
-                      {formErrors.phone && <p className="text-red-300 text-xs mt-0.5 sm:mt-1">{formErrors.phone}</p>}
+                      {formErrors.phone && (
+                        <p className="text-red-300 text-xs mt-0.5 sm:mt-1">
+                          {formErrors.phone}
+                        </p>
+                      )}
                     </div>
 
                     <div>
@@ -1607,7 +1671,11 @@ const ChatWindow = () => {
                         className="w-full p-1.5 sm:p-2 rounded bg-transparent text-white border border-white/50 text-xs sm:text-sm"
                         required
                       />
-                      {formErrors.dob && <p className="text-red-300 text-xs mt-0.5 sm:mt-1">{formErrors.dob}</p>}
+                      {formErrors.dob && (
+                        <p className="text-red-300 text-xs mt-0.5 sm:mt-1">
+                          {formErrors.dob}
+                        </p>
+                      )}
                     </div>
 
                     <div>
@@ -1619,7 +1687,11 @@ const ChatWindow = () => {
                         className="w-full p-1.5 sm:p-2 rounded bg-transparent text-white border border-white/50 text-xs sm:text-sm"
                         required
                       />
-                      {formErrors.address && <p className="text-red-300 text-xs mt-0.5 sm:mt-1">{formErrors.address}</p>}
+                      {formErrors.address && (
+                        <p className="text-red-300 text-xs mt-0.5 sm:mt-1">
+                          {formErrors.address}
+                        </p>
+                      )}
                     </div>
 
                     <div>
@@ -1631,7 +1703,11 @@ const ChatWindow = () => {
                         className="w-full p-1.5 sm:p-2 rounded bg-transparent text-white border border-white/50 text-xs sm:text-sm"
                         required
                       />
-                      {formErrors.suburb && <p className="text-red-300 text-xs mt-0.5 sm:mt-1">{formErrors.suburb}</p>}
+                      {formErrors.suburb && (
+                        <p className="text-red-300 text-xs mt-0.5 sm:mt-1">
+                          {formErrors.suburb}
+                        </p>
+                      )}
                     </div>
 
                     <div>
@@ -1643,7 +1719,11 @@ const ChatWindow = () => {
                         className="w-full p-1.5 sm:p-2 rounded bg-transparent text-white border border-white/50 text-xs sm:text-sm"
                         required
                       />
-                      {formErrors.state && <p className="text-red-300 text-xs mt-0.5 sm:mt-1">{formErrors.state}</p>}
+                      {formErrors.state && (
+                        <p className="text-red-300 text-xs mt-0.5 sm:mt-1">
+                          {formErrors.state}
+                        </p>
+                      )}
                     </div>
 
                     <div>
@@ -1655,7 +1735,11 @@ const ChatWindow = () => {
                         className="w-full p-1.5 sm:p-2 rounded bg-transparent text-white border border-white/50 text-xs sm:text-sm"
                         required
                       />
-                      {formErrors.postcode && <p className="text-red-300 text-xs mt-0.5 sm:mt-1">{formErrors.postcode}</p>}
+                      {formErrors.postcode && (
+                        <p className="text-red-300 text-xs mt-0.5 sm:mt-1">
+                          {formErrors.postcode}
+                        </p>
+                      )}
                     </div>
 
                     <div>
@@ -1668,7 +1752,11 @@ const ChatWindow = () => {
                         className="w-full p-1.5 sm:p-2 rounded bg-transparent text-white border border-white/50 text-xs sm:text-sm"
                         required
                       />
-                      {formErrors.pin && <p className="text-red-300 text-xs mt-0.5 sm:mt-1">{formErrors.pin}</p>}
+                      {formErrors.pin && (
+                        <p className="text-red-300 text-xs mt-0.5 sm:mt-1">
+                          {formErrors.pin}
+                        </p>
+                      )}
                     </div>
                   </div>
 
@@ -1740,7 +1828,9 @@ const ChatWindow = () => {
                     maxLength={13}
                     value={physicalSimNo}
                     onChange={(e) => {
-                      const val = e.target.value.replace(/\D/g, "").slice(0, 13);
+                      const val = e.target.value
+                        .replace(/\D/g, "")
+                        .slice(0, 13);
                       setPhysicalSimNo(val);
                     }}
                     placeholder="Enter 13-digit SIM number"
@@ -1772,7 +1862,9 @@ const ChatWindow = () => {
                     setPaymentId(paymentId);
                     setShowPayment(false);
                     setShowPaymentProcessCard(true);
-                    handleSend(`Payment completed for plan ${selectedPlan.planName}`);
+                    handleSend(
+                      `Payment completed for plan ${selectedPlan.planName}`
+                    );
                   }}
                 />
               ) : showPaymentProcessCard ? (
@@ -1800,7 +1892,14 @@ const ChatWindow = () => {
                     disabled={loading}
                     className="inline-flex items-center justify-center w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-[#2bb673] hover:opacity-90 disabled:opacity-50"
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" className="w-3 h-3 sm:w-4 sm:h-4">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="white"
+                      strokeWidth="2"
+                      className="w-3 h-3 sm:w-4 sm:h-4"
+                    >
                       <path d="M22 2L11 13" />
                       <path d="M22 2l-7 20-4-9-9-4 20-7z" />
                     </svg>

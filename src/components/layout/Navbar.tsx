@@ -19,7 +19,7 @@ const Navbar = () => {
   ];
 
   return (
-    <nav className="relative top-0 left-0 w-full z-50 bg-gradient-to-r from-[#1d5e8e] to-[#145374] shadow-lg transition-all duration-300 p-5">
+    <nav className="relative top-0 left-0 w-full z-60 bg-linear-to-r from-[#1d5e8e] to-[#145374] shadow-lg transition-all duration-300 p-5">
       <div className="max-w-7xl mx-auto flex items-center justify-between px-6 sm:px-10 py-4 relative">
         {/* Desktop Links */}
         <div className="hidden lg:flex items-center space-x-8">
@@ -36,7 +36,9 @@ const Navbar = () => {
               {link.name}
               <span
                 className={`absolute left-0 -bottom-1 h-0.5 w-full bg-green-300 transition-all duration-300 ${
-                  pathname === link.href ? "scale-x-100" : "scale-x-0 hover:scale-x-100"
+                  pathname === link.href
+                    ? "scale-x-100"
+                    : "scale-x-0 hover:scale-x-100"
                 }`}
               ></span>
             </Link>
@@ -79,7 +81,9 @@ const Navbar = () => {
               href={link.href}
               onClick={() => setMenuOpen(false)}
               className={`text-white text-2xl font-semibold transition-colors duration-300 ${
-                pathname === link.href ? "text-green-300" : "hover:text-green-300"
+                pathname === link.href
+                  ? "text-green-300"
+                  : "hover:text-green-300"
               }`}
             >
               {link.name}
