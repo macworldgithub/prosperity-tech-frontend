@@ -1,14 +1,45 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Menu, X } from "lucide-react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import logo from "../../../public/images/logo.png";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "@/store/reduxStore";
+import { logout } from "@/reduxSlices/loginSlice";
+import { Button } from "../Button";
 
 const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
+  const dispatch = useDispatch<AppDispatch>();
+  const { access_token } = useSelector((state: RootState) => state.login);
+
+  useEffect(() => {
+    setIsLoggedIn(!!access_token || !!localStorage.getItem("access_token"));
+  }, [access_token]);
+
+  useEffect(() => {
+    const handleStorage = () => {
+      setIsLoggedIn(!!localStorage.getItem("access_token"));
+    };
+    window.addEventListener("storage", handleStorage);
+    return () => window.removeEventListener("storage", handleStorage);
+  }, []);
+
+  const handleLogin = () => router.push("/login");
+
+  const handleLogout = () => {
+    localStorage.removeItem("persist:flywing-kiwi-root");
+    localStorage.removeItem("access_token");
+    dispatch(logout());
+    setIsLoggedIn(false);
+    router.push("/login");
+  };
 
   const navLinks = [
     { name: "Home", href: "/" },
@@ -58,6 +89,15 @@ const Navbar = () => {
             />
           </Link>
         </div>
+        {!isLoggedIn ? (
+          <Button variant="outline" size="md" onClick={handleLogin}>
+            Login
+          </Button>
+        ) : (
+          <Button variant="outline" size="md" onClick={handleLogout}>
+            Logout
+          </Button>
+        )}
 
         {/* Mobile Menu Button */}
         <div className="lg:hidden z-50">
@@ -89,6 +129,25 @@ const Navbar = () => {
               {link.name}
             </Link>
           ))}
+          {!isLoggedIn ? (
+            <Button
+              variant="gradient"
+              size="md"
+              className="w-full mt-2"
+              onClick={handleLogin}
+            >
+              Login
+            </Button>
+          ) : (
+            <Button
+              variant="outline"
+              size="md"
+              className="w-full mt-2"
+              onClick={handleLogout}
+            >
+              Logout
+            </Button>
+          )}
         </div>
       </div>
     </nav>
