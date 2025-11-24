@@ -29,59 +29,57 @@ const ChatWindow = () => {
   const [numberOptions, setNumberOptions] = useState<string[]>([]);
   const [showPayment, setShowPayment] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
-  const [showPaymentProcessCard, setShowPaymentProcessCard] = useState(false);
   const [selectedSim, setSelectedSim] = useState<string | null>(null);
   const [custNo, setCustNo] = useState<string | null>(null);
-  const [paymentId, setPaymentId] = useState<string | null>(null);
   const [showSimTypeSelection, setShowSimTypeSelection] = useState(false);
   const [simType, setSimType] = useState<"esim" | "physical" | null>(null);
   const [simNumber, setSimNumber] = useState("");
   const [showSimNumberInput, setShowSimNumberInput] = useState(false);
+  const [userEmail, setUserEmail] = useState("");
 
-  const fromBanner = searchParams.get("fromBanner");
   useEffect(() => {
+    const fromBanner = searchParams.get("fromBanner");
     if (fromBanner) {
-      const initialBotMsg = {
-        id: 1,
-        type: "bot" as const,
-        text: "Let me help you switch to an E-sim and ask you to fill out the form below.",
-        time: new Date().toLocaleTimeString([], {
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
-      };
-      setChat([initialBotMsg]);
+      setChat([
+        {
+          id: 1,
+          type: "bot",
+          text: "Let me help you switch to an E-sim. Please fill the form below.",
+          time: new Date().toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+        },
+      ]);
+      setShowDetailsForm(true);
     }
-  }, [fromBanner]);
+  }, [searchParams]);
 
   useEffect(() => {
-    const fetchPlansAndCheckQuery = async () => {
+    const loadPlans = async () => {
       try {
         const res = await fetch(
           "https://prosperity.omnisuiteai.com/api/v1/plans"
         );
         const data = await res.json();
-        const plansList: Plan[] = data.data || [];
-        setPlans(plansList);
+        const list: Plan[] = data.data || [];
+        setPlans(list);
 
+        // Preselect plan from URL
         const planParam = searchParams.get("plan");
         if (planParam) {
-          const preselected = plansList.find((p) => p.planName === planParam);
-          if (preselected) {
-            setSelectedPlan(preselected);
-            setShowDetailsForm(true);
-          } else {
+          const match = list.find((p) => p.planName === planParam);
+          if (match) {
+            setSelectedPlan(match);
             setShowDetailsForm(true);
           }
-        } else {
-          setShowDetailsForm(true);
         }
-      } catch (err) {
-        console.error("Error fetching plans:", err);
+      } catch (e) {
+        console.error("Failed loading plans:", e);
       }
     };
 
-    fetchPlansAndCheckQuery();
+    loadPlans();
   }, [searchParams]);
 
   const [formData, setFormData] = useState({
@@ -96,145 +94,229 @@ const ChatWindow = () => {
     postcode: "",
     pin: "",
   });
-  const [formErrors, setFormErrors] = useState({
-    firstName: "",
-    surname: "",
-    email: "",
-    phone: "",
-    dob: "",
-    address: "",
-    suburb: "",
-    state: "",
-    postcode: "",
-    pin: "",
-  });
+  const [formErrors, setFormErrors] = useState<any>({});
 
-  const isDetailsRequest = (text: string): boolean => {
-    const lowerText = text.toLowerCase();
-    return (
-      lowerText.includes("first name") &&
-      lowerText.includes("surname") &&
-      lowerText.includes("email") &&
-      lowerText.includes("phone") &&
-      lowerText.includes("date of birth") &&
-      lowerText.includes("address") &&
-      lowerText.includes("suburb") &&
-      lowerText.includes("state") &&
-      lowerText.includes("postcode") &&
-      lowerText.includes("pin")
-    );
-  };
+  const validateForm = () => {
+    const errors: any = {};
+    let ok = true;
 
-  const isNumberSelection = (text: string): boolean => {
-    const matches = text.match(/04\d{8}/g);
-    return matches ? matches.length === 5 : false;
-  };
+    const requiredFields: (keyof typeof formData)[] = [
+      "firstName",
+      "surname",
+      "email",
+      "phone",
+      "dob",
+      "address",
+      "suburb",
+      "state",
+      "postcode",
+      "pin",
+    ];
 
-  const extractNumbers = (text: string): string[] => {
-    const matches = text.match(/04\d{8}/g);
-    return matches || [];
-  };
-
-  const validateForm = (): boolean => {
-    let isValid = true;
-    const errors = {
-      firstName: "",
-      surname: "",
-      email: "",
-      phone: "",
-      dob: "",
-      address: "",
-      suburb: "",
-      state: "",
-      postcode: "",
-      pin: "",
-    };
-
-    if (!formData.firstName.trim()) {
-      errors.firstName = "First Name is required";
-      isValid = false;
+    for (let field of requiredFields) {
+      if (!formData[field].trim()) {
+        errors[field] = "Required";
+        ok = false;
+      }
     }
-    if (!formData.surname.trim()) {
-      errors.surname = "Surname is required";
-      isValid = false;
+    if (formData.email && !/\S+@\S+\.\S+/.test(formData.email)) {
+      errors.email = "Invalid email";
+      ok = false;
     }
-    if (!formData.email.trim()) {
-      errors.email = "Email is required";
-      isValid = false;
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      errors.email = "Invalid email format";
-      isValid = false;
+    if (formData.phone && !/^04\d{8}$/.test(formData.phone)) {
+      errors.phone = "Invalid AU mobile";
+      ok = false;
     }
-    if (!formData.phone.trim()) {
-      errors.phone = "Phone is required";
-      isValid = false;
-    } else if (!/^04\d{8}$/.test(formData.phone)) {
-      errors.phone =
-        "Phone must be a valid Australian mobile number (e.g., 0412345678)";
-      isValid = false;
-    }
-    if (!formData.dob.trim()) {
-      errors.dob = "Date of Birth is required";
-      isValid = false;
-    } else if (!/^\d{4}-\d{2}-\d{2}$/.test(formData.dob)) {
-      errors.dob = "Date of Birth must be in YYYY-MM-DD format";
-      isValid = false;
-    }
-    if (!formData.address.trim()) {
-      errors.address = "Address is required";
-      isValid = false;
-    }
-    if (!formData.suburb.trim()) {
-      errors.suburb = "Suburb is required";
-      isValid = false;
-    }
-    if (!formData.state.trim()) {
-      errors.state = "State is required";
-      isValid = false;
-    }
-    if (!formData.postcode.trim()) {
-      errors.postcode = "Postcode is required";
-      isValid = false;
-    } else if (!/^\d{4}$/.test(formData.postcode)) {
+    if (formData.postcode && !/^\d{4}$/.test(formData.postcode)) {
       errors.postcode = "Postcode must be 4 digits";
-      isValid = false;
+      ok = false;
     }
-    if (!formData.pin.trim()) {
-      errors.pin = "PIN is required";
-      isValid = false;
-    } else if (!/^\d{4}$/.test(formData.pin)) {
-      errors.pin = "PIN must be exactly 4 digits";
-      isValid = false;
+
+    if (formData.pin && !/^\d{4}$/.test(formData.pin)) {
+      errors.pin = "PIN must be 4 digits";
+      ok = false;
     }
 
     setFormErrors(errors);
-    return isValid;
+    return ok;
   };
 
   const handleFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
+    const name = e.target.name as keyof typeof formData;
+    const { value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-    setFormErrors((prev) => ({ ...prev, [name]: "" }));
+    setFormErrors((prev: any) => ({ ...prev, [name]: "" }));
   };
 
-  const handleFormSubmit = (e: React.FormEvent) => {
+  const handleFormSubmit = (e: any) => {
     e.preventDefault();
-    if (!validateForm()) {
-      return;
-    }
+    if (!validateForm()) return;
+
+    setUserEmail(formData.email);
+    localStorage.setItem("userEmail", formData.email);
+
     const formatted = Object.entries(formData)
-      .map(([key, value]) => `${key}: ${value}`)
+      .map(([k, v]) => `${k}: ${v}`)
       .join(", ");
+
     setShowDetailsForm(false);
     handleSend(formatted);
   };
 
-  // Add new handler for plan selection
-  const handlePlanSelect = (plan: any) => {
+  const callAPI = async (text: string) => {
+    const payload = sessionId
+      ? { query: text, session_id: sessionId, brand: "flying-kiwi" }
+      : { query: text, brand: "flying-kiwi" };
+
+    try {
+      const res = await fetch("/api", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) return null;
+      const data = await res.json();
+
+      if (!sessionId && data.session_id) setSessionId(data.session_id);
+      if (data.custNo) setCustNo(data.custNo);
+
+      return data;
+    } catch (e) {
+      console.error("API error:", e);
+      return null;
+    }
+  };
+
+  const handleSend = async (text: string) => {
+    if (!text.trim() || loading) return;
+
+    const userMsg = {
+      id: chat.length + 1,
+      type: "user" as const,
+      text,
+      time: new Date().toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
+    };
+
+    setChat((prev) => [...prev, userMsg]);
+    setMessage("");
+    setLoading(true);
+    await new Promise((res) => setTimeout(res, 50));
+
+    const data = await callAPI(text);
+    setLoading(false);
+
+    if (!data) {
+      return setChat((prev) => [
+        ...prev,
+        {
+          id: prev.length + 1,
+          type: "bot",
+          text: "Oops! Something went wrong.",
+          time: new Date().toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+        },
+      ]);
+    }
+
+    const botText = data.message || data.response || "";
+
+    if (
+      botText.toLowerCase().includes("first name") ||
+      botText.toLowerCase().includes("surname")
+    ) {
+      setShowDetailsForm(true);
+    }
+
+    const matches = botText.match(/04\d{8}/g);
+    if (matches?.length === 5) {
+      setNumberOptions(matches);
+      setShowNumberButtons(true);
+      return;
+    }
+    setChat((prev) => [
+      ...prev,
+      {
+        id: prev.length + 1,
+        type: "bot",
+        text: botText,
+        time: new Date().toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+      },
+    ]);
+  };
+
+  const handleNumberSelect = async (num: string) => {
+    setSelectedSim(num);
+    setShowNumberButtons(false);
+
+    setChat((prev) => [
+      ...prev,
+      {
+        id: prev.length + 1,
+        type: "user",
+        text: `You selected this number: ${num}`,
+        time: new Date().toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+      },
+    ]);
+
+    setLoading(true);
+    await new Promise((r) => setTimeout(r, 50));
+    await callAPI(num);
+    setLoading(false);
+
+    setChat((prev) => [
+      ...prev,
+      {
+        id: prev.length + 1,
+        type: "bot",
+        text: selectedPlan
+          ? "Perfect! Let's continue with payment."
+          : "Choose one of the plans below:",
+        time: new Date().toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+      },
+    ]);
+
+    if (selectedPlan) {
+      setShowSimTypeSelection(true);
+    } else {
+      setShowPlans(true);
+    }
+  };
+
+  const handlePlanSelect = (plan: Plan) => {
     setSelectedPlan(plan);
+    localStorage.setItem("planPrice", String(plan.price));
+
     setShowPlans(false);
+
+    setChat((prev) => [
+      ...prev,
+      {
+        id: prev.length + 1,
+        type: "user",
+        text: `You selected this plan: ${plan.planName}`,
+        time: new Date().toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+      },
+    ]);
+
     setShowSimTypeSelection(true); // Show SIM type selection next
-    handleSend(`I would like to select the plan: ${plan.planName}`);
   };
 
   const handleSimTypeSelect = (type: "esim" | "physical") => {
@@ -257,222 +339,18 @@ const ChatWindow = () => {
     setShowPayment(true);
   };
 
-  const sendToAPI = async (text: string) => {
-    if (!text.trim()) return null;
-
-    const payload = sessionId
-      ? { query: text, session_id: sessionId, brand: "prosperity-tech" }
-      : { query: text, brand: "prosperity-tech" };
-
-    try {
-      const response = await fetch("/api", {
-        method: "POST",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
-
-      if (!response.ok)
-        throw new Error(`HTTP error! status: ${response.status}`);
-      const data = await response.json();
-
-      if (!sessionId && data.session_id) setSessionId(data.session_id);
-      if (data?.custNo) setCustNo(data.custNo);
-
-      return data;
-    } catch (error) {
-      console.error("API call error:", error);
-      return null;
-    }
-  };
-
-  const handleSend = async (msgText: string) => {
-    if (!msgText.trim() || loading) return;
-
-    const userMsg = {
-      id: chat.length + 1,
-      type: "user" as const,
-      text: msgText.trim(),
-      time: new Date().toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-      }),
-    };
-
-    setChat((prev) => [...prev, userMsg]);
-    setMessage("");
-    setLoading(true);
-
-    try {
-      const payload = sessionId
-        ? {
-            query: userMsg.text,
-            session_id: sessionId,
-            brand: "prosperity-tech",
-          }
-        : { query: userMsg.text, brand: "prosperity-tech" };
-
-      const response = await fetch("/api", {
-        method: "POST",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await sendToAPI(userMsg.text);
-      if (!data) throw new Error("No data from API");
-
-      if (!sessionId && data.session_id) {
-        setSessionId(data.session_id);
-      }
-
-      const botText =
-        data?.message || data?.response || "Sorry, I couldn’t understand that.";
-
-      const isPlanConfirmation =
-        botText.toLowerCase().includes("i’ve noted your interest") ||
-        botText.toLowerCase().includes("customer id") ||
-        botText.toLowerCase().includes("your account is set up");
-
-      if (!isPlanConfirmation && !isNumberSelection(botText)) {
-        const botMsg = {
-          id: chat.length + 2,
-          type: "bot" as const,
-          text: botText,
-          time: new Date().toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-          }),
-        };
-        setChat((prev) => [...prev, botMsg]);
-      }
-
-      if (data?.custNo) setCustNo(data.custNo);
-
-      if (botText.toLowerCase().includes("please provide your first name")) {
-        setShowDetailsForm(true);
-      }
-
-      if (botText.match(/04\d{8}/g)?.length === 5) {
-        const numbers = botText.match(/04\d{8}/g);
-        setNumberOptions(numbers || []);
-        setShowNumberButtons(true);
-      }
-
-      if (isDetailsRequest(botText)) {
-        setShowDetailsForm(true);
-      }
-
-      if (isNumberSelection(botText)) {
-        const numbers = extractNumbers(botText);
-        setNumberOptions(numbers);
-        setShowNumberButtons(true);
-        const botMsg = {
-          id: chat.length + 2,
-          type: "bot" as const,
-          text: "Choose from the numbers below:",
-          time: new Date().toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-          }),
-        };
-        setChat((prev) => [...prev, botMsg]);
-
-        if (!selectedPlan) {
-          try {
-            const plansResponse = await fetch(
-              "https://prosperity.omnisuiteai.com/api/v1/plans",
-              {
-                method: "GET",
-                headers: { accept: "application/json" },
-              }
-            );
-
-            if (!plansResponse.ok) throw new Error("Failed to fetch plans");
-
-            const plansData = await plansResponse.json();
-            setPlans(plansData.data || []);
-            setShowPlans(true);
-          } catch (plansError) {
-            console.error("Error fetching plans:", plansError);
-            setPlans([]);
-            setShowPlans(true);
-          }
-        }
-      }
-    } catch (error: any) {
-      console.error("Full Chat error:", error); // Enhanced logging
-      let errorMsg = "Oops! Something went wrong. Please try again.";
-      if (
-        error.name === "TypeError" &&
-        error.message.includes("Failed to fetch")
-      ) {
-        errorMsg = "Network error (CORS?). Check console and try refreshing.";
-      } else if (error.message.includes("401")) {
-        errorMsg = "Session expired. Please log in again.";
-      }
-      const errorResponse = {
-        id: chat.length + 2,
-        type: "bot" as const,
-        text: errorMsg,
-        time: new Date().toLocaleTimeString([], {
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
-      };
-      setChat((prev) => [...prev, errorResponse]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleNumberSelect = async (number: string) => {
-    setSelectedSim(number);
-    setShowNumberButtons(false);
-    // Call API but do NOT show bot response
-    await sendToAPI(number);
-
-    // Now manually add the next bot message for your UI flow
-    const botMsg = {
-      id: chat.length + 2,
-      type: "bot" as const,
-      text: selectedPlan
-        ? "Perfect! Let’s continue with the payment."
-        : "Choose from the Plans below:",
-      time: new Date().toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-      }),
-    };
-    setChat((prev) => [...prev, botMsg]);
-
-    if (selectedPlan) {
-      setShowSimTypeSelection(true);
-    } else {
-      setShowPlans(true);
-    }
-  };
-
   const handleActivateOrder = async () => {
     try {
       const body = {
         number: selectedSim,
         cust: {
-          custNo: custNo,
+          custNo,
           suburb: formData.suburb,
           postcode: formData.postcode,
           address: formData.address,
           email: formData.email,
         },
-        planNo: String(selectedPlan?.planNo) || "",
+        planNo: String(selectedPlan?.planNo),
         simNo:
           simType === "physical"
             ? localStorage.getItem("physicalSimNumber") || ""
@@ -481,7 +359,7 @@ const ChatWindow = () => {
 
       console.log("Activation payload:", body);
 
-      const response = await fetch(
+      const res = await fetch(
         "https://prosperity.omnisuiteai.com/api/v1/orders/activate",
         {
           method: "POST",
@@ -490,17 +368,34 @@ const ChatWindow = () => {
         }
       );
 
-      const result = await response.json();
-      console.log("Activation result:", result);
+      const data = await res.json();
+      if (!res.ok) throw new Error("Activation failed");
+      const receiptNumber = data?.data?.orderId || "";
 
-      if (response.ok) {
-        handleSend("Order successfully activated!");
-      } else {
-        handleSend(`Activation failed: ${result.message || "Unknown error"}`);
-      }
+      const activationMessage = `Great news... your eSIM has been created with prosperity-tech.
+
+Here is your receipt number: ${receiptNumber}.
+Take a copy of it now, but you will also be getting an email of it.
+
+Step 3 is installing the eSIM on your phone.
+You will receive a QR Code in the next 5 to 10 minutes via email from: donotreply@mobileservicesolutions.com.au
+
+Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minutes.`;
+
+      setChat((prev) => [
+        ...prev,
+        {
+          id: prev.length + 1,
+          type: "bot",
+          text: activationMessage,
+          time: new Date().toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+        },
+      ]);
     } catch (err) {
-      console.error("Activation failed", err);
-      handleSend("Order activation failed. Please try again.");
+      handleSend("Activation failed. Please try again.");
     }
   };
 
