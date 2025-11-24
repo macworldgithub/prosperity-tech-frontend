@@ -1,6 +1,11 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import PlanCard from "./Cards";
+import { useRouter } from "next/navigation";
+import { useDispatch } from "react-redux";
+import { AppDispatch } from "@/store/reduxStore";
+import { fetchCustomerServices } from "@/app/api/service";
+import { Button } from "../Button";
 
 interface Plan {
   _id: string;
@@ -10,10 +15,33 @@ interface Plan {
   isActive: boolean;
 }
 
+interface ServiceDetail {
+  planName: string;
+  [key: string]: any;
+}
+
 const PlansSection: React.FC = () => {
   const [plans, setPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [services, setServices] = useState<ServiceDetail[]>([]);
+  const router = useRouter();
+  const dispatch = useDispatch<AppDispatch>();
+
+  useEffect(() => {
+    const fetchServices = async () => {
+      try {
+        const result: any = await dispatch(fetchCustomerServices());
+        if (result.payload?.data?.services?.serviceDetails) {
+          setServices(result.payload.data.services.serviceDetails);
+        }
+      } catch (err) {
+        console.error("Error fetching services:", err);
+      }
+    };
+
+    fetchServices();
+  }, [dispatch]);
 
   useEffect(() => {
     const fetchPlans = async () => {
@@ -33,6 +61,10 @@ const PlansSection: React.FC = () => {
 
     fetchPlans();
   }, []);
+
+  const handleChangePlan = () => {
+    router.push("/change-plan");
+  };
 
   // Extract numeric GB value (for sorting and categorization)
   const extractGB = (name: string) => {
@@ -71,6 +103,13 @@ const PlansSection: React.FC = () => {
               </p>
             </div>
 
+            {services.length > 0 && (
+              <div className="my-6 flex justify-center">
+                <Button variant="outline" size="md" onClick={handleChangePlan}>
+                  Change Your Plan
+                </Button>
+              </div>
+            )}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 justify-center">
               {smallPlans.map((plan) => {
                 const dataMatch = plan.planName.match(/(\d+GB)/i);

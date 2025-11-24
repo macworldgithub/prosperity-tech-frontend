@@ -1,7 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { PaymentCard } from "./PaymentCard";
-import { PaymentProcessCard } from "./PaymentProcessCard";
 import { useRouter, useSearchParams } from "next/navigation";
 
 interface Plan {
@@ -309,10 +308,10 @@ const ChatWindow = () => {
     try {
       const payload = sessionId
         ? {
-          query: userMsg.text,
-          session_id: sessionId,
-          brand: "prosperity-tech",
-        }
+            query: userMsg.text,
+            session_id: sessionId,
+            brand: "prosperity-tech",
+          }
         : { query: userMsg.text, brand: "prosperity-tech" };
 
       const response = await fetch("/api", {
@@ -474,7 +473,10 @@ const ChatWindow = () => {
           email: formData.email,
         },
         planNo: String(selectedPlan?.planNo) || "",
-        simNo: simType === "physical" ? localStorage.getItem("physicalSimNumber") || "" : "",
+        simNo:
+          simType === "physical"
+            ? localStorage.getItem("physicalSimNumber") || ""
+            : "",
       };
 
       console.log("Activation payload:", body);
@@ -566,8 +568,9 @@ const ChatWindow = () => {
             {chat.map((msg) => (
               <div
                 key={msg.id}
-                className={`flex items-start gap-2 sm:gap-3 mb-3 sm:mb-4 md:mb-6 ${msg.type === "user" ? "justify-end" : "justify-start"
-                  }`}
+                className={`flex items-start gap-2 sm:gap-3 mb-3 sm:mb-4 md:mb-6 ${
+                  msg.type === "user" ? "justify-end" : "justify-start"
+                }`}
               >
                 {msg.type === "bot" && (
                   <div className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 bg-yellow-400 rounded-full flex-shrink-0 flex items-center justify-center overflow-hidden">
@@ -580,10 +583,11 @@ const ChatWindow = () => {
                 )}
 
                 <div
-                  className={`${msg.type === "user"
-                    ? "bg-white text-[#0E3B5C]"
-                    : "bg-white text-[#0E3B5C]"
-                    } rounded-2xl px-3 py-1.5 sm:px-4 sm:py-2 md:px-6 md:py-2 shadow-md max-w-[90%] sm:max-w-[80%] md:max-w-[70%]`}
+                  className={`${
+                    msg.type === "user"
+                      ? "bg-white text-[#0E3B5C]"
+                      : "bg-white text-[#0E3B5C]"
+                  } rounded-2xl px-3 py-1.5 sm:px-4 sm:py-2 md:px-6 md:py-2 shadow-md max-w-[90%] sm:max-w-[80%] md:max-w-[70%]`}
                 >
                   <p className="text-xs sm:text-xs md:text-sm leading-relaxed break-words">
                     {msg.text}
@@ -807,7 +811,9 @@ const ChatWindow = () => {
                 </div>
               ) : showSimTypeSelection ? (
                 <div className="flex flex-col items-center gap-3 p-4 bg-white/10 rounded-lg border border-white/30 text-white">
-                  <p className="text-sm sm:text-base">Please choose SIM type:</p>
+                  <p className="text-sm sm:text-base">
+                    Please choose SIM type:
+                  </p>
                   <div className="flex gap-2">
                     <button
                       onClick={() => handleSimTypeSelect("esim")}
@@ -825,12 +831,16 @@ const ChatWindow = () => {
                 </div>
               ) : showSimNumberInput ? (
                 <div className="flex flex-col items-center gap-3 p-4 bg-white/10 rounded-lg border border-white/30 text-white">
-                  <p className="text-sm sm:text-base">Enter your 13-digit SIM number:</p>
+                  <p className="text-sm sm:text-base">
+                    Enter your 13-digit SIM number:
+                  </p>
                   <input
                     type="text"
                     maxLength={13}
                     value={simNumber}
-                    onChange={(e) => setSimNumber(e.target.value.replace(/\D/g, ""))}
+                    onChange={(e) =>
+                      setSimNumber(e.target.value.replace(/\D/g, ""))
+                    }
                     className="w-full p-2 rounded bg-transparent border border-white/50 text-center text-white text-sm sm:text-base tracking-widest"
                     placeholder="Enter 13-digit SIM number"
                   />
@@ -845,24 +855,27 @@ const ChatWindow = () => {
                 <PaymentCard
                   custNo={custNo || ""}
                   planName={selectedPlan.planName}
-                  onPaymentProcessed={(paymentId) => {
-                    setPaymentId(paymentId);
+                  planPrice={selectedPlan.price}
+                  onPaymentComplete={(success, msg) => {
                     setShowPayment(false);
-                    setShowPaymentProcessCard(true);
-                    handleSend(
-                      `Payment completed for plan ${selectedPlan.planName}`
-                    );
+
+                    if (msg) {
+                      setChat((prev) => [
+                        ...prev,
+                        {
+                          id: prev.length + 1,
+                          type: "bot",
+                          text: msg,
+                          time: new Date().toLocaleTimeString([], {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          }),
+                        },
+                      ]);
+                    }
+
+                    if (success) handleActivateOrder();
                   }}
-                />
-              ) : showPaymentProcessCard ? (
-                <PaymentProcessCard
-                  onClose={() => {
-                    setShowPaymentProcessCard(false);
-                    handleSend("Payment processing completed!");
-                    handleActivateOrder();
-                  }}
-                  defaultCustNo={custNo || ""}
-                  defaultPaymentId={paymentId || ""}
                 />
               ) : (
                 <div className="flex items-center gap-2 sm:gap-3 border border-white/30 rounded-full px-3 sm:px-4 py-2 sm:py-3 bg-white/10 backdrop-blur-sm text-white">

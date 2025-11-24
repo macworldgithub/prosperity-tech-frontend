@@ -4,13 +4,19 @@ import { useEffect, useState } from "react";
 interface PaymentCardProps {
   custNo: string;
   planName: string;
-  onPaymentProcessed: (paymentId: string) => void; // returns paymentId for process card
+  planNo?: string;
+  planPrice?: number;
+  fromChangePlan?: boolean;
+  onPaymentComplete: (success: boolean, message: string) => void;
 }
 
 export const PaymentCard = ({
   custNo,
   planName,
-  onPaymentProcessed,
+  planNo,
+  planPrice,
+  fromChangePlan,
+  onPaymentComplete,
 }: PaymentCardProps) => {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
@@ -117,10 +123,73 @@ export const PaymentCard = ({
             if (!response.ok)
               throw new Error(result.message || "Payment method failed");
 
-            // Call parent callback with paymentId to show PaymentProcessCard
-            onPaymentProcessed(result.data.paymentId);
+            const paymentId = result.data.paymentId;
+            let email = "";
+            if (typeof window !== "undefined") {
+              const storedRoot = localStorage.getItem(
+                "persist:flywing-kiwi-root"
+              );
+
+              if (storedRoot) {
+                const parsedRoot = JSON.parse(storedRoot);
+
+                if (parsedRoot.login) {
+                  const loginData = JSON.parse(parsedRoot.login);
+                  email = loginData.email || "";
+                }
+              }
+            }
+
+            const amount =
+              String(planPrice) ||
+              String(localStorage.getItem("planPrice") || 0);
+            const comment = `Ref-${Math.random().toString(36).substring(2, 8)}`;
+
+            const processPayload = {
+              custNo,
+              amount,
+              paymentId,
+              email,
+              comment,
+            };
+
+            const processResponse = await fetch(
+              "https://prosperity.omnisuiteai.com/api/v1/payments/process",
+              {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(processPayload),
+              }
+            );
+
+            const processData = await processResponse.json();
+            if (!processResponse.ok)
+              throw new Error(processData.message || "Payment failed");
+
+            if (fromChangePlan) {
+              const storedCustNo = localStorage.getItem("custNo");
+              if (!storedCustNo) throw new Error("Customer number missing");
+
+              const updateResponse = await fetch(
+                `https://prosperity.omnisuiteai.com/api/v1/orders/${storedCustNo}/plan`,
+                {
+                  method: "PATCH",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ planNo: String(planNo) }),
+                }
+              );
+
+              const updateData = await updateResponse.json();
+              if (!updateResponse.ok)
+                throw new Error(updateData.message || "Plan update failed");
+
+              console.log("Plan updated:", updateData);
+            }
+            setMessage("✅ Payment processed successfully!");
+            onPaymentComplete(true, "");
           } catch (err: any) {
             setMessage("❌ " + (err.message || "Something went wrong"));
+            onPaymentComplete(false, "");
           } finally {
             setLoading(false);
           }
@@ -129,7 +198,7 @@ export const PaymentCard = ({
     };
 
     loadQuickstream();
-  }, [custNo, planName, onPaymentProcessed]);
+  }, [custNo, planName, onPaymentComplete]);
 
   return (
     <div className="bg-white/90 rounded-2xl p-3 w-full shadow-md">

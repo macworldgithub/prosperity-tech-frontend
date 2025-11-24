@@ -11,20 +11,21 @@ export const LoginApi = createAsyncThunk<
     const { email, pin } = (getState() as RootState).login;
 
     const loginRes = await axios.post(
-      `https://bele.omnisuiteai.com/auth/login`,
+      `https://prosperity.omnisuiteai.com/auth/login`,
       { identifier: email, pin }
     );
-
+    console.log(loginRes);
     const { access_token } = loginRes.data;
+    console.log(access_token);
 
     if (!access_token) {
       return rejectWithValue({ message: "Login failed: No access token" });
     }
 
-    const meRes = await axios.get(`https://bele.omnisuiteai.com/user/me`, {
+    const meRes = await axios.get(`https://prosperity.omnisuiteai.com/user/me`, {
       headers: { Authorization: `Bearer ${access_token}` },
     });
-
+    console.log(meRes)
     const custNo = meRes.data?.user?.custNo;
 
     if (custNo) {
