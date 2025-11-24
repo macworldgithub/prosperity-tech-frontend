@@ -10,7 +10,7 @@ const HeroSection = () => {
   const router = useRouter(); // ✅ Initialize router
 
   const handleChatClick = () => {
-    router.push("/chat-window?fromBanner=true"); // Modified route path to follow convention
+    router.push("/chat-window"); // Modified route path to follow convention
   };
 
   return (
