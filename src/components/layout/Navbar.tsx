@@ -200,7 +200,7 @@ const Navbar = () => {
 
     try {
       const serviceRes = await fetch(
-        `https://bele.omnisuiteai.com/api/v1/customers/${custNo}/services`,
+        `https://prosperity.omnisuiteai.com/api/v1/customers/${custNo}/services`,
         {
           headers: {
             accept: "application/json",
@@ -220,11 +220,11 @@ const Navbar = () => {
 
       const [allowanceRes, unbilledRes] = await Promise.all([
         fetch(
-          `https://bele.omnisuiteai.com/api/v1/customers/${custNo}/balance/mobile?lineSeqNo=${service.lineSeqNo}`,
+          `https://prosperity.omnisuiteai.com/api/v1/customers/${custNo}/balance/mobile?lineSeqNo=${service.lineSeqNo}`,
           { headers: { Authorization: `Bearer ${token}` } }
         ),
         fetch(
-          `https://bele.omnisuiteai.com/api/v1/customers/${custNo}/unbilled-summary`,
+          `https://prosperity.omnisuiteai.com/api/v1/customers/${custNo}/unbilled-summary`,
           { headers: { Authorization: `Bearer ${token}` } }
         ),
       ]);
