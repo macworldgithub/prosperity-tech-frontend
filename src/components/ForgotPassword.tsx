@@ -92,7 +92,7 @@ export default function ForgotPassword() {
       />
 
       {/* Gradient Background */}
-      <div className="fixed inset-0 z-30 bg-gradient-to-br from-[#16559] to-[#01a2ff] animate-gradient" />
+      <div className="fixed inset-0 z-30 from-[#16559] to-[#01a2ff] animate-gradient" />
 
       {/* Modal */}
       <motion.div
