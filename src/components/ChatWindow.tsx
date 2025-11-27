@@ -435,10 +435,10 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
             </button>
           </div>
 
-          <div className="h-0.5 sm:h-1 w-full from-[#215988] via-[#2bb673] to-[#215988]" />
+          <div className="h-0.5 sm:h-1 w-full bg-gradient-to-r from-[#215988] via-[#2bb673] to-[#215988]" />
 
           {/* Chat Body */}
-          <div className="flex-1 flex flex-col from-[#33a748] via-[#257773] to-[#1e608c] p-2 sm:p-4 md:p-6 overflow-y-auto rounded-b-2xl ring-1 ring-white/20 shadow-[inset_0_8px_24px_rgba(0,0,0,0.25)]">
+          <div className="flex-1 flex flex-col bg-gradient-to-b from-[#33a748] via-[#257773] to-[#1e608c] p-2 sm:p-4 md:p-6 overflow-y-auto rounded-b-2xl ring-1 ring-white/20 shadow-[inset_0_8px_24px_rgba(0,0,0,0.25)]">
             <div className="text-center mb-2 sm:mb-4 md:mb-6 mt-2 sm:mt-4 md:mt-8">
               <div className="mx-auto mb-1 sm:mb-2 w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20">
                 <img
@@ -468,7 +468,7 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
                 }`}
               >
                 {msg.type === "bot" && (
-                  <div className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 bg-yellow-400 rounded-full flex items-center justify-center overflow-hidden">
+                  <div className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 bg-yellow-400 rounded-full flex-shrink-0 flex items-center justify-center overflow-hidden">
                     <img
                       src="/images/bot.png"
                       alt="Bot Avatar"
@@ -484,7 +484,7 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
                       : "bg-white text-[#0E3B5C]"
                   } rounded-2xl px-3 py-1.5 sm:px-4 sm:py-2 md:px-6 md:py-2 shadow-md max-w-[90%] sm:max-w-[80%] md:max-w-[70%]`}
                 >
-                  <p className="text-xs sm:text-xs md:text-sm leading-relaxed ">
+                  <p className="text-xs sm:text-xs md:text-sm leading-relaxed break-words">
                     {msg.text}
                   </p>
                 </div>
