@@ -18,6 +18,15 @@ const ChatWindow = () => {
   >([]);
   const router = useRouter();
   const searchParams = useSearchParams();
+  const [showExistingNumberOptions, setShowExistingNumberOptions] = useState(false);
+  const [showNumberTypeSelection, setShowNumberTypeSelection] = useState(false);
+  const [showConfirmNewNumber, setShowConfirmNewNumber] = useState(false);
+  const [existingNumberType, setExistingNumberType] = useState<"prepaid" | "postpaid" | null>(null);
+  const [showArnInput, setShowArnInput] = useState(false);
+  const [arn, setArn] = useState("");
+  const [existingPhone, setExistingPhone] = useState("");
+  const [showConfirmExistingNumber, setShowConfirmExistingNumber] = useState(false);
+
 
   const [plans, setPlans] = useState<any[]>([]); // for storing plans
   const [showPlans, setShowPlans] = useState(false);
@@ -36,6 +45,8 @@ const ChatWindow = () => {
   const [simNumber, setSimNumber] = useState("");
   const [showSimNumberInput, setShowSimNumberInput] = useState(false);
   const [userEmail, setUserEmail] = useState("");
+  const [isPorting, setIsPorting] = useState(false);           // ← NEW
+const [hasSelectedNumber, setHasSelectedNumber] = useState(false); // ← NEW
 
   useEffect(() => {
     const fromBanner = searchParams.get("fromBanner");
@@ -148,21 +159,121 @@ const ChatWindow = () => {
     setFormErrors((prev: any) => ({ ...prev, [name]: "" }));
   };
 
-  const handleFormSubmit = (e: any) => {
-    e.preventDefault();
-    if (!validateForm()) return;
+  const handleFormSubmit = async (e: any) => {
+  e.preventDefault();
+  if (!validateForm()) return;
 
+  try {
+    // Save DOB to localStorage
+    localStorage.setItem("userDOB", formData.dob);
     setUserEmail(formData.email);
     localStorage.setItem("userEmail", formData.email);
 
+  
     const formatted = Object.entries(formData)
       .map(([k, v]) => `${k}: ${v}`)
       .join(", ");
 
     setShowDetailsForm(false);
-    handleSend(formatted);
+    
+   
+    setShowNumberTypeSelection(true);
+
+    // Call the API
+    await handleSend(formatted);
+  } catch (error) {
+    console.error("Error during form submission:", error);
+
+  }
+};
+
+  const handleNewNumber = () => {
+    setShowNumberTypeSelection(false);
+    setShowConfirmNewNumber(true);
   };
 
+ const confirmNewNumber = (yes: boolean) => {
+  setShowConfirmNewNumber(false);
+  if (yes) {
+    setIsPorting(false);              
+    setHasSelectedNumber(false);        
+
+    addBotMessage("Thanks, now it's time to choose a number from the selection below");
+
+    if (numberOptions.length > 0) {
+      setShowNumberButtons(true);
+    } else {
+      handleSend("new number");
+    }
+  } else {
+    setShowNumberTypeSelection(true);
+  }
+};
+  const handleExistingNumber = () => {
+    setShowNumberTypeSelection(false);
+    setExistingNumberType(null);
+    setShowArnInput(false);
+    setArn("");
+    setExistingPhone("");
+    setShowConfirmExistingNumber(false);
+ 
+    setShowExistingNumberOptions(true);
+  };
+
+  const handleExistingTypeSelect = (type: "prepaid" | "postpaid") => {
+    setExistingNumberType(type);
+    setShowArnInput(type === "postpaid");
+  };
+
+  const handleExistingNumberSubmit = () => {
+    if (!existingPhone.match(/^04\d{8}$/)) {
+      alert("Please enter a valid 10-digit Australian mobile number starting with 04");
+      return;
+    }
+    if (existingNumberType === "postpaid" && !arn.trim()) {
+      alert("Please enter your ARN (Account Reference Number)");
+      return;
+    }
+
+    localStorage.setItem("existingPhoneNumber", existingPhone);
+    if (existingNumberType === "postpaid") {
+      localStorage.setItem("arn", arn);
+    }
+
+    setShowExistingNumberOptions(false);
+    setShowConfirmExistingNumber(true);
+  };
+
+ const confirmExistingNumber = (yes: boolean) => {
+  setShowConfirmExistingNumber(false);
+  if (yes) {
+    localStorage.setItem("existingPhoneNumber", existingPhone);
+    if (existingNumberType === "postpaid") {
+      localStorage.setItem("arn", arn);
+    }
+
+   
+    setIsPorting(true);
+    setHasSelectedNumber(true);
+    setSelectedSim(existingPhone);     
+
+    setShowPlans(true);
+
+    addBotMessage(
+      `Great! We'll port your existing number ${existingPhone}. Now please choose a plan.`
+    );
+  } else {
+    setShowExistingNumberOptions(true);
+  }
+};
+  const addBotMessage = (text: string) => {
+    setChat(prev => [...prev, {
+      id: prev.length + 1,
+      type: "bot" as const,
+      text,
+      time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+    }]);
+  };
   const callAPI = async (text: string) => {
     const payload = sessionId
       ? { query: text, session_id: sessionId, brand: "flying-kiwi" }
@@ -189,56 +300,26 @@ const ChatWindow = () => {
   };
 
   const handleSend = async (text: string) => {
-    if (!text.trim() || loading) return;
+  if (!text.trim() || loading) return;
 
-    const userMsg = {
-      id: chat.length + 1,
-      type: "user" as const,
-      text,
-      time: new Date().toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-      }),
-    };
+  const userMsg = {
+    id: chat.length + 1,
+    type: "user" as const,
+    text,
+    time: new Date().toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    }),
+  };
 
-    setChat((prev) => [...prev, userMsg]);
-    setMessage("");
-    setLoading(true);
-    await new Promise((res) => setTimeout(res, 50));
+  setChat((prev) => [...prev, userMsg]);
+  setMessage("");
+  setLoading(true);
+  await new Promise((res) => setTimeout(res, 50));
 
-    const data = await callAPI(text);
-    setLoading(false);
-
-    if (!data) {
-      return setChat((prev) => [
-        ...prev,
-        {
-          id: prev.length + 1,
-          type: "bot",
-          text: "Oops! Something went wrong.",
-          time: new Date().toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-          }),
-        },
-      ]);
-    }
-
-    const botText = data.message || data.response || "";
-
-    if (
-      botText.toLowerCase().includes("first name") ||
-      botText.toLowerCase().includes("surname")
-    ) {
-      setShowDetailsForm(true);
-    }
-
-    const matches = botText.match(/04\d{8}/g);
-    if (matches?.length === 5) {
-      setNumberOptions(matches);
-      setShowNumberButtons(true);
-      return;
-    }
+  // Skip API call if it's a new number confirmation
+  if (text.toLowerCase().includes("new number") && showConfirmNewNumber) {
+    const botText = "Please choose a number from the selection below.";
     setChat((prev) => [
       ...prev,
       {
@@ -251,10 +332,76 @@ const ChatWindow = () => {
         }),
       },
     ]);
-  };
+    setLoading(false);
+    return;
+  }
+
+  // Original API call for other messages
+  const data = await callAPI(text);
+  setLoading(false);
+
+  if (!data) {
+    return setChat((prev) => [
+      ...prev,
+      {
+        id: prev.length + 1,
+        type: "bot",
+        text: "Oops! Something went wrong.",
+        time: new Date().toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+      },
+    ]);
+  }
+
+  const botText = data.message || data.response || "";
+
+  // Prevent showing the form again if we're in the number selection flow
+  if (
+    botText.toLowerCase().includes("first name") ||
+    botText.toLowerCase().includes("surname")
+  ) {
+    if (!showNumberTypeSelection && !showConfirmNewNumber) {
+      setShowDetailsForm(true);
+    }
+    return;
+  }
+
+
+ const matches = botText.match(/04\d{8}/g);
+if (
+  matches?.length === 5 &&
+  !isPorting &&
+  !hasSelectedNumber
+) {
+  setNumberOptions(matches);
+  setShowNumberButtons(true);
+  // Override bot message
+  addBotMessage("Please choose a number from the selection below");
+  return;
+}
+
+  // Only add bot message if it's not empty
+  if (botText.trim()) {
+    setChat((prev) => [
+      ...prev,
+      {
+        id: prev.length + 1,
+        type: "bot",
+        text: botText,
+        time: new Date().toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+      },
+    ]);
+  }
+};
 
   const handleNumberSelect = async (num: string) => {
     setSelectedSim(num);
+    setHasSelectedNumber(true);
     setShowNumberButtons(false);
 
     setChat((prev) => [
@@ -463,9 +610,8 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
             {chat.map((msg) => (
               <div
                 key={msg.id}
-                className={`flex items-start gap-2 sm:gap-3 mb-3 sm:mb-4 md:mb-6 ${
-                  msg.type === "user" ? "justify-end" : "justify-start"
-                }`}
+                className={`flex items-start gap-2 sm:gap-3 mb-3 sm:mb-4 md:mb-6 ${msg.type === "user" ? "justify-end" : "justify-start"
+                  }`}
               >
                 {msg.type === "bot" && (
                   <div className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 bg-yellow-400 rounded-full flex-shrink-0 flex items-center justify-center overflow-hidden">
@@ -478,11 +624,10 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
                 )}
 
                 <div
-                  className={`${
-                    msg.type === "user"
+                  className={`${msg.type === "user"
                       ? "bg-white text-[#0E3B5C]"
                       : "bg-white text-[#0E3B5C]"
-                  } rounded-2xl px-3 py-1.5 sm:px-4 sm:py-2 md:px-6 md:py-2 shadow-md max-w-[90%] sm:max-w-[80%] md:max-w-[70%]`}
+                    } rounded-2xl px-3 py-1.5 sm:px-4 sm:py-2 md:px-6 md:py-2 shadow-md max-w-[90%] sm:max-w-[80%] md:max-w-[70%]`}
                 >
                   <p className="text-xs sm:text-xs md:text-sm leading-relaxed break-words">
                     {msg.text}
@@ -679,6 +824,93 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
                     Submit Details
                   </button>
                 </form>
+              ) : showNumberTypeSelection ? (
+                <div className="bg-white/10 backdrop-blur-sm p-4 rounded-lg border border-white/30 text-center">
+                  <p className="text-white mb-3">Do you want a new number or keep your existing one?</p>
+                  <div className="flex gap-3 justify-center">
+                    <button onClick={handleNewNumber} className="bg-[#2bb673] text-white px-4 py-2 rounded">
+                      New Number
+                    </button>
+                    <button onClick={handleExistingNumber} className="bg-[#215988] text-white px-4 py-2 rounded">
+                      Existing Number
+                    </button>
+                  </div>
+                </div>
+              ) : showConfirmNewNumber ? (
+                <div className="bg-white/10 backdrop-blur-sm p-4 rounded-lg border border-white/30 text-center">
+                  <p className="text-white mb-3">Are you sure you want a new number?</p>
+                  <div className="flex gap-3 justify-center">
+                    <button onClick={() => confirmNewNumber(true)} className="bg-green-600 text-white px-4 py-2 rounded">
+                      Yes
+                    </button>
+                    <button onClick={() => confirmNewNumber(false)} className="bg-red-600 text-white px-4 py-2 rounded">
+                      No
+                    </button>
+                  </div>
+                </div>
+              ) : showExistingNumberOptions ? (
+                <div className="bg-white/10 backdrop-blur-sm p-4 rounded-lg border border-white/30">
+                  <p className="text-white mb-3 text-center">Is your existing number Prepaid or Postpaid?</p>
+                  <div className="flex gap-3 justify-center mb-4">
+                    <button
+                      onClick={() => handleExistingTypeSelect("prepaid")}
+                      className={`px-4 py-2 rounded ${existingNumberType === "prepaid" ? 'bg-[#2bb673]' : 'bg-gray-600'} text-white`}
+                    >
+                      Prepaid
+                    </button>
+                    <button
+                      onClick={() => handleExistingTypeSelect("postpaid")}
+                      className={`px-4 py-2 rounded ${existingNumberType === "postpaid" ? 'bg-[#2bb673]' : 'bg-gray-600'} text-white`}
+                    >
+                      Postpaid
+                    </button>
+                  </div>
+
+                  <div className="mb-3">
+                    <input
+                      type="tel"
+                      value={existingPhone}
+                      onChange={(e) => setExistingPhone(e.target.value.replace(/\D/g, "").substring(0, 10))}
+                      placeholder="Enter your 10-digit mobile number (04xxxxxxxx)"
+                      className="w-full p-2 rounded bg-transparent border border-white/50 text-white text-center"
+                    />
+                    {existingPhone && !existingPhone.match(/^04\d{8}$/) && (
+                      <p className="text-red-300 text-xs mt-1">Please enter a valid 10-digit Australian mobile number starting with 04</p>
+                    )}
+                  </div>
+
+                  {showArnInput && (
+                    <div className="mb-3">
+                      <input
+                        type="text"
+                        value={arn}
+                        onChange={(e) => setArn(e.target.value)}
+                        placeholder="Enter ARN (Account Reference Number)"
+                        className="w-full p-2 rounded bg-transparent border border-white/50 text-white text-center"
+                      />
+                    </div>
+                  )}
+
+                  <button
+                    onClick={handleExistingNumberSubmit}
+                    disabled={!existingPhone.match(/^04\d{8}$/) || (existingNumberType === "postpaid" && !arn.trim())}
+                    className="w-full bg-[#2bb673] text-white py-2 rounded hover:opacity-90 disabled:opacity-50"
+                  >
+                    Continue
+                  </button>
+                </div>
+              ) : showConfirmExistingNumber ? (
+                <div className="bg-white/10 backdrop-blur-sm p-4 rounded-lg border border-white/30 text-center">
+                  <p className="text-white mb-3">Are you sure you want to port {existingPhone}?</p>
+                  <div className="flex gap-3 justify-center">
+                    <button onClick={() => confirmExistingNumber(true)} className="bg-green-600 text-white px-4 py-2 rounded">
+                      Yes
+                    </button>
+                    <button onClick={() => confirmExistingNumber(false)} className="bg-red-600 text-white px-4 py-2 rounded">
+                      No
+                    </button>
+                  </div>
+                </div>
               ) : showNumberButtons && numberOptions.length > 0 ? (
                 <div className="flex flex-wrap gap-1 sm:gap-2 p-3 sm:p-4 bg-white/10 backdrop-blur-sm rounded-lg border border-white/30 justify-center">
                   {numberOptions.map((num, index) => (
