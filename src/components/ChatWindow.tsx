@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { PaymentCard } from "./PaymentCard";
 import { useRouter, useSearchParams } from "next/navigation";
 import { formatDob } from "@/lib/utils";
+import DatePicker from "react-datepicker";
 
 interface Plan {
   _id: string;
@@ -776,23 +777,22 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
                         </p>
                       )}
                     </div>
-                    <div>
-                      <input
-                        name="dob"
-                        type="date"
-                        value={formData.dob}
-                        onChange={handleFormChange}
-                        placeholder="Date of Birth"
-                        className="w-full p-1.5 sm:p-2 rounded bg-transparent text-white border border-white/50 text-xs sm:text-sm"
-                        required
-                      />
+                    <DatePicker
+                      selected={formData.dob ? new Date(formData.dob) : null}
+                      onChange={(date: Date | null) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          dob: date ? date.toISOString() : "", // store in ISO format
+                        }))
+                      }
+                      placeholderText="mm/dd/yyyy"
+                      dateFormat="MM/dd/yyyy"
+                      className="w-full p-1.5 sm:p-2 rounded bg-transparent text-white border border-white/50 text-xs sm:text-sm focus:outline-none"
+                    />
+                    {formErrors.dob && (
+                      <p className="text-red-300 text-xs mt-0.5 sm:mt-1">{formErrors.dob}</p>
+                    )}
 
-                      {formErrors.dob && (
-                        <p className="text-red-300 text-xs mt-0.5 sm:mt-1">
-                          {formErrors.dob}
-                        </p>
-                      )}
-                    </div>
                     <div>
                       <input
                         name="address"
