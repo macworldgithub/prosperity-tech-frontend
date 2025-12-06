@@ -785,7 +785,7 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
                         </p>
                       )}
                     </div>
-                    <DatePicker
+                    {/* <DatePicker
                       selected={formData.dob ? parseDateFromDDMMYYYY(formData.dob) : null}
                       onChange={(date: Date | null) => {
                         if (date) {
@@ -801,7 +801,35 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
                       placeholderText="dd/mm/yyyy"
                       dateFormat="dd/MM/yyyy"
                       className="w-full p-2 rounded bg-transparent text-white border border-white/50 text-xs sm:text-sm focus:outline-none"
-                    />
+                    /> */}
+                    <DatePicker
+  selected={formData.dob ? parseDateFromDDMMYYYY(formData.dob) : null}
+  onChange={(date: Date | null) => {
+    if (date) {
+      const day = String(date.getDate()).padStart(2, "0");
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const year = date.getFullYear();
+      setFormData(prev => ({ ...prev, dob: `${day}/${month}/${year}` }));
+      setFormErrors(prev => ({ ...prev, dob: "" }));
+    } else {
+      setFormData(prev => ({ ...prev, dob: "" }));
+    }
+  }}
+  placeholderText="dd/mm/yyyy"
+  dateFormat="dd/MM/yyyy"
+
+  // 🔥 This makes year clickable (dropdown)
+  showYearDropdown
+  showMonthDropdown
+  dropdownMode="select"
+
+  // 🔥 Prevent keyboard from opening on mobile
+  onFocus={(e) => e.target.blur()}
+
+  // Styling
+  className="w-full p-2 rounded bg-transparent text-white border border-white/50 text-xs sm:text-sm focus:outline-none"
+/>
+
                     {formErrors.dob && (
                       <p className="text-red-300 text-xs mt-1">{formErrors.dob}</p>
                     )}
