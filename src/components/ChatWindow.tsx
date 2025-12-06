@@ -169,6 +169,13 @@ const ChatWindow = () => {
     setFormErrors((prev: any) => ({ ...prev, [name]: "" }));
   };
 
+  // Convert "dd/mm/yyyy" string to JS Date object
+  const parseDateFromDDMMYYYY = (dateStr: string) => {
+    if (!dateStr) return null;
+    const [day, month, year] = dateStr.split("/").map(Number);
+    return new Date(year, month - 1, day);
+  };
+
   const handleFormSubmit = async (e: any) => {
     e.preventDefault();
     if (!validateForm()) return;
@@ -778,20 +785,26 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
                       )}
                     </div>
                     <DatePicker
-                      selected={formData.dob ? new Date(formData.dob) : null}
-                      onChange={(date: Date | null) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          dob: date ? date.toISOString() : "", // store in ISO format
-                        }))
-                      }
-                      placeholderText="mm/dd/yyyy"
-                      dateFormat="MM/dd/yyyy"
-                      className="w-full p-1.5 sm:p-2 rounded bg-transparent text-white border border-white/50 text-xs sm:text-sm focus:outline-none"
+                      selected={formData.dob ? parseDateFromDDMMYYYY(formData.dob) : null}
+                      onChange={(date: Date | null) => {
+                        if (date) {
+                          const day = String(date.getDate()).padStart(2, "0");
+                          const month = String(date.getMonth() + 1).padStart(2, "0");
+                          const year = date.getFullYear();
+                          setFormData((prev) => ({ ...prev, dob: `${day}/${month}/${year}` }));
+                          setFormErrors((prev: any) => ({ ...prev, dob: "" }));
+                        } else {
+                          setFormData((prev) => ({ ...prev, dob: "" }));
+                        }
+                      }}
+                      placeholderText="dd/mm/yyyy"
+                      dateFormat="dd/MM/yyyy"
+                      className="w-full p-2 rounded bg-transparent text-white border border-white/50 text-xs sm:text-sm focus:outline-none"
                     />
                     {formErrors.dob && (
-                      <p className="text-red-300 text-xs mt-0.5 sm:mt-1">{formErrors.dob}</p>
+                      <p className="text-red-300 text-xs mt-1">{formErrors.dob}</p>
                     )}
+
 
                     <div>
                       <input
