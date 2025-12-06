@@ -794,7 +794,6 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
                     </div> */}
                     <div className="relative">
   <input
-    id="dob"
     name="dob"
     type="date"
     value={formData.dob}
@@ -803,20 +802,20 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
     required
   />
 
-  {/* overlay placeholder — shows only when there's no value */}
+  {/* Custom placeholder ALWAYS visible on mobile */}
   {!formData.dob && (
-    <span
-      className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/60 text-xs sm:text-sm pointer-events-none"
-      aria-hidden="true"
-    >
+    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/50 text-xs sm:text-sm pointer-events-none">
       Date of Birth
     </span>
   )}
 
   {formErrors.dob && (
-    <p className="text-red-300 text-xs mt-0.5 sm:mt-1">{formErrors.dob}</p>
+    <p className="text-red-300 text-xs mt-0.5 sm:mt-1">
+      {formErrors.dob}
+    </p>
   )}
 </div>
+
                     <div>
                       <input
                         name="address"
