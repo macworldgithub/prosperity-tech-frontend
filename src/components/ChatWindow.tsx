@@ -558,7 +558,8 @@ const ChatWindow = () => {
         body.numType = existingType;
 
         if (existingType === "prepaid") {
-          body.cust.dob = formatDob(dob);
+          // body.cust.dob = formatDob(dob);
+          body.cust.dob = dob;
         } else if (existingType === "postpaid") {
           body.cust.arn = arn;
         }
