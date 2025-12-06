@@ -51,6 +51,7 @@ const ChatWindow = () => {
   const [userEmail, setUserEmail] = useState("");
   const [isPorting, setIsPorting] = useState(false); // ← NEW
   const [hasSelectedNumber, setHasSelectedNumber] = useState(false); // ← NEW
+  const [selectedOption, setSelectedOption] = useState("");
 
   useEffect(() => {
     const fromBanner = searchParams.get("fromBanner");
@@ -162,7 +163,7 @@ const ChatWindow = () => {
 
     setFormData((prev) => ({
       ...prev,
-      [name]: value.trim(), 
+      [name]: value.trim(),
     }));
     setFormErrors((prev: any) => ({ ...prev, [name]: "" }));
   };
@@ -207,11 +208,13 @@ const ChatWindow = () => {
   };
 
   const handleNewNumber = () => {
+    setSelectedOption("new");
     setShowNumberTypeSelection(false);
     setShowConfirmNewNumber(true);
   };
 
   const confirmNewNumber = (yes: boolean) => {
+    setSelectedOption("existing");
     setShowConfirmNewNumber(false);
     if (yes) {
       setIsPorting(false);
@@ -660,9 +663,8 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
             {chat.map((msg) => (
               <div
                 key={msg.id}
-                className={`flex items-start gap-2 sm:gap-3 mb-3 sm:mb-4 md:mb-6 ${
-                  msg.type === "user" ? "justify-end" : "justify-start"
-                }`}
+                className={`flex items-start gap-2 sm:gap-3 mb-3 sm:mb-4 md:mb-6 ${msg.type === "user" ? "justify-end" : "justify-start"
+                  }`}
               >
                 {msg.type === "bot" && (
                   <div className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 bg-yellow-400 rounded-full flex-shrink-0 flex items-center justify-center overflow-hidden">
@@ -675,11 +677,10 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
                 )}
 
                 <div
-                  className={`${
-                    msg.type === "user"
-                      ? "bg-white text-[#0E3B5C]"
-                      : "bg-white text-[#0E3B5C]"
-                  } rounded-2xl px-3 py-1.5 sm:px-4 sm:py-2 md:px-6 md:py-2 shadow-md max-w-[90%] sm:max-w-[80%] md:max-w-[70%]`}
+                  className={`${msg.type === "user"
+                    ? "bg-white text-[#0E3B5C]"
+                    : "bg-white text-[#0E3B5C]"
+                    } rounded-2xl px-3 py-1.5 sm:px-4 sm:py-2 md:px-6 md:py-2 shadow-md max-w-[90%] sm:max-w-[80%] md:max-w-[70%]`}
                 >
                   <p className="text-xs sm:text-xs md:text-sm leading-relaxed break-words">
                     {msg.text}
@@ -775,7 +776,7 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
                         </p>
                       )}
                     </div>
-                    {/* <div>
+                    <div>
                       <input
                         name="dob"
                         type="date"
@@ -791,32 +792,7 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
                           {formErrors.dob}
                         </p>
                       )}
-                    </div> */}
-                    <div className="relative">
-  <input
-    id="dob"
-    name="dob"
-    type="date"
-    value={formData.dob}
-    onChange={handleFormChange}
-    className="w-full p-1.5 sm:p-2 rounded bg-transparent text-white border border-white/50 text-xs sm:text-sm"
-    required
-  />
-
-  {/* overlay placeholder — shows only when there's no value */}
-  {!formData.dob && (
-    <span
-      className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/60 text-xs sm:text-sm pointer-events-none"
-      aria-hidden="true"
-    >
-      Date of Birth
-    </span>
-  )}
-
-  {formErrors.dob && (
-    <p className="text-red-300 text-xs mt-0.5 sm:mt-1">{formErrors.dob}</p>
-  )}
-</div>
+                    </div>
                     <div>
                       <input
                         name="address"
@@ -925,7 +901,7 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
               ) : showConfirmNewNumber ? (
                 <div className="bg-white/10 backdrop-blur-sm p-4 rounded-lg border border-white/30 text-center">
                   <p className="text-white mb-3">
-                    Are you sure you want a new number?
+                    Are you sure you want a {selectedOption === "new" ? "new number" : "existing number"}?
                   </p>
                   <div className="flex gap-3 justify-center">
                     <button
@@ -950,21 +926,19 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
                   <div className="flex gap-3 justify-center mb-4">
                     <button
                       onClick={() => handleExistingTypeSelect("prepaid")}
-                      className={`px-4 py-2 rounded ${
-                        existingNumberType === "prepaid"
-                          ? "bg-[#2bb673]"
-                          : "bg-gray-600"
-                      } text-white`}
+                      className={`px-4 py-2 rounded ${existingNumberType === "prepaid"
+                        ? "bg-[#2bb673]"
+                        : "bg-gray-600"
+                        } text-white`}
                     >
                       Prepaid
                     </button>
                     <button
                       onClick={() => handleExistingTypeSelect("postpaid")}
-                      className={`px-4 py-2 rounded ${
-                        existingNumberType === "postpaid"
-                          ? "bg-[#2bb673]"
-                          : "bg-gray-600"
-                      } text-white`}
+                      className={`px-4 py-2 rounded ${existingNumberType === "postpaid"
+                        ? "bg-[#2bb673]"
+                        : "bg-gray-600"
+                        } text-white`}
                     >
                       Postpaid
                     </button>
