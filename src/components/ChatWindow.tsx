@@ -776,7 +776,7 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
                       )}
                     </div>
                     <div>
-                      <input
+                      {/* <input
                         name="dob"
                         type="date"
                         value={formData.dob}
@@ -784,7 +784,16 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
                         placeholder="Date of Birth"
                         className="w-full p-1.5 sm:p-2 rounded bg-transparent text-white border border-white/50 text-xs sm:text-sm"
                         required
-                      />
+                      /> */}
+                      <input
+  name="dob"
+  type="date"
+  value={formData.dob}
+  onChange={handleFormChange}
+  className="w-full p-1.5 sm:p-2 rounded bg-white text-black border border-white/50 text-xs sm:text-sm"
+  required
+/>
+
                       {formErrors.dob && (
                         <p className="text-red-300 text-xs mt-0.5 sm:mt-1">
                           {formErrors.dob}
