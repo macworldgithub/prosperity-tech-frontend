@@ -57,7 +57,7 @@ const Footer = () => {
         </div>
 
         {/* Column 3: Contact Info */}
-        <div className="flex flex-col gap-2">
+        {/* <div className="flex flex-col gap-2">
           <h3 className="font-semibold text-base sm:text-lg mb-3">Contact Us</h3>
           <p className="text-sm sm:text-base flex items-center gap-2">
             📞 <span>+0184185935</span>
@@ -67,6 +67,18 @@ const Footer = () => {
           </p>
           <p className="text-sm sm:text-base mt-2 text-white/70">
             123 Prosperity Avenue, Business City
+          </p>
+        </div> */}
+        <div className="flex flex-col gap-2">
+          <h3 className="font-semibold text-base sm:text-lg mb-3">Contact Us</h3>
+          <p className="text-sm sm:text-base flex items-center gap-2">
+          📞 <span>08 8520 6215</span>
+          </p>
+          <p className="text-sm sm:text-base flex items-center gap-2">
+          ✉️ <span>support@prosperitytech.solutions</span>
+          </p>
+          <p className="text-sm sm:text-base mt-2 text-white/70">
+          Suite 2, 15 Adelaide Rd, Gawler South SA 5118
           </p>
         </div>
       </div>
