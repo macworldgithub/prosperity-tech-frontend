@@ -775,7 +775,7 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
                         </p>
                       )}
                     </div>
-                    {/* <div>
+                     <div>
                       <input
                         name="dob"
                         type="date"
@@ -791,30 +791,8 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
                           {formErrors.dob}
                         </p>
                       )}
-                    </div> */}
-                    <div className="relative">
-  <input
-    name="dob"
-    type="date"
-    value={formData.dob}
-    onChange={handleFormChange}
-    className="w-full p-1.5 sm:p-2 rounded bg-transparent text-white border border-white/50 text-xs sm:text-sm"
-    required
-  />
-
-  {/* Custom placeholder ALWAYS visible on mobile */}
-  {!formData.dob && (
-    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/50 text-xs sm:text-sm pointer-events-none">
-      Date of Birth
-    </span>
-  )}
-
-  {formErrors.dob && (
-    <p className="text-red-300 text-xs mt-0.5 sm:mt-1">
-      {formErrors.dob}
-    </p>
-  )}
-</div>
+                    </div> 
+                    
 
                     <div>
                       <input
