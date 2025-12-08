@@ -164,7 +164,7 @@ const ChatWindow = () => {
 
     setFormData((prev) => ({
       ...prev,
-      [name]: value.trim(),
+      [name]: value,
     }));
     setFormErrors((prev: any) => ({ ...prev, [name]: "" }));
   };
@@ -544,7 +544,7 @@ const ChatWindow = () => {
           custNo,
           suburb: formData.suburb,
           postcode: formData.postcode,
-          address: formData.address,
+          address: formData.address.trim(),
           email: formData.email,
         },
         planNo: String(selectedPlan?.planNo),
@@ -580,8 +580,8 @@ const ChatWindow = () => {
       const data = await res.json();
       if (!res.ok) throw new Error("Activation failed");
       const receiptNumber = data?.data?.orderId || "";
-
-      const activationMessage = `Great news... your eSIM has been created with prosperity-tech.
+      const simLabel = simType === "esim" ? "eSIM" : "physical SIM";
+      const activationMessage = `Great news... your ${simLabel} has been created with prosperity-tech.
 
 Here is your receipt number: ${receiptNumber}.
 Take a copy of it now, but you will also be getting an email of it.
@@ -672,8 +672,9 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
             {chat.map((msg) => (
               <div
                 key={msg.id}
-                className={`flex items-start gap-2 sm:gap-3 mb-3 sm:mb-4 md:mb-6 ${msg.type === "user" ? "justify-end" : "justify-start"
-                  }`}
+                className={`flex items-start gap-2 sm:gap-3 mb-3 sm:mb-4 md:mb-6 ${
+                  msg.type === "user" ? "justify-end" : "justify-start"
+                }`}
               >
                 {msg.type === "bot" && (
                   <div className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 bg-yellow-400 rounded-full flex-shrink-0 flex items-center justify-center overflow-hidden">
@@ -686,10 +687,11 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
                 )}
 
                 <div
-                  className={`${msg.type === "user"
-                    ? "bg-white text-[#0E3B5C]"
-                    : "bg-white text-[#0E3B5C]"
-                    } rounded-2xl px-3 py-1.5 sm:px-4 sm:py-2 md:px-6 md:py-2 shadow-md max-w-[90%] sm:max-w-[80%] md:max-w-[70%]`}
+                  className={`${
+                    msg.type === "user"
+                      ? "bg-white text-[#0E3B5C]"
+                      : "bg-white text-[#0E3B5C]"
+                  } rounded-2xl px-3 py-1.5 sm:px-4 sm:py-2 md:px-6 md:py-2 shadow-md max-w-[90%] sm:max-w-[80%] md:max-w-[70%]`}
                 >
                   <p className="text-xs sm:text-xs md:text-sm leading-relaxed break-words">
                     {msg.text}
@@ -786,13 +788,23 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
                       )}
                     </div>
                     <DatePicker
-                      selected={formData.dob ? parseDateFromDDMMYYYY(formData.dob) : null}
+                      selected={
+                        formData.dob
+                          ? parseDateFromDDMMYYYY(formData.dob)
+                          : null
+                      }
                       onChange={(date: Date | null) => {
                         if (date) {
                           const day = String(date.getDate()).padStart(2, "0");
-                          const month = String(date.getMonth() + 1).padStart(2, "0");
+                          const month = String(date.getMonth() + 1).padStart(
+                            2,
+                            "0"
+                          );
                           const year = date.getFullYear();
-                          setFormData((prev) => ({ ...prev, dob: `${day}/${month}/${year}` }));
+                          setFormData((prev) => ({
+                            ...prev,
+                            dob: `${day}/${month}/${year}`,
+                          }));
                           setFormErrors((prev: any) => ({ ...prev, dob: "" }));
                         } else {
                           setFormData((prev) => ({ ...prev, dob: "" }));
@@ -803,9 +815,10 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
                       className="w-full p-2 rounded bg-transparent text-white border border-white/50 text-xs sm:text-sm focus:outline-none"
                     />
                     {formErrors.dob && (
-                      <p className="text-red-300 text-xs mt-1">{formErrors.dob}</p>
+                      <p className="text-red-300 text-xs mt-1">
+                        {formErrors.dob}
+                      </p>
                     )}
-
 
                     <div>
                       <input
@@ -915,7 +928,11 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
               ) : showConfirmNewNumber ? (
                 <div className="bg-white/10 backdrop-blur-sm p-4 rounded-lg border border-white/30 text-center">
                   <p className="text-white mb-3">
-                    Are you sure you want a {selectedOption === "new" ? "new number" : "existing number"}?
+                    Are you sure you want a{" "}
+                    {selectedOption === "new"
+                      ? "new number"
+                      : "existing number"}
+                    ?
                   </p>
                   <div className="flex gap-3 justify-center">
                     <button
@@ -940,19 +957,21 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
                   <div className="flex gap-3 justify-center mb-4">
                     <button
                       onClick={() => handleExistingTypeSelect("prepaid")}
-                      className={`px-4 py-2 rounded ${existingNumberType === "prepaid"
-                        ? "bg-[#2bb673]"
-                        : "bg-gray-600"
-                        } text-white`}
+                      className={`px-4 py-2 rounded ${
+                        existingNumberType === "prepaid"
+                          ? "bg-[#2bb673]"
+                          : "bg-gray-600"
+                      } text-white`}
                     >
                       Prepaid
                     </button>
                     <button
                       onClick={() => handleExistingTypeSelect("postpaid")}
-                      className={`px-4 py-2 rounded ${existingNumberType === "postpaid"
-                        ? "bg-[#2bb673]"
-                        : "bg-gray-600"
-                        } text-white`}
+                      className={`px-4 py-2 rounded ${
+                        existingNumberType === "postpaid"
+                          ? "bg-[#2bb673]"
+                          : "bg-gray-600"
+                      } text-white`}
                     >
                       Postpaid
                     </button>

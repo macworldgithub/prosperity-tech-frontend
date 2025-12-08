@@ -88,14 +88,6 @@ const Navbar = () => {
     return (totalBytes / 1024 ** 3).toFixed(2);
   };
 
-  // Replace "SimplyBig Unlimited" → "Just Mobile"
-  const getDisplayServiceName = (name: string) => {
-    if (name === "SimplyBig Unlimited") {
-      return "Just Mobile";
-    }
-    return name || "N/A";
-  };
-
   // === Updated Check Usage Function (Exact App Logic) ===
   const checkUsage = async () => {
     if (!token) {
@@ -181,6 +173,18 @@ const Navbar = () => {
     setShowUsageModal(true);
     checkUsage();
   };
+
+  useEffect(() => {
+    const shouldOpen = sessionStorage.getItem("openUsageAfterLogin");
+
+    if (shouldOpen && token) {
+      sessionStorage.removeItem("openUsageAfterLogin");
+      setTimeout(() => {
+        setShowUsageModal(true);
+        checkUsage();
+      }, 300);
+    }
+  }, [token]);
 
   const handleLogin = () => router.push("/login");
   const handleLogout = () => {
@@ -441,7 +445,7 @@ const Navbar = () => {
                   <p className="text-xl font-bold text-red-600">{usageError}</p>
                   {usageError.includes("plan") && (
                     <Button
-                      variant="gradient"
+                      variant="primary"
                       className="mt-6"
                       onClick={() =>
                         router.push("/chat-window?fromBanner=true")
@@ -465,8 +469,7 @@ const Navbar = () => {
                         {usageData.service.planName || "N/A"}
                       </p>
                       <p>
-                        <span className="font-semibold">Service:</span>{" "}
-                        {getDisplayServiceName(usageData.service.name)}
+                        <span className="font-semibold">Service:</span> Belar
                       </p>
                       <p>
                         <span className="font-semibold">CSN:</span>{" "}

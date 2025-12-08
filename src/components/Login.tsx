@@ -33,6 +33,7 @@ export const Login = () => {
     try {
       const result = await dispatch(LoginApi()).unwrap(); // ← .unwrap() se actual result/error milega
 
+      sessionStorage.setItem("openUsageAfterLogin", "true");
       setShowLogin(false);
       router.push("/");
     } catch (err: any) {
@@ -80,19 +81,17 @@ export const Login = () => {
                 <FormInput
                   label="Email"
                   type="email"
-                  placeholder="you@example.com"
                   value={email}
                   onChange={(e) => dispatch(setEmail(e.target.value))}
-                  icon={<Mail size={18} color="black" />}
+                  icon={<Mail size={18} color="white" />}
                 />
 
                 <FormInput
                   label="PIN"
                   type="password"
-                  placeholder="Enter your PIN"
                   value={pin}
                   onChange={(e) => dispatch(setPin(e.target.value))}
-                  icon={<KeyRound size={18} color="black" />}
+                  icon={<KeyRound size={18} color="white" />}
                   maxLength={6}
                 />
 
