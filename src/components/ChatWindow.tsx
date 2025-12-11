@@ -192,11 +192,11 @@ const ChatWindow = () => {
 
       setShowDetailsForm(false);
 
-      setShowNumberTypeSelection(true);
+      setShowSimTypeSelection(true);
 
       await handleSend(formatted, true);
       const prosperityMessage =
-        "Thanks!, Now it’s time to choose a number -- either a new number or your existing number -- from the options below.";
+        "Great! Before we continue, please choose whether you want an eSIM or a Physical SIM.";
 
       setChat((prev) => [
         ...prev,
@@ -507,17 +507,17 @@ const ChatWindow = () => {
       },
     ]);
 
-    setShowSimTypeSelection(true); // Show SIM type selection next
+    setShowPayment(true);
   };
 
   const handleSimTypeSelect = (type: "esim" | "physical") => {
     setSimType(type);
     setShowSimTypeSelection(false);
-    if (type === "esim") {
-      setShowPayment(true);
-    } else {
+    if (type === "physical") {
       setShowSimNumberInput(true);
     }
+    setShowNumberTypeSelection(true);
+    addBotMessage("Would you like a new number or use your existing number?");
   };
 
   const handleSimNumberContinue = () => {
@@ -905,6 +905,48 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
                     Submit Details
                   </button>
                 </form>
+              ) : showSimTypeSelection ? (
+                <div className="flex flex-col items-center gap-3 p-4 bg-white/10 rounded-lg border border-white/30 text-white">
+                  <p className="text-sm sm:text-base">
+                    Please choose SIM type:
+                  </p>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handleSimTypeSelect("esim")}
+                      className="bg-[#2bb673] text-white px-3 py-1 rounded hover:opacity-90 text-xs sm:text-sm"
+                    >
+                      E-SIM
+                    </button>
+                    <button
+                      onClick={() => handleSimTypeSelect("physical")}
+                      className="bg-[#215988] text-white px-3 py-1 rounded hover:opacity-90 text-xs sm:text-sm"
+                    >
+                      Physical SIM
+                    </button>
+                  </div>
+                </div>
+              ) : showSimNumberInput ? (
+                <div className="flex flex-col items-center gap-3 p-4 bg-white/10 rounded-lg border border-white/30 text-white">
+                  <p className="text-sm sm:text-base">
+                    Enter your 13-digit SIM number:
+                  </p>
+                  <input
+                    type="text"
+                    maxLength={13}
+                    value={simNumber}
+                    onChange={(e) =>
+                      setSimNumber(e.target.value.replace(/\D/g, ""))
+                    }
+                    className="w-full p-2 rounded bg-transparent border border-white/50 text-center text-white text-sm sm:text-base tracking-widest"
+                    placeholder="Enter 13-digit SIM number"
+                  />
+                  <button
+                    onClick={handleSimNumberContinue}
+                    className="bg-[#2bb673] text-white px-4 py-1 rounded hover:opacity-90 text-xs sm:text-sm"
+                  >
+                    Continue
+                  </button>
+                </div>
               ) : showNumberTypeSelection ? (
                 <div className="bg-white/10 backdrop-blur-sm p-4 rounded-lg border border-white/30 text-center">
                   <p className="text-white mb-3">
@@ -1064,48 +1106,6 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
                       {plan.planName} - ${plan.price}
                     </button>
                   ))}
-                </div>
-              ) : showSimTypeSelection ? (
-                <div className="flex flex-col items-center gap-3 p-4 bg-white/10 rounded-lg border border-white/30 text-white">
-                  <p className="text-sm sm:text-base">
-                    Please choose SIM type:
-                  </p>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => handleSimTypeSelect("esim")}
-                      className="bg-[#2bb673] text-white px-3 py-1 rounded hover:opacity-90 text-xs sm:text-sm"
-                    >
-                      E-SIM
-                    </button>
-                    <button
-                      onClick={() => handleSimTypeSelect("physical")}
-                      className="bg-[#215988] text-white px-3 py-1 rounded hover:opacity-90 text-xs sm:text-sm"
-                    >
-                      Physical SIM
-                    </button>
-                  </div>
-                </div>
-              ) : showSimNumberInput ? (
-                <div className="flex flex-col items-center gap-3 p-4 bg-white/10 rounded-lg border border-white/30 text-white">
-                  <p className="text-sm sm:text-base">
-                    Enter your 13-digit SIM number:
-                  </p>
-                  <input
-                    type="text"
-                    maxLength={13}
-                    value={simNumber}
-                    onChange={(e) =>
-                      setSimNumber(e.target.value.replace(/\D/g, ""))
-                    }
-                    className="w-full p-2 rounded bg-transparent border border-white/50 text-center text-white text-sm sm:text-base tracking-widest"
-                    placeholder="Enter 13-digit SIM number"
-                  />
-                  <button
-                    onClick={handleSimNumberContinue}
-                    className="bg-[#2bb673] text-white px-4 py-1 rounded hover:opacity-90 text-xs sm:text-sm"
-                  >
-                    Continue
-                  </button>
                 </div>
               ) : showPayment && selectedPlan ? (
                 <PaymentCard
