@@ -345,8 +345,8 @@ const ChatWindow = () => {
   };
   const callAPI = async (text: string) => {
     const payload = sessionId
-      ? { query: text, session_id: sessionId, brand: "flying-kiwi" }
-      : { query: text, brand: "flying-kiwi" };
+      ? { query: text, session_id: sessionId, brand: "prosperity-tech" }
+      : { query: text, brand: "prosperity-tech" };
 
     try {
       const res = await fetch("/api", {
