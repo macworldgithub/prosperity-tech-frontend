@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { PaymentCard } from "./PaymentCard";
 import { useRouter, useSearchParams } from "next/navigation";
-import { formatDob } from "@/lib/utils";
+import { formatDob, isDeleteIntent } from "@/lib/utils";
 import DatePicker from "react-datepicker";
 
 interface Plan {
@@ -58,6 +58,9 @@ const ChatWindow = () => {
   const [otpCode, setOtpCode] = useState("");
   const [otpTransactionId, setOtpTransactionId] = useState(""); // to track OTP
   const [otpVerified, setOtpVerified] = useState(false);
+
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [pendingDeleteIntent, setPendingDeleteIntent] = useState(false);
 
   useEffect(() => {
     const fromBanner = searchParams.get("fromBanner");
@@ -360,6 +363,7 @@ const ChatWindow = () => {
 
       if (!sessionId && data.session_id) setSessionId(data.session_id);
       if (data.custNo) setCustNo(data.custNo);
+      if (data.custNo) localStorage.setItem("custNo", data.custNo);
 
       return data;
     } catch (e) {
@@ -386,6 +390,27 @@ const ChatWindow = () => {
     }
     setMessage("");
     setLoading(true);
+    if (isDeleteIntent(text)) {
+      try {
+        const data = await callDeleteIntentAPI(text);
+
+        setLoading(false);
+
+        // show bot message from /chat/query
+        if (data?.message) {
+          addBotMessage(data.message);
+        }
+
+        // open modal AFTER success
+        setPendingDeleteIntent(true);
+        setShowDeleteModal(true);
+        return;
+      } catch (err) {
+        setLoading(false);
+        addBotMessage("Something went wrong. Please try again.");
+        return;
+      }
+    }
     await new Promise((res) => setTimeout(res, 50));
 
     // Skip API call if it's a new number confirmation
@@ -584,6 +609,42 @@ const ChatWindow = () => {
     } catch (err) {
       console.error(err);
       addBotMessage("OTP verification failed. Please try again.");
+    }
+  };
+
+  const callDeleteIntentAPI = async (text: string) => {
+    const res = await fetch("https://prosperity.omnisuiteai.com/chat/query", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ query: text }),
+    });
+
+    if (!res.ok) throw new Error("Delete intent API failed");
+
+    return res.json();
+  };
+
+  const handleConfirmDelete = async () => {
+    setShowDeleteModal(false);
+    setPendingDeleteIntent(false);
+
+    const storedCustNo = localStorage.getItem("custNo");
+
+    if (!storedCustNo) {
+      addBotMessage(
+        "You need to sign up or log in first before deleting your account."
+      );
+      return;
+    }
+
+    try {
+      await callAPI(`Yes I am sure, my custNo is -- ${storedCustNo}`);
+      addBotMessage("Your account has been deleted successfully.");
+
+      // optional cleanup
+      localStorage.clear();
+    } catch (err) {
+      addBotMessage("Failed to delete your account. Please try again.");
     }
   };
 
@@ -1247,6 +1308,37 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
             </div>
           </div>
         </div>
+        {showDeleteModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+            <div className="bg-white rounded-xl p-6 w-[90%] max-w-sm shadow-2xl text-center">
+              <h3 className="text-lg font-semibold text-gray-800 mb-3">
+                Delete Account
+              </h3>
+              <p className="text-sm text-gray-600 mb-6">
+                Are you sure you want to delete your account?
+              </p>
+
+              <div className="flex justify-center gap-4">
+                <button
+                  onClick={() => {
+                    setShowDeleteModal(false);
+                    setPendingDeleteIntent(false);
+                  }}
+                  className="px-4 py-2 rounded bg-gray-300 hover:bg-gray-400"
+                >
+                  No
+                </button>
+
+                <button
+                  onClick={handleConfirmDelete}
+                  className="px-4 py-2 rounded bg-red-600 text-white hover:bg-red-700"
+                >
+                  Yes
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </>
   );

@@ -10,3 +10,13 @@ export const formatDob = (isoDate:any) => {
   const [year, month, day] = isoDate.split("-");
   return `${day}/${month}/${year}`;   // e.g. 15/03/1990
 };
+
+export const isDeleteIntent = (text: string) => {
+  const t = text.toLowerCase();
+  return (
+    t.includes("delete my account") ||
+    t.includes("close my account") ||
+    t.includes("delete account") ||
+    t.includes("close account")
+  );
+};
