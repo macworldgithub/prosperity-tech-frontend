@@ -1047,7 +1047,7 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
                         name="pin"
                         value={formData.pin}
                         onChange={handleFormChange}
-                        placeholder="4-digit PIN"
+                        placeholder="Create your 4-digit PIN"
                         maxLength={4}
                         className="w-full p-1.5 sm:p-2 rounded bg-transparent text-white border border-white/50 text-xs sm:text-sm"
                         required
