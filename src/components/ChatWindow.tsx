@@ -62,6 +62,9 @@ const ChatWindow = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [pendingDeleteIntent, setPendingDeleteIntent] = useState(false);
 
+  const [states, setStates] = useState([]);
+  const [loadingStates, setLoadingStates] = useState(false);
+
   useEffect(() => {
     const fromBanner = searchParams.get("fromBanner");
     if (fromBanner) {
@@ -106,6 +109,17 @@ const ChatWindow = () => {
 
     loadPlans();
   }, [searchParams]);
+
+  useEffect(() => {
+    if (showDetailsForm && states.length === 0) {
+      setLoadingStates(true);
+      fetch("https://prosperity.omnisuiteai.com/states")
+        .then((res) => res.json())
+        .then((data) => setStates(data))
+        .catch((err) => console.error("Failed to fetch states:", err))
+        .finally(() => setLoadingStates(false));
+    }
+  }, [showDetailsForm]);
 
   const [formData, setFormData] = useState({
     firstName: "",
@@ -969,14 +983,44 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
                       )}
                     </div>
                     <div>
-                      <input
-                        name="state"
-                        value={formData.state}
-                        onChange={handleFormChange}
-                        placeholder="State (e.g., VIC)"
-                        className="w-full p-1.5 sm:p-2 rounded bg-transparent text-white border border-white/50 text-xs sm:text-sm"
-                        required
-                      />
+                      <div>
+                        <select
+                          name="state"
+                          value={formData.state}
+                          onChange={(e) => {
+                            setFormData((prev) => ({
+                              ...prev,
+                              state: e.target.value,
+                            }));
+                            setFormErrors((prev: any) => ({
+                              ...prev,
+                              state: "",
+                            }));
+                          }}
+                          className="w-full p-1.5 sm:p-2 rounded bg-transparent text-white border border-white/50 text-xs sm:text-sm focus:outline-none"
+                          required
+                        >
+                          <option value="" className="text-black">
+                            Select State
+                          </option>
+
+                          {states.map((state: any, index) => (
+                            <option
+                              key={index}
+                              value={state.code}
+                              className="text-black"
+                            >
+                              {state.name ?? state.code}
+                            </option>
+                          ))}
+                        </select>
+
+                        {formErrors.state && (
+                          <p className="text-red-300 text-xs mt-0.5 sm:mt-1">
+                            {formErrors.state}
+                          </p>
+                        )}
+                      </div>
                       {formErrors.state && (
                         <p className="text-red-300 text-xs mt-0.5 sm:mt-1">
                           {formErrors.state}

@@ -87,7 +87,7 @@ export const Login = () => {
                 />
 
                 <FormInput
-                  label="PIN"
+                  label="Create your PIN no"
                   type="password"
                   value={pin}
                   onChange={(e) => dispatch(setPin(e.target.value))}
