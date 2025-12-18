@@ -68,7 +68,7 @@ const HeroSection = () => {
       </div>
 
       {/* Trusted By Section */}
-      <div className="relative z-10 mt-32 w-full px-6">
+      {/* <div className="relative z-10 mt-32 w-full px-6">
         <div className="flex flex-col sm:flex-row items-center justify-center gap-10 max-w-5xl mx-auto ">
           <p className="text-lg text-gray-300 -mt-12">Trusted by</p>
           <Image
@@ -79,7 +79,7 @@ const HeroSection = () => {
             className="max-w-full h-auto object-contain"
           />
         </div>
-      </div>
+      </div> */}
     </section>
   );
 };
