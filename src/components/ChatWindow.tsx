@@ -53,6 +53,9 @@ const ChatWindow = () => {
   const [isPorting, setIsPorting] = useState(false); // ← NEW
   const [hasSelectedNumber, setHasSelectedNumber] = useState(false); // ← NEW
   const [selectedOption, setSelectedOption] = useState("");
+  const [showInitialOptions, setShowInitialOptions] = useState(true);
+  const [isTypingEnabled, setIsTypingEnabled] = useState(false);
+  const [isTransferFlow, setIsTransferFlow] = useState(false);
 
   const [showOtpInput, setShowOtpInput] = useState(false);
   const [otpCode, setOtpCode] = useState("");
@@ -80,6 +83,8 @@ const ChatWindow = () => {
         },
       ]);
       setShowDetailsForm(true);
+      setShowInitialOptions(false);
+      setIsTypingEnabled(false);
     }
   }, [searchParams]);
 
@@ -359,6 +364,119 @@ const ChatWindow = () => {
         }),
       },
     ]);
+  };
+
+  const handleInitialOption = async (option: string) => {
+    setShowInitialOptions(false);
+
+    if (option === "buy-esim") {
+      // Call API with "signup" query to open signup modal
+      setLoading(true);
+      await new Promise((res) => setTimeout(res, 50));
+
+      const data = await callAPI("signup");
+      setLoading(false);
+
+      if (!data) {
+        return setChat((prev) => [
+          ...prev,
+          {
+            id: prev.length + 1,
+            type: "bot",
+            text: "Oops! Something went wrong.",
+            time: new Date().toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            }),
+          },
+        ]);
+      }
+
+      const botText = data.message || data.response || "";
+
+      // Check if response contains signup form indicators
+      if (
+        botText.toLowerCase().includes("first name") ||
+        botText.toLowerCase().includes("surname")
+      ) {
+        addBotMessage("Please fill in the details in the given form below.");
+        setShowDetailsForm(true);
+        return;
+      }
+
+      // Add bot message if it's not empty
+      if (botText.trim()) {
+        setChat((prev) => [
+          ...prev,
+          {
+            id: prev.length + 1,
+            type: "bot",
+            text: botText,
+            time: new Date().toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            }),
+          },
+        ]);
+      }
+    } else if (option === "account-problem") {
+      // Enable typing for user to enter their query
+      setIsTypingEnabled(true);
+      addBotMessage(
+        "Please describe your account, billing, or technical problem:"
+      );
+    } else if (option === "transfer-number") {
+      // Set transfer flow flag and call API with "signup" query
+      setIsTransferFlow(true);
+      setLoading(true);
+      await new Promise((res) => setTimeout(res, 50));
+
+      const data = await callAPI("signup");
+      setLoading(false);
+
+      if (!data) {
+        return setChat((prev) => [
+          ...prev,
+          {
+            id: prev.length + 1,
+            type: "bot",
+            text: "Oops! Something went wrong.",
+            time: new Date().toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            }),
+          },
+        ]);
+      }
+
+      const botText = data.message || data.response || "";
+
+      // Check if response contains signup form indicators
+      if (
+        botText.toLowerCase().includes("first name") ||
+        botText.toLowerCase().includes("surname")
+      ) {
+        addBotMessage("Please fill in the details in the given form below.");
+        setShowDetailsForm(true);
+        return;
+      }
+
+      // Add bot message if it's not empty
+      if (botText.trim()) {
+        setChat((prev) => [
+          ...prev,
+          {
+            id: prev.length + 1,
+            type: "bot",
+            text: botText,
+            time: new Date().toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            }),
+          },
+        ]);
+      }
+    }
   };
   const callAPI = async (text: string) => {
     const payload = sessionId
@@ -1112,15 +1230,19 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
               ) : showNumberTypeSelection ? (
                 <div className="bg-white/10 backdrop-blur-sm p-4 rounded-lg border border-white/30 text-center">
                   <p className="text-white mb-3">
-                    Do you want a new number or keep your existing one?
+                    {isTransferFlow
+                      ? "Since you're transferring your number, we'll use your existing number."
+                      : "Do you want a new number or keep your existing one?"}
                   </p>
                   <div className="flex gap-3 justify-center">
-                    <button
-                      onClick={handleNewNumber}
-                      className="bg-[#2bb673] text-white px-4 py-2 rounded"
-                    >
-                      New Number
-                    </button>
+                    {!isTransferFlow && (
+                      <button
+                        onClick={handleNewNumber}
+                        className="bg-[#2bb673] text-white px-4 py-2 rounded"
+                      >
+                        New Number
+                      </button>
+                    )}
                     <button
                       onClick={handleExistingNumber}
                       className="bg-[#215988] text-white px-4 py-2 rounded"
@@ -1319,6 +1441,32 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
                     if (success) handleActivateOrder();
                   }}
                 />
+              ) : showInitialOptions ? (
+                <div className="flex flex-col items-center gap-3 p-4 bg-white/10 backdrop-blur-sm rounded-lg border border-white/30 text-white">
+                  <p className="text-sm sm:text-base text-center">
+                    How can I help you today?
+                  </p>
+                  <div className="flex flex-col gap-2 w-full max-w-sm">
+                    <button
+                      onClick={() => handleInitialOption("buy-esim")}
+                      className="bg-white text-[#0E3B5C] border border-gray-300 px-4 py-3 rounded-lg hover:bg-gray-50 text-xs sm:text-sm font-medium transition-colors"
+                    >
+                      Buy an eSIM / Physical SIM
+                    </button>
+                    <button
+                      onClick={() => handleInitialOption("account-problem")}
+                      className="bg-white text-[#0E3B5C] border border-gray-300 px-4 py-3 rounded-lg hover:bg-gray-50 text-xs sm:text-sm font-medium transition-colors"
+                    >
+                      Account, billing or Technical Problem
+                    </button>
+                    <button
+                      onClick={() => handleInitialOption("transfer-number")}
+                      className="bg-white text-[#0E3B5C] border border-gray-300 px-4 py-3 rounded-lg hover:bg-gray-50 text-xs sm:text-sm font-medium transition-colors"
+                    >
+                      Transfer my number
+                    </button>
+                  </div>
+                </div>
               ) : (
                 <div className="flex items-center gap-2 sm:gap-3 border border-white/30 rounded-full px-3 sm:px-4 py-2 sm:py-3 bg-white/10 backdrop-blur-sm text-white">
                   <input
@@ -1328,11 +1476,12 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
                     onKeyDown={(e) => e.key === "Enter" && sendMessage()}
                     placeholder="Message..."
                     className="flex-1 bg-transparent text-white placeholder-white/70 text-xs sm:text-sm focus:outline-none"
+                    disabled={!isTypingEnabled}
                   />
 
                   <button
                     onClick={sendMessage}
-                    disabled={loading}
+                    disabled={loading || !isTypingEnabled}
                     className="inline-flex items-center justify-center w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-[#2bb673] hover:opacity-90 disabled:opacity-50"
                   >
                     <svg

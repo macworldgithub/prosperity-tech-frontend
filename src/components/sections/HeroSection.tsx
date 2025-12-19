@@ -1,16 +1,16 @@
 "use client";
 import React from "react";
 import Image from "next/image";
-import { useRouter } from "next/navigation"; // ✅ Import useRouter
+import { useRouter } from "next/navigation"; 
 import screen from "../../../public/images/iPhone 14.png";
 import screen1 from "../../../public/images/iPhone 13.png";
 import screen2 from "../../../public/images/iPhone 15.png";
 
 const HeroSection = () => {
-  const router = useRouter(); // ✅ Initialize router
+  const router = useRouter(); 
 
   const handleChatClick = () => {
-    router.push("/chat-window"); // Modified route path to follow convention
+    router.push("/chat-window"); 
   };
 
   return (
