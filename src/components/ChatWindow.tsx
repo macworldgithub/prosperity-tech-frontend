@@ -598,7 +598,14 @@ const ChatWindow = () => {
     }
 
     const matches = botText.match(/04\d{8}/g);
-    if (matches?.length === 5 && !isPorting && !hasSelectedNumber) {
+    if (
+      matches?.length === 5 &&
+      !isPorting &&
+      !hasSelectedNumber &&
+      !showExistingNumberOptions &&
+      !showOtpInput &&
+      !isTransferFlow
+    ) {
       setNumberOptions(matches);
       setShowNumberButtons(true);
       // Override bot message
@@ -606,8 +613,25 @@ const ChatWindow = () => {
       return;
     }
 
-    // Only add bot message if it's not empty
+    // Only add bot message if it's not empty and not in inappropriate flow states
     if (botText.trim()) {
+      // Don't show reserved numbers or eSIM/Physical SIM messages during OTP or existing number flows
+      const isReservedNumbersMessage =
+        botText.includes("reserved") && botText.includes("phone numbers");
+      const isESimMessage = botText.includes(
+        "Before we continue, please choose whether you want an eSIM"
+      );
+
+      if (
+        (isReservedNumbersMessage &&
+          (showOtpInput || showExistingNumberOptions || isTransferFlow)) ||
+        (isESimMessage &&
+          (showOtpInput || showExistingNumberOptions || isTransferFlow))
+      ) {
+        // Skip adding these messages during inappropriate flow states
+        return;
+      }
+
       setChat((prev) => [
         ...prev,
         {
@@ -655,7 +679,7 @@ const ChatWindow = () => {
           ? "Perfect! Let's continue with payment."
           : "Choose one of the plans below:",
         time: new Date().toLocaleTimeString([], {
-          hour: "2-digit",
+          hour: "2-digit",  
           minute: "2-digit",
         }),
       },
