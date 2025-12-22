@@ -2,8 +2,9 @@
 import React, { useState, useEffect } from "react";
 import { PaymentCard } from "./PaymentCard";
 import { useRouter, useSearchParams } from "next/navigation";
-import { formatDob, isDeleteIntent } from "@/lib/utils";
+import { formatDob, formatDobToISO, isDeleteIntent } from "@/lib/utils";
 import DatePicker from "react-datepicker";
+import sessionStorage from "redux-persist/es/storage/session";
 
 interface Plan {
   _id: string;
@@ -209,9 +210,11 @@ const ChatWindow = () => {
 
     try {
       // Save DOB to localStorage
-      localStorage.setItem("userDOB", formData.dob);
+      const isoDob = formatDobToISO(formData.dob);
+
+      sessionStorage.setItem("userDOB", isoDob);
       setUserEmail(formData.email);
-      localStorage.setItem("userEmail", formData.email);
+      sessionStorage.setItem("userEmail", formData.email);
 
       const formatted = Object.entries(formData)
         .map(([k, v]) => `${k}: ${v}`)
@@ -241,6 +244,12 @@ const ChatWindow = () => {
       console.error("Error during form submission:", error);
     }
   };
+
+  useEffect(() => {
+  sessionStorage.removeItem("custNo");
+  sessionStorage.removeItem("userEmail");
+  sessionStorage.removeItem("userDOB");
+}, []);
 
   const handleNewNumber = () => {
     setSelectedOption("new");
@@ -495,7 +504,7 @@ const ChatWindow = () => {
 
       if (!sessionId && data.session_id) setSessionId(data.session_id);
       if (data.custNo) setCustNo(data.custNo);
-      if (data.custNo) localStorage.setItem("custNo", data.custNo);
+      if (data.custNo) sessionStorage.setItem("custNo", data.custNo);
 
       return data;
     } catch (e) {
@@ -679,7 +688,7 @@ const ChatWindow = () => {
           ? "Perfect! Let's continue with payment."
           : "Choose one of the plans below:",
         time: new Date().toLocaleTimeString([], {
-          hour: "2-digit",  
+          hour: "2-digit",
           minute: "2-digit",
         }),
       },
