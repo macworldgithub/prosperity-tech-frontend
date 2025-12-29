@@ -226,17 +226,20 @@ const ChatWindow = () => {
     }));
     setFormErrors((prev: any) => ({ ...prev, [name]: "" }));
 
-    // ←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
-    // Agar DOB manually type ki ja rahi hai toh real-time check
+    // Manual DOB typing ke liye real-time check
     if (name === "dob" && value.trim()) {
       const match = value.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
       if (match) {
-        const [_, day, month, year] = match.map(Number);
+        const day = parseInt(match[1], 10);
+        const month = parseInt(match[2], 10);
+        const year = parseInt(match[3], 10);
+
         const birthDate = new Date(year, month - 1, day);
         const today = new Date();
-        let age = today.getFullYear() - birthDate.getFullYear();
-        const m = today.getMonth() - birthDate.getMonth();
-        if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+
+        let age = today.getFullYear() - year;
+        const m = today.getMonth() - (month - 1);
+        if (m < 0 || (m === 0 && today.getDate() < day)) {
           age--;
         }
 
@@ -247,7 +250,6 @@ const ChatWindow = () => {
         }
       }
     }
-    // ←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
   };
   const parseDateFromDDMMYYYY = (dateStr: string) => {
     if (!dateStr) return null;
@@ -1228,19 +1230,28 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
                           const year = date.getFullYear();
                           const newDob = `${day}/${month}/${year}`;
 
-                          // Update form data
                           setFormData((prev) => ({
                             ...prev,
                             dob: newDob,
                           }));
-                          const birthDate = new Date(year, month - 1, day);
+
+                          // ←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+                          // Real-time age validation – TypeScript-safe
+                          const birthDate = new Date(
+                            year,
+                            date.getMonth(),
+                            date.getDate()
+                          ); // All numbers
                           const today = new Date();
+
                           let age =
                             today.getFullYear() - birthDate.getFullYear();
-                          const m = today.getMonth() - birthDate.getMonth();
+                          const monthDiff =
+                            today.getMonth() - birthDate.getMonth();
                           if (
-                            m < 0 ||
-                            (m === 0 && today.getDate() < birthDate.getDate())
+                            monthDiff < 0 ||
+                            (monthDiff === 0 &&
+                              today.getDate() < birthDate.getDate())
                           ) {
                             age--;
                           }
@@ -1250,8 +1261,10 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
                               "You must be at least 18 years old to sign up."
                             );
                           } else {
-                            setAgeError(""); // Clear error if now 18+
+                            setAgeError(""); // Clear error immediately
                           }
+                          // ←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+
                           setFormErrors((prev: any) => ({ ...prev, dob: "" }));
                         } else {
                           setFormData((prev) => ({ ...prev, dob: "" }));
