@@ -348,6 +348,50 @@ const ChatWindow = () => {
     setShowArnInput(type === "postpaid");
   };
 
+  // const handleExistingNumberSubmit = async () => {
+  //   if (!existingPhone.match(/^04\d{8}$/)) {
+  //     alert(
+  //       "Please enter a valid 10-digit Australian mobile number starting with 04"
+  //     );
+  //     return;
+  //   }
+  //   if (existingNumberType === "postpaid" && !arn.trim()) {
+  //     alert("Please enter your ARN (Account Reference Number)");
+  //     return;
+  //   }
+
+  //   try {
+  //     const res = await fetch(
+  //       "https://prosperity.omnisuiteai.com/api/v1/auth/otp",
+  //       {
+  //         method: "POST",
+  //         headers: { "Content-Type": "application/json" },
+  //         body: JSON.stringify({
+  //           custNo,
+  //           destination: existingPhone,
+  //         }),
+  //       }
+  //     );
+
+  //     const data = await res.json();
+
+  //     if (!res.ok) throw new Error(data.message || "OTP request failed");
+
+  //     setOtpTransactionId(data.transactionId);
+  //     setShowExistingNumberOptions(false);
+  //     setShowPlans(false);
+  //     setShowNumberButtons(false);
+  //     setShowPayment(false);
+  //     setShowSimTypeSelection(false);
+  //     setShowNumberTypeSelection(false);
+  //     setShowOtpInput(true);
+  //     addBotMessage("OTP has been sent. Please enter it to proceed.");
+  //   } catch (err) {
+  //     console.error(err);
+  //     addBotMessage("Failed to send OTP. Please try again.");
+  //   }
+  // };
+
   const handleExistingNumberSubmit = async () => {
     if (!existingPhone.match(/^04\d{8}$/)) {
       alert(
@@ -357,6 +401,13 @@ const ChatWindow = () => {
     }
     if (existingNumberType === "postpaid" && !arn.trim()) {
       alert("Please enter your ARN (Account Reference Number)");
+      return;
+    }
+    await new Promise((resolve) => setTimeout(resolve, 1500)); // 1.5 second delay
+    if (!custNo) {
+      addBotMessage(
+        "We're having trouble fetching your customer ID. Please try again in a moment."
+      );
       return;
     }
 
@@ -391,7 +442,6 @@ const ChatWindow = () => {
       addBotMessage("Failed to send OTP. Please try again.");
     }
   };
-
   const handleResendOtp = async () => {
     // Basic validation
     if (!existingPhone || !existingPhone.match(/^04\d{8}$/)) {
