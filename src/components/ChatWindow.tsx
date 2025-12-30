@@ -347,6 +347,7 @@ const ChatWindow = () => {
     setExistingNumberType(type);
     setShowArnInput(type === "postpaid");
   };
+
   const handleExistingNumberSubmit = async () => {
     if (!existingPhone.match(/^04\d{8}$/)) {
       alert(
@@ -866,6 +867,41 @@ const ChatWindow = () => {
     setShowPayment(true);
   };
   console.log("OTP CODE:", otpCode);
+  // const handleOtpVerify = async () => {
+  //   if (otpCode.length !== 6) {
+  //     alert("Please enter a 6-digit OTP");
+  //     return;
+  //   }
+
+  //   try {
+  //     console.log(otpTransactionId);
+  //     const res = await fetch(
+  //       "https://prosperity.omnisuiteai.com/api/v1/auth/otp/verify",
+  //       {
+  //         method: "POST",
+  //         headers: { "Content-Type": "application/json" },
+  //         body: JSON.stringify({
+  //           code: otpCode,
+  //           transactionId: otpTransactionId,
+  //         }),
+  //       }
+  //     );
+
+  //     const data = await res.json();
+
+  //     if (!res.ok) throw new Error(data.message || "OTP verification failed");
+
+  //     setOtpVerified(true);
+  //     setShowOtpInput(false);
+  //     addBotMessage(
+  //       "OTP verified successfully! You can now proceed to payment."
+  //     );
+  //   } catch (err) {
+  //     console.error(err);
+  //     addBotMessage("OTP verification failed. Please try again.");
+  //   }
+  // };
+
   const handleOtpVerify = async () => {
     if (otpCode.length !== 6) {
       alert("Please enter a 6-digit OTP");
@@ -873,7 +909,8 @@ const ChatWindow = () => {
     }
 
     try {
-      console.log(otpTransactionId);
+      setLoading(true);
+
       const res = await fetch(
         "https://prosperity.omnisuiteai.com/api/v1/auth/otp/verify",
         {
@@ -887,20 +924,49 @@ const ChatWindow = () => {
       );
 
       const data = await res.json();
+      console.log("OTP Verify Response:", data);
 
-      if (!res.ok) throw new Error(data.message || "OTP verification failed");
+      // Check if OTP is actually valid
+      const isValid = data?.data?.verifyOtp?.valid === true;
 
-      setOtpVerified(true);
-      setShowOtpInput(false);
-      addBotMessage(
-        "OTP verified successfully! You can now proceed to payment."
-      );
+      if (isValid) {
+        // Success: OTP is correct
+        setOtpVerified(true);
+        setShowOtpInput(false);
+        addBotMessage(
+          "OTP verified successfully! You can now proceed to payment."
+        );
+
+        // If plan is already selected, show payment screen
+        if (selectedPlan) {
+          setShowPayment(true);
+        }
+      } else {
+        // Failure: OTP is incorrect
+        const remaining = data?.data?.verifyOtp?.remainingAttempts ?? 0;
+        const msg = data?.data?.verifyOtp?.message || "Invalid OTP";
+
+        if (remaining > 0) {
+          addBotMessage(`${msg}. You have ${remaining} attempt left.`);
+        } else {
+          addBotMessage(
+            `${msg}. No attempts remaining. Please request a new OTP.`
+          );
+        }
+
+        // Clear the OTP field so user can try again
+        setOtpCode("");
+      }
     } catch (err) {
-      console.error(err);
-      addBotMessage("OTP verification failed. Please try again.");
+      console.error("OTP verification error:", err);
+      addBotMessage(
+        "Failed to verify OTP. Please check your connection and try again."
+      );
+      setOtpCode(""); // Clear field on error too
+    } finally {
+      setLoading(false);
     }
   };
-
   const callDeleteIntentAPI = async (text: string) => {
     const res = await fetch("https://prosperity.omnisuiteai.com/chat/query", {
       method: "POST",
