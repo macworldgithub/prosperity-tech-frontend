@@ -881,29 +881,30 @@ const ChatWindow = () => {
         setOtpVerified(true);
         setShowOtpInput(false);
         addBotMessage(
-          "OTP verified successfully! You can now proceed to payment."
+          "OTP verified successfully! Please choose a plan to continue."
         );
 
-        // If plan is already selected, show payment screen
-        if (selectedPlan) {
+        if (!selectedPlan) {
+          setShowPlans(true);
+        } else {
           setShowPayment(true);
         }
-      } else {
-        // Failure: OTP is incorrect
-        const remaining = data?.data?.verifyOtp?.remainingAttempts ?? 0;
-        const msg = data?.data?.verifyOtp?.message || "Invalid OTP";
 
-        if (remaining > 0) {
-          addBotMessage(`${msg}. You have ${remaining} attempt left.`);
-        } else {
-          addBotMessage(
-            `${msg}. No attempts remaining. Please request a new OTP.`
-          );
-        }
-
-        // Clear the OTP field so user can try again
-        setOtpCode("");
+        return;
       }
+
+      const remaining = data?.data?.verifyOtp?.remainingAttempts ?? 0;
+      const msg = data?.data?.verifyOtp?.message || "Invalid OTP";
+
+      if (remaining > 0) {
+        addBotMessage(`${msg}. You have ${remaining} attempt left.`);
+      } else {
+        addBotMessage(
+          `${msg}. No attempts remaining. Please request a new OTP.`
+        );
+      }
+
+      setOtpCode("");
     } catch (err) {
       console.error("OTP verification error:", err);
       addBotMessage(
