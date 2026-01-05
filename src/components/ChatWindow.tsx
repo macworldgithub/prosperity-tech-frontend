@@ -349,11 +349,18 @@ const ChatWindow = () => {
       );
       return;
     }
+
     if (existingNumberType === "postpaid" && !arn.trim()) {
       alert("Please enter your ARN (Account Reference Number)");
       return;
     }
-    await new Promise((resolve) => setTimeout(resolve, 1500)); // 1.5 second delay
+
+    setIsPorting(true);
+    setHasSelectedNumber(true);
+    setShowNumberButtons(false);
+
+    await new Promise((resolve) => setTimeout(resolve, 1500));
+
     if (!custNo) {
       addBotMessage(
         "We're having trouble fetching your customer ID. Please try again in a moment."
@@ -375,12 +382,12 @@ const ChatWindow = () => {
       );
 
       const data = await res.json();
-
       if (!res.ok) throw new Error(data.message || "OTP request failed");
 
       setOtpTransactionId(data.data.getOtp.transactionId);
       setShowExistingNumberOptions(false);
       setShowOtpInput(true);
+
       addBotMessage("OTP has been sent. Please enter it to proceed.");
     } catch (err) {
       console.error(err);
@@ -711,7 +718,6 @@ const ChatWindow = () => {
       matches?.length === 5 &&
       !isPorting &&
       !hasSelectedNumber &&
-      !showExistingNumberOptions &&
       !showOtpInput &&
       !isTransferFlow
     ) {
