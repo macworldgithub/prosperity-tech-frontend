@@ -69,6 +69,8 @@ const ChatWindow = () => {
   const [states, setStates] = useState([]);
   const [loadingStates, setLoadingStates] = useState(false);
   const [numberDecisionMade, setNumberDecisionMade] = useState(false);
+  const [ageError, setAgeError] = useState("");
+
   useEffect(() => {
     const fromBanner = searchParams.get("fromBanner");
     if (fromBanner) {
@@ -138,9 +140,10 @@ const ChatWindow = () => {
     state: "",
     postcode: "",
     pin: "",
+    custAuthorityNo: "",
+    custAuthorityType: "",
   });
   const [formErrors, setFormErrors] = useState<any>({});
-  const [ageError, setAgeError] = useState(""); // ← YEH NAYA ADD KARO
 
   const validateForm = () => {
     const errors: any = {};
@@ -157,6 +160,8 @@ const ChatWindow = () => {
       "state",
       "postcode",
       "pin",
+      "custAuthorityNo",
+      "custAuthorityType",
     ];
 
     for (let field of requiredFields) {
@@ -182,7 +187,13 @@ const ChatWindow = () => {
       errors.pin = "PIN must be 4 digits";
       ok = false;
     }
-    // AGE VALIDATION (18+ only)
+    if (!formData.custAuthorityNo.trim()) {
+      errors.custAuthorityNo = "Customer Authority Number is required";
+    }
+
+    if (!formData.custAuthorityType) {
+      errors.custAuthorityType = "Please select a Customer Authority Type";
+    }
     if (formData.dob) {
       const [day, month, year] = formData.dob.split("/").map(Number);
       const birthDate = new Date(year, month - 1, day);
@@ -204,18 +215,6 @@ const ChatWindow = () => {
     return ok;
   };
 
-  // const handleFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  //   const name = e.target.name as keyof typeof formData;
-  //   const { value } = e.target;
-
-  //   setFormData((prev) => ({
-  //     ...prev,
-  //     [name]: value,
-  //   }));
-  //   setFormErrors((prev: any) => ({ ...prev, [name]: "" }));
-  // };
-
-  // Convert "dd/mm/yyyy" string to JS Date object
   const handleFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const name = e.target.name as keyof typeof formData;
     const { value } = e.target;
@@ -225,21 +224,15 @@ const ChatWindow = () => {
       [name]: value,
     }));
     setFormErrors((prev: any) => ({ ...prev, [name]: "" }));
-
-    // Manual DOB typing ke liye real-time check
     if (name === "dob" && value.trim()) {
       const match = value.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
       if (match) {
-        const day = parseInt(match[1], 10);
-        const month = parseInt(match[2], 10);
-        const year = parseInt(match[3], 10);
-
+        const [_, day, month, year] = match.map(Number);
         const birthDate = new Date(year, month - 1, day);
         const today = new Date();
-
-        let age = today.getFullYear() - year;
-        const m = today.getMonth() - (month - 1);
-        if (m < 0 || (m === 0 && today.getDate() < day)) {
+        let age = today.getFullYear() - birthDate.getFullYear();
+        const m = today.getMonth() - birthDate.getMonth();
+        if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
           age--;
         }
 
@@ -251,6 +244,8 @@ const ChatWindow = () => {
       }
     }
   };
+
+  // Convert "dd/mm/yyyy" string to JS Date object
   const parseDateFromDDMMYYYY = (dateStr: string) => {
     if (!dateStr) return null;
     const [day, month, year] = dateStr.split("/").map(Number);
@@ -310,27 +305,26 @@ const ChatWindow = () => {
     setShowConfirmNewNumber(true);
   };
 
-  const confirmNewNumber = (yes: boolean) => {
+  const confirmNewNumber = async (yes: boolean) => {
     setShowConfirmNewNumber(false);
-    if (yes) {
-      setIsPorting(false);
-      setHasSelectedNumber(true); // ← FIX: Set to true immediately
-      setNumberDecisionMade(true);
-      setSelectedOption("new");
 
-      addBotMessage(
-        "Thanks, now it's time to choose a number from the selection below"
-      );
-
-      if (numberOptions.length > 0) {
-        setShowNumberButtons(true);
-      } else {
-        handleSend("new number");
-      }
-    } else {
+    if (!yes) {
       setShowNumberTypeSelection(true);
+      return;
     }
+
+    setSelectedOption("new");
+    setIsPorting(false);
+    setHasSelectedNumber(false);
+    setNumberDecisionMade(false);
+
+    addBotMessage(
+      "Thanks, now it's time to choose a number from the selection below."
+    );
+
+    await handleSend("new number");
   };
+
   const handleExistingNumber = () => {
     setShowNumberTypeSelection(false);
     setShowConfirmNewNumber(true);
@@ -381,17 +375,11 @@ const ChatWindow = () => {
       );
 
       const data = await res.json();
-      console.log(data);
 
       if (!res.ok) throw new Error(data.message || "OTP request failed");
 
       setOtpTransactionId(data.data.getOtp.transactionId);
       setShowExistingNumberOptions(false);
-      setShowPlans(false);
-      setShowNumberButtons(false);
-      setShowPayment(false);
-      setShowSimTypeSelection(false);
-      setShowNumberTypeSelection(false);
       setShowOtpInput(true);
       addBotMessage("OTP has been sent. Please enter it to proceed.");
     } catch (err) {
@@ -399,6 +387,7 @@ const ChatWindow = () => {
       addBotMessage("Failed to send OTP. Please try again.");
     }
   };
+
   const handleResendOtp = async () => {
     // Basic validation
     if (!existingPhone || !existingPhone.match(/^04\d{8}$/)) {
@@ -722,7 +711,6 @@ const ChatWindow = () => {
       matches?.length === 5 &&
       !isPorting &&
       !hasSelectedNumber &&
-      !numberDecisionMade &&
       !showExistingNumberOptions &&
       !showOtpInput &&
       !isTransferFlow
@@ -807,7 +795,7 @@ const ChatWindow = () => {
     ]);
 
     if (selectedPlan) {
-      setShowSimTypeSelection(true);
+      setShowPayment(true);
     } else {
       setShowPlans(true);
     }
@@ -840,21 +828,9 @@ const ChatWindow = () => {
     setShowSimTypeSelection(false);
     if (type === "physical") {
       setShowSimNumberInput(true);
-      return;
     }
-
-    // Only ask for number type if not already decided
-    if (!numberDecisionMade && !hasSelectedNumber && !isPorting) {
-      setShowNumberTypeSelection(true);
-      addBotMessage("Would you like a new number or use your existing number?");
-    } else {
-      // Skip directly to plan or payment
-      if (selectedPlan) {
-        setShowPayment(true);
-      } else {
-        setShowPlans(true);
-      }
-    }
+    setShowNumberTypeSelection(true);
+    addBotMessage("Would you like a new number or use your existing number?");
   };
 
   const handleSimNumberContinue = () => {
@@ -866,41 +842,6 @@ const ChatWindow = () => {
     setShowSimNumberInput(false);
     setShowPayment(true);
   };
-  console.log("OTP CODE:", otpCode);
-  // const handleOtpVerify = async () => {
-  //   if (otpCode.length !== 6) {
-  //     alert("Please enter a 6-digit OTP");
-  //     return;
-  //   }
-
-  //   try {
-  //     console.log(otpTransactionId);
-  //     const res = await fetch(
-  //       "https://prosperity.omnisuiteai.com/api/v1/auth/otp/verify",
-  //       {
-  //         method: "POST",
-  //         headers: { "Content-Type": "application/json" },
-  //         body: JSON.stringify({
-  //           code: otpCode,
-  //           transactionId: otpTransactionId,
-  //         }),
-  //       }
-  //     );
-
-  //     const data = await res.json();
-
-  //     if (!res.ok) throw new Error(data.message || "OTP verification failed");
-
-  //     setOtpVerified(true);
-  //     setShowOtpInput(false);
-  //     addBotMessage(
-  //       "OTP verified successfully! You can now proceed to payment."
-  //     );
-  //   } catch (err) {
-  //     console.error(err);
-  //     addBotMessage("OTP verification failed. Please try again.");
-  //   }
-  // };
 
   const handleOtpVerify = async () => {
     if (otpCode.length !== 6) {
@@ -967,6 +908,7 @@ const ChatWindow = () => {
       setLoading(false);
     }
   };
+
   const callDeleteIntentAPI = async (text: string) => {
     const res = await fetch("https://prosperity.omnisuiteai.com/chat/query", {
       method: "POST",
@@ -1260,33 +1202,6 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
                         </p>
                       )}
                     </div>
-                    {/* <DatePicker
-                      selected={
-                        formData.dob
-                          ? parseDateFromDDMMYYYY(formData.dob)
-                          : null
-                      }
-                      onChange={(date: Date | null) => {
-                        if (date) {
-                          const day = String(date.getDate()).padStart(2, "0");
-                          const month = String(date.getMonth() + 1).padStart(
-                            2,
-                            "0"
-                          );
-                          const year = date.getFullYear();
-                          setFormData((prev) => ({
-                            ...prev,
-                            dob: `${day}/${month}/${year}`,
-                          }));
-                          setFormErrors((prev: any) => ({ ...prev, dob: "" }));
-                        } else {
-                          setFormData((prev) => ({ ...prev, dob: "" }));
-                        }
-                      }}
-                      placeholderText="dd/mm/yyyy"
-                      dateFormat="dd/MM/yyyy"
-                      className="w-full p-2 rounded bg-transparent text-white border border-white/50 text-xs sm:text-sm focus:outline-none"
-                    /> */}
                     <DatePicker
                       selected={
                         formData.dob
@@ -1303,28 +1218,23 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
                           const year = date.getFullYear();
                           const newDob = `${day}/${month}/${year}`;
 
+                          // Update form data
                           setFormData((prev) => ({
                             ...prev,
                             dob: newDob,
                           }));
-
-                          // ←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
-                          // Real-time age validation – TypeScript-safe
                           const birthDate = new Date(
                             year,
                             date.getMonth(),
                             date.getDate()
-                          ); // All numbers
+                          );
                           const today = new Date();
-
                           let age =
                             today.getFullYear() - birthDate.getFullYear();
-                          const monthDiff =
-                            today.getMonth() - birthDate.getMonth();
+                          const m = today.getMonth() - birthDate.getMonth();
                           if (
-                            monthDiff < 0 ||
-                            (monthDiff === 0 &&
-                              today.getDate() < birthDate.getDate())
+                            m < 0 ||
+                            (m === 0 && today.getDate() < birthDate.getDate())
                           ) {
                             age--;
                           }
@@ -1334,10 +1244,8 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
                               "You must be at least 18 years old to sign up."
                             );
                           } else {
-                            setAgeError(""); // Clear error immediately
+                            setAgeError(""); // Clear error if now 18+
                           }
-                          // ←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
-
                           setFormErrors((prev: any) => ({ ...prev, dob: "" }));
                         } else {
                           setFormData((prev) => ({ ...prev, dob: "" }));
@@ -1460,14 +1368,79 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
                         </p>
                       )}
                     </div>
+                    <div>
+                      <input
+                        name="custAuthorityNo"
+                        value={formData.custAuthorityNo}
+                        onChange={(e) => {
+                          const value = e.target.value.substring(0, 20);
+                          setFormData((prev) => ({
+                            ...prev,
+                            custAuthorityNo: String(value),
+                          }));
+                          setFormErrors((prev: any) => ({
+                            ...prev,
+                            custAuthorityNo: "",
+                          }));
+                        }}
+                        placeholder="Customer Authority Number"
+                        maxLength={20}
+                        className="w-full p-1.5 sm:p-2 rounded bg-transparent text-white border border-white/50 text-xs sm:text-sm"
+                        required
+                      />
+                      {formErrors.custAuthorityNo && (
+                        <p className="text-red-300 text-xs mt-0.5 sm:mt-1">
+                          {formErrors.custAuthorityNo}
+                        </p>
+                      )}
+                    </div>
+                    <div>
+                      <select
+                        name="custAuthorityType"
+                        value={formData.custAuthorityType}
+                        onChange={(e) => {
+                          setFormData((prev) => ({
+                            ...prev,
+                            custAuthorityType: e.target.value,
+                          }));
+                          setFormErrors((prev: any) => ({
+                            ...prev,
+                            custAuthorityType: "",
+                          }));
+                        }}
+                        className="w-full p-1.5 sm:p-2 rounded bg-transparent text-white border border-white/50 text-xs sm:text-sm focus:outline-none"
+                        required
+                      >
+                        <option value="" className="text-black">
+                          Customer Authority Type
+                        </option>
+                        <option value="AC" className="text-black">
+                          Customer Number and Account Password
+                        </option>
+                        <option value="DL" className="text-black">
+                          Driver License Number
+                        </option>
+                        <option value="PA" className="text-black">
+                          Passport Number
+                        </option>
+                        <option value="PI" className="text-black">
+                          Photo ID Type
+                        </option>
+                        <option value="PN" className="text-black">
+                          Pensioner Card Number
+                        </option>
+                        <option value="UB" className="text-black">
+                          Utility Bill
+                        </option>
+                      </select>
+
+                      {formErrors.custAuthorityType && (
+                        <p className="text-red-300 text-xs mt-0.5 sm:mt-1">
+                          {formErrors.custAuthorityType}
+                        </p>
+                      )}
+                    </div>
                   </div>
-                  {/* <button
-                    type="submit"
-                    disabled={loading}
-                    className="mt-3 sm:mt-4 w-full bg-[#2bb673] text-white py-1.5 sm:py-2 rounded hover:opacity-90 text-xs sm:text-sm"
-                  >
-                    Submit Details
-                  </button> */}
                   {ageError && (
                     <p className="text-red-400 font-semibold text-sm mt-2 col-span-2 text-center">
                       {ageError}
@@ -1691,7 +1664,7 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
                     </button>
                   ))}
                 </div>
-              ) : showOtpInput ? (
+              ) : showOtpInput ? ( // OTP input only appears for existing numbers
                 <div className="flex flex-col items-center gap-3 p-4 bg-white/10 rounded-lg border border-white/30 text-white">
                   <p className="text-sm sm:text-base">
                     Enter the OTP sent to your existing number:
@@ -1710,7 +1683,7 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
                   <button
                     onClick={handleOtpVerify}
                     disabled={otpCode.length !== 6}
-                    className="bg-[#2bb673] text-white px-8 py-2 rounded hover:opacity-90 disabled:opacity-50 text-sm"
+                    className="bg-[#2bb673] text-white px-4 py-1 rounded hover:opacity-90 text-xs sm:text-sm"
                   >
                     {loading ? "Verifying..." : "Verify OTP"}
                   </button>
