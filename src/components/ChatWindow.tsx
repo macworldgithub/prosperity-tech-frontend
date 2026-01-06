@@ -70,6 +70,10 @@ const ChatWindow = () => {
   const [loadingStates, setLoadingStates] = useState(false);
   const [numberDecisionMade, setNumberDecisionMade] = useState(false);
   const [ageError, setAgeError] = useState("");
+  const [showNumberConfirmation, setShowNumberConfirmation] = useState(false);
+  const [confirmationType, setConfirmationType] = useState<
+    "new" | "existing" | null
+  >(null);
 
   useEffect(() => {
     const fromBanner = searchParams.get("fromBanner");
@@ -325,18 +329,28 @@ const ChatWindow = () => {
     await handleSend("new number");
   };
 
+  // const handleExistingNumber = () => {
+  //   setShowNumberTypeSelection(false);
+  //   setShowConfirmNewNumber(true);
+  //   setExistingNumberType(null);
+  //   setShowArnInput(false);
+  //   setArn("");
+  //   setExistingPhone("");
+  //   setShowConfirmExistingNumber(false);
+
+  //   setShowExistingNumberOptions(true);
+  // };
   const handleExistingNumber = () => {
     setShowNumberTypeSelection(false);
-    setShowConfirmNewNumber(true);
+    setConfirmationType("existing");
+    setShowNumberConfirmation(true);
     setExistingNumberType(null);
     setShowArnInput(false);
     setArn("");
     setExistingPhone("");
     setShowConfirmExistingNumber(false);
-
     setShowExistingNumberOptions(true);
   };
-
   const handleExistingTypeSelect = (type: "prepaid" | "postpaid") => {
     setExistingNumberType(type);
     setShowArnInput(type === "postpaid");
