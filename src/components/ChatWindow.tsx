@@ -3,7 +3,8 @@ import React, { useState, useEffect } from "react";
 import { PaymentCard } from "./PaymentCard";
 import { useRouter, useSearchParams } from "next/navigation";
 import { formatDob, formatDobToISO, isDeleteIntent } from "@/lib/utils";
-import DatePicker from "react-datepicker";
+import Flatpickr from "react-flatpickr";
+import "flatpickr/dist/themes/dark.css";
 import sessionStorage from "redux-persist/es/storage/session";
 
 interface Plan {
@@ -1250,59 +1251,52 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
                         </p>
                       )}
                     </div>
-                    <DatePicker
-                      selected={
-                        formData.dob
-                          ? parseDateFromDDMMYYYY(formData.dob)
-                          : null
-                      }
-                      onChange={(date: Date | null) => {
-                        if (date) {
-                          const day = String(date.getDate()).padStart(2, "0");
-                          const month = String(date.getMonth() + 1).padStart(
-                            2,
-                            "0"
-                          );
-                          const year = date.getFullYear();
-                          const newDob = `${day}/${month}/${year}`;
-
-                          // Update form data
-                          setFormData((prev) => ({
-                            ...prev,
-                            dob: newDob,
-                          }));
-                          const birthDate = new Date(
-                            year,
-                            date.getMonth(),
-                            date.getDate()
-                          );
-                          const today = new Date();
-                          let age =
-                            today.getFullYear() - birthDate.getFullYear();
-                          const m = today.getMonth() - birthDate.getMonth();
-                          if (
-                            m < 0 ||
-                            (m === 0 && today.getDate() < birthDate.getDate())
-                          ) {
-                            age--;
-                          }
-
-                          if (age < 18) {
-                            setAgeError(
-                              "You must be at least 18 years old to sign up."
-                            );
-                          } else {
-                            setAgeError(""); // Clear error if now 18+
-                          }
-                          setFormErrors((prev: any) => ({ ...prev, dob: "" }));
-                        } else {
-                          setFormData((prev) => ({ ...prev, dob: "" }));
-                          setAgeError("");
-                        }
+                    <Flatpickr
+                      placeholder="dd/mm/yyyy"
+                      value={formData.dob}
+                      options={{
+                        dateFormat: "d/m/Y",
+                        maxDate: "today",
                       }}
-                      placeholderText="dd/mm/yyyy"
-                      dateFormat="dd/MM/yyyy"
-                      className="w-full p-2 rounded bg-transparent text-white border border-white/50 text-xs sm:text-sm focus:outline-none"
+                      onChange={([date]) => {
+                        if (!date) return;
+
+                        const day = String(date.getDate()).padStart(2, "0");
+                        const month = String(date.getMonth() + 1).padStart(
+                          2,
+                          "0"
+                        );
+                        const year = date.getFullYear();
+                        const newDob = `${day}/${month}/${year}`;
+
+                        setFormData((prev) => ({
+                          ...prev,
+                          dob: newDob,
+                        }));
+                        const birthDate = new Date(
+                          year,
+                          date.getMonth(),
+                          date.getDate()
+                        );
+                        const today = new Date();
+                        let age = today.getFullYear() - birthDate.getFullYear();
+                        const m = today.getMonth() - birthDate.getMonth();
+                        if (
+                          m < 0 ||
+                          (m === 0 && today.getDate() < birthDate.getDate())
+                        ) {
+                          age--;
+                        }
+                        if (age < 18) {
+                          setAgeError(
+                            "You must be at least 18 years old to sign up."
+                          );
+                        } else {
+                          setAgeError(""); // Clear error if now 18+
+                        }
+                        setFormErrors((prev: any) => ({ ...prev, dob: "" }));
+                      }}
+                      className="w-full p-2 rounded bg-transparent text-white border border-white/50 text-xs sm:text-sm"
                     />
                     {formErrors.dob && (
                       <p className="text-red-300 text-xs mt-1">
