@@ -127,7 +127,8 @@ const PlansSection: React.FC = () => {
                       "Unlimited SMS",
                       "Auto recharge enabled",
                     ]}
-                    highlight={plan.network === "5G"}
+                    // highlight={plan.network === "5G"}
+                    highlight={false}
                   />
                 );
               })}
@@ -167,7 +168,8 @@ const PlansSection: React.FC = () => {
                       "Unlimited SMS",
                       "5G network access",
                     ]}
-                    highlight={plan.network === "5G"}
+                    // highlight={plan.network === "5G"}
+                    highlight={true}
                   />
                 );
               })}

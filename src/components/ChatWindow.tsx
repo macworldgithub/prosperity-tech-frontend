@@ -1079,7 +1079,7 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
     <>
       {/* Background with image */}
       <div
-        className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 bg-cover bg-center"
+        className="fixed inset-0 bg-black/40 z-40 bg-cover bg-center "
         style={{
           backgroundImage: "url('/images/bg.png')",
         }}
@@ -1087,7 +1087,7 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
 
       {/* Chat Modal */}
       <div className="fixed inset-0 flex items-center justify-center z-50 p-2 sm:p-4 md:p-0 overflow-y-auto">
-        <div className="w-full sm:w-[50%] h-[80vh] sm:h-[75vh] md:max-h-[600px] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden">
+        <div className="w-full sm:w-[50%] h-[70vh] sm:h-[75vh] md:max-h-[600px] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden">
           {/* Header */}
           <div className="flex justify-between items-center p-2 sm:p-3 bg-[#215988] rounded-t-2xl">
             <div className="flex items-center gap-1 sm:gap-2">
@@ -1417,32 +1417,6 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
                       )}
                     </div>
                     <div>
-                      <input
-                        name="custAuthorityNo"
-                        value={formData.custAuthorityNo}
-                        onChange={(e) => {
-                          const value = e.target.value.substring(0, 20);
-                          setFormData((prev) => ({
-                            ...prev,
-                            custAuthorityNo: String(value),
-                          }));
-                          setFormErrors((prev: any) => ({
-                            ...prev,
-                            custAuthorityNo: "",
-                          }));
-                        }}
-                        placeholder="Customer Authority Number"
-                        maxLength={20}
-                        className="w-full p-1.5 sm:p-2 rounded bg-transparent text-white border border-white/50 text-xs sm:text-sm"
-                        required
-                      />
-                      {formErrors.custAuthorityNo && (
-                        <p className="text-red-300 text-xs mt-0.5 sm:mt-1">
-                          {formErrors.custAuthorityNo}
-                        </p>
-                      )}
-                    </div>
-                    <div>
                       <select
                         name="custAuthorityType"
                         value={formData.custAuthorityType}
@@ -1459,32 +1433,57 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
                         className="w-full p-1.5 sm:p-2 rounded bg-transparent text-white border border-white/50 text-xs sm:text-sm focus:outline-none"
                         required
                       >
+                        <option
+                          value=""
+                          disabled
+                          hidden
+                          className="text-gray-400"
+                        >
+                          ID Type
+                        </option>
                         <option value="" className="text-black">
                           Customer Authority Type
                         </option>
-                        <option value="AC" className="text-black">
-                          Customer Number and Account Password
-                        </option>
                         <option value="DL" className="text-black">
-                          Driver License Number
+                          Driver License
                         </option>
                         <option value="PA" className="text-black">
-                          Passport Number
+                          Passport
                         </option>
                         <option value="PI" className="text-black">
-                          Photo ID Type
-                        </option>
-                        <option value="PN" className="text-black">
-                          Pensioner Card Number
-                        </option>
-                        <option value="UB" className="text-black">
-                          Utility Bill
+                          Proof of age Card
                         </option>
                       </select>
 
                       {formErrors.custAuthorityType && (
                         <p className="text-red-300 text-xs mt-0.5 sm:mt-1">
                           {formErrors.custAuthorityType}
+                        </p>
+                      )}
+                    </div>
+                    <div>
+                      <input
+                        name="custAuthorityNo"
+                        value={formData.custAuthorityNo}
+                        onChange={(e) => {
+                          const value = e.target.value.substring(0, 20);
+                          setFormData((prev) => ({
+                            ...prev,
+                            custAuthorityNo: String(value),
+                          }));
+                          setFormErrors((prev: any) => ({
+                            ...prev,
+                            custAuthorityNo: "",
+                          }));
+                        }}
+                        placeholder="Your ID Number"
+                        maxLength={20}
+                        className="w-full p-1.5 sm:p-2 rounded bg-transparent text-white border border-white/50 text-xs sm:text-sm"
+                        required
+                      />
+                      {formErrors.custAuthorityNo && (
+                        <p className="text-red-300 text-xs mt-0.5 sm:mt-1">
+                          {formErrors.custAuthorityNo}
                         </p>
                       )}
                     </div>

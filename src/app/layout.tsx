@@ -3,7 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
-import ReduxProvider from "@/store/ReduxProvider"; 
+import ReduxProvider from "@/store/ReduxProvider";
 import "react-datepicker/dist/react-datepicker.css";
 
 const geistSans = Geist({
@@ -33,11 +33,11 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-white text-gray-900`}
       >
         <ReduxProvider>
-        <Navbar />
+          <Navbar />
 
-        {/* Page Content */}
-        <main>{children}</main>
-        <Footer />
+          {/* Page Content */}
+          <main>{children}</main>
+          <Footer />
         </ReduxProvider>
       </body>
     </html>
