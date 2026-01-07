@@ -853,14 +853,41 @@ const ChatWindow = () => {
     addBotMessage("Would you like a new number or use your existing number?");
   };
 
-  const handleSimNumberContinue = () => {
-    if (simNumber.trim().length !== 13) {
+  const handleSimNumberContinue = async () => {
+    const trimmedSim = simNumber.trim();
+
+    if (trimmedSim.length !== 13) {
       alert("SIM number must be exactly 13 digits.");
       return;
     }
-    localStorage.setItem("physicalSimNumber", simNumber.trim());
-    setShowSimNumberInput(false);
-    setShowPayment(true);
+
+    try {
+      const response = await fetch(
+        `https://prosperity.omnisuiteai.com/api/v1/numbers/check/${trimmedSim}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const result = await response.json();
+
+      if (!result?.data?.success) {
+        alert("SIM number is not valid.");
+        setShowSimNumberInput(true);
+        return;
+      }
+
+      localStorage.setItem("physicalSimNumber", trimmedSim);
+      setShowSimNumberInput(false);
+      setShowPayment(true);
+    } catch (error) {
+      console.error("SIM check failed:", error);
+      alert("Unable to verify SIM number. Please try again.");
+      setShowSimNumberInput(true);
+    }
   };
 
   const handleOtpVerify = async () => {
@@ -1516,9 +1543,10 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
                   />
                   <button
                     onClick={handleSimNumberContinue}
+                    disabled={loading}
                     className="bg-[#2bb673] text-white px-4 py-1 rounded hover:opacity-90 text-xs sm:text-sm"
                   >
-                    Continue
+                    {loading ? "Checking..." : "Continue"}
                   </button>
                 </div>
               ) : showNumberTypeSelection ? (
