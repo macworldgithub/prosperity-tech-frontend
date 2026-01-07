@@ -408,7 +408,11 @@ const Navbar = () => {
                 variant="outline"
                 size="lg"
                 className="w-full max-w-xs"
-                onClick={handleLogin}
+                // onClick={handleLogin}
+                onClick={() => {
+                  router.push("/login");
+                  setMenuOpen(false);
+                }}
               >
                 Login
               </Button>
