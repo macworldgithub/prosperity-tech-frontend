@@ -130,9 +130,9 @@ export const PaymentCard = ({
             const rawEmail = await sessionStorage.getItem("userEmail");
             const email = propEmail || rawEmail || "";
             console.log(email, "email");
-            const amount =
-              String(planPrice) ||
-              String(localStorage.getItem("planPrice") || 0);
+            const amount = 0;
+            // String(planPrice) ||
+            // String(localStorage.getItem("planPrice") || 0);
             const comment = `Ref-${Math.random().toString(36).substring(2, 8)}`;
 
             const processPayload = {
