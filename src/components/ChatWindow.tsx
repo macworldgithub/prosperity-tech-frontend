@@ -369,6 +369,7 @@ const ChatWindow = () => {
       alert("Please enter your ARN (Account Reference Number)");
       return;
     }
+    localStorage.setItem("portingNumber", existingPhone);
 
     setIsPorting(true);
     setHasSelectedNumber(true);
@@ -1001,9 +1002,11 @@ const ChatWindow = () => {
       const existingType = existingNumberType;
       const arn = localStorage.getItem("arn") || "";
       const dob = formData.dob || "";
-
+      const portingNo = localStorage.getItem("portingNumber") || "";
+      const activationNumber = isPorting ? portingNo : selectedSim || "";
+      
       let body: any = {
-        number: selectedSim,
+        number: activationNumber,
         cust: {
           custNo,
           suburb: formData.suburb,
@@ -1017,7 +1020,6 @@ const ChatWindow = () => {
             ? localStorage.getItem("physicalSimNumber") || ""
             : "",
       };
-
       if (isPorting) {
         body.numType = existingType;
 
