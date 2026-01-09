@@ -1004,7 +1004,7 @@ const ChatWindow = () => {
       const dob = formData.dob || "";
       const portingNo = localStorage.getItem("portingNumber") || "";
       const activationNumber = isPorting ? portingNo : selectedSim || "";
-      
+
       let body: any = {
         number: activationNumber,
         cust: {
@@ -1090,7 +1090,7 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
 
       {/* Chat Modal */}
       <div className="fixed inset-0 flex items-center justify-center z-50 p-2 sm:p-4 md:p-0 overflow-y-auto">
-        <div className="w-full sm:w-[50%] h-[70vh] sm:h-[75vh] md:max-h-[600px] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden">
+        <div className="w-full sm:w-[50%] h-[70vh] sm:h-[65vh] md:max-h-[600px] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden">
           {/* Header */}
           <div className="flex justify-between items-center p-2 sm:p-3 bg-[#215988] rounded-t-2xl">
             <div className="flex items-center gap-1 sm:gap-2">
