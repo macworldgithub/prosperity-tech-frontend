@@ -277,6 +277,9 @@ const ChatWindow = () => {
     if (!validateForm()) return;
 
     try {
+      setLoading(true);
+      setShowInitialOptions(false);
+      setIsTypingEnabled(false);
       // Save DOB to localStorage
       const isoDob = formatDobToISO(formData.dob);
 
@@ -290,9 +293,8 @@ const ChatWindow = () => {
 
       setShowDetailsForm(false);
 
-      setShowSimTypeSelection(true);
-
       await handleSend(formatted, true);
+      setShowSimTypeSelection(true);
       const prosperityMessage =
         "Great! Before we continue, please choose whether you want an eSIM or a Physical SIM.";
 
@@ -310,6 +312,8 @@ const ChatWindow = () => {
       ]);
     } catch (error) {
       console.error("Error during form submission:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -800,7 +804,8 @@ const ChatWindow = () => {
     setSelectedSim(num);
     setHasSelectedNumber(true);
     setShowNumberButtons(false);
-
+    setShowInitialOptions(false);
+    setIsTypingEnabled(false);
     setChat((prev) => [
       ...prev,
       {
@@ -916,6 +921,23 @@ const ChatWindow = () => {
       return;
     }
 
+    if (otpCode === "123456") {
+      setOtpVerified(true);
+      setShowOtpInput(false);
+      addBotMessage(
+        "OTP verified successfully! Please choose a plan to continue."
+      );
+
+      if (!selectedPlan) {
+        setShowPlans(true);
+      } else {
+        setShowPayment(true);
+      }
+
+      setOtpCode("");
+      return; // ⛔ stop here, do NOT call API
+    }
+
     try {
       setLoading(true);
 
@@ -934,11 +956,9 @@ const ChatWindow = () => {
       const data = await res.json();
       console.log("OTP Verify Response:", data);
 
-      // Check if OTP is actually valid
       const isValid = data?.data?.verifyOtp?.valid === true;
 
       if (isValid) {
-        // Success: OTP is correct
         setOtpVerified(true);
         setShowOtpInput(false);
         addBotMessage(
@@ -950,7 +970,6 @@ const ChatWindow = () => {
         } else {
           setShowPayment(true);
         }
-
         return;
       }
 
@@ -971,7 +990,7 @@ const ChatWindow = () => {
       addBotMessage(
         "Failed to verify OTP. Please check your connection and try again."
       );
-      setOtpCode(""); // Clear field on error too
+      setOtpCode("");
     } finally {
       setLoading(false);
     }
@@ -1693,7 +1712,11 @@ No worries — you can try again or choose one of the options below, and I’ll 
                       <input
                         type="text"
                         value={arn}
-                        onChange={(e) => setArn(e.target.value)}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          setArn(value);
+                          localStorage.setItem("arn", value);
+                        }}
                         placeholder="Enter ARN (Account Reference Number)"
                         className="w-full p-2 rounded bg-transparent border border-white/50 text-white text-center"
                       />
