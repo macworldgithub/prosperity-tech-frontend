@@ -76,6 +76,20 @@ const ChatWindow = () => {
     "new" | "existing" | null
   >(null);
   const [flowCompleted, setFlowCompleted] = useState(false);
+  const [typingDots, setTypingDots] = useState("");
+
+  useEffect(() => {
+    if (!loading) {
+      setTypingDots("");
+      return;
+    }
+
+    const interval = setInterval(() => {
+      setTypingDots((prev) => (prev.length < 3 ? prev + "." : ""));
+    }, 500);
+
+    return () => clearInterval(interval);
+  }, [loading]);
 
   useEffect(() => {
     const fromBanner = searchParams.get("fromBanner");
@@ -370,22 +384,25 @@ const ChatWindow = () => {
       alert("Please enter your ARN (Account Reference Number)");
       return;
     }
-    localStorage.setItem("portingNumber", existingPhone);
 
-    setIsPorting(true);
-    setHasSelectedNumber(true);
-    setShowNumberButtons(false);
-
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-
-    if (!custNo) {
-      addBotMessage(
-        "We're having trouble fetching your customer ID. Please try again in a moment."
-      );
-      return;
-    }
+    setLoading(true);
 
     try {
+      localStorage.setItem("portingNumber", existingPhone);
+
+      setIsPorting(true);
+      setHasSelectedNumber(true);
+      setShowNumberButtons(false);
+
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+
+      if (!custNo) {
+        addBotMessage(
+          "We're having trouble fetching your customer ID. Please try again in a moment."
+        );
+        return;
+      }
+
       const res = await fetch(
         "https://prosperity.omnisuiteai.com/api/v1/auth/otp",
         {
@@ -409,6 +426,8 @@ const ChatWindow = () => {
     } catch (err) {
       console.error(err);
       addBotMessage("Failed to send OTP. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -740,8 +759,6 @@ const ChatWindow = () => {
     ) {
       setNumberOptions(matches);
       setShowNumberButtons(true);
-      // Override bot message
-      addBotMessage("Please choose a number from the selection below");
       return;
     }
 
@@ -1074,7 +1091,33 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
       setShowInitialOptions(false);
       setIsTypingEnabled(false);
     } catch (err) {
-      handleSend("Activation failed. Please try again.");
+      console.error("Activation error:", err);
+
+      const failureMessage = `Unfortunately, we couldn't complete your SIM activation.
+
+This can sometimes happen if:
+• Some of the details provided were incorrect
+• There was a temporary system issue
+• The selected number or SIM could not be validated
+
+No worries — you can try again or choose one of the options below, and I’ll help you from there.`;
+
+      setChat((prev) => [
+        ...prev,
+        {
+          id: prev.length + 1,
+          type: "bot",
+          text: failureMessage,
+          time: new Date().toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+        },
+      ]);
+
+      setFlowCompleted(false);
+      setShowInitialOptions(true);
+      setIsTypingEnabled(false);
     }
   };
 
@@ -1170,21 +1213,27 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
 
             {/* Loading indicator */}
             {loading && (
-              <div className="flex items-start gap-2 sm:gap-3 mb-3 sm:mb-4 md:mb-6">
-                <div className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 bg-yellow-400 rounded-full flex items-center justify-center overflow-hidden">
+              <div className="flex items-start gap-2 sm:gap-3 mb-3 sm:mb-4 md:mb-6 animate-fade-in">
+                <div className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 bg-yellow-400 rounded-full flex items-center justify-center overflow-hidden shadow-sm">
                   <img
                     src="/images/bot.png"
                     alt="Loading Avatar"
                     className="w-full h-full rounded-full object-cover"
                   />
                 </div>
-                <div className="bg-white rounded-2xl px-3 py-1.5 sm:px-4 sm:py-2 md:px-6 md:py-2 shadow-md max-w-[90%] sm:max-w-[80%] md:max-w-[70%]">
-                  <p className="text-[#0E3B5C] text-xs sm:text-xs md:text-sm leading-relaxed">
-                    Typing...
+
+                <div className="bg-white rounded-2xl px-4 py-2 shadow-md max-w-[90%] sm:max-w-[80%] md:max-w-[70%]">
+                  <p className="text-[#0E3B5C] text-xs sm:text-sm font-medium">
+                    Prosperity Assistant
+                  </p>
+                  <p className="text-[#0E3B5C] text-xs sm:text-sm leading-relaxed">
+                    Preparing the next step{typingDots}
                   </p>
                 </div>
               </div>
             )}
+
+
 
             {/* Input Bar */}
             <div className="mt-auto">
@@ -1654,12 +1703,13 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
                   <button
                     onClick={handleExistingNumberSubmit}
                     disabled={
+                      loading ||
                       !existingPhone.match(/^04\d{8}$/) ||
                       (existingNumberType === "postpaid" && !arn.trim())
                     }
                     className="w-full bg-[#2bb673] text-white py-2 rounded hover:opacity-90 disabled:opacity-50"
                   >
-                    Continue
+                    {loading ? "Processing..." : "Continue"}
                   </button>
                 </div>
               ) : showConfirmExistingNumber ? (
