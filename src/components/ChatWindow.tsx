@@ -75,6 +75,7 @@ const ChatWindow = () => {
   const [confirmationType, setConfirmationType] = useState<
     "new" | "existing" | null
   >(null);
+  const [flowCompleted, setFlowCompleted] = useState(false);
 
   useEffect(() => {
     const fromBanner = searchParams.get("fromBanner");
@@ -1069,6 +1070,9 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
           }),
         },
       ]);
+      setFlowCompleted(true);
+      setShowInitialOptions(false);
+      setIsTypingEnabled(false);
     } catch (err) {
       handleSend("Activation failed. Please try again.");
     }
@@ -1138,9 +1142,8 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
             {chat.map((msg) => (
               <div
                 key={msg.id}
-                className={`flex items-start gap-2 sm:gap-3 mb-3 sm:mb-4 md:mb-6 ${
-                  msg.type === "user" ? "justify-end" : "justify-start"
-                }`}
+                className={`flex items-start gap-2 sm:gap-3 mb-3 sm:mb-4 md:mb-6 ${msg.type === "user" ? "justify-end" : "justify-start"
+                  }`}
               >
                 {msg.type === "bot" && (
                   <div className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 bg-yellow-400 rounded-full flex-shrink-0 flex items-center justify-center overflow-hidden">
@@ -1153,11 +1156,10 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
                 )}
 
                 <div
-                  className={`${
-                    msg.type === "user"
-                      ? "bg-white text-[#0E3B5C]"
-                      : "bg-white text-[#0E3B5C]"
-                  } rounded-2xl px-3 py-1.5 sm:px-4 sm:py-2 md:px-6 md:py-2 shadow-md max-w-[90%] sm:max-w-[80%] md:max-w-[70%]`}
+                  className={`${msg.type === "user"
+                    ? "bg-white text-[#0E3B5C]"
+                    : "bg-white text-[#0E3B5C]"
+                    } rounded-2xl px-3 py-1.5 sm:px-4 sm:py-2 md:px-6 md:py-2 shadow-md max-w-[90%] sm:max-w-[80%] md:max-w-[70%]`}
                 >
                   <p className="text-xs sm:text-xs md:text-sm leading-relaxed break-words">
                     {msg.text}
@@ -1492,11 +1494,10 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
                   <button
                     type="submit"
                     disabled={loading || ageError !== ""} // ← YEH ADD KARO
-                    className={`mt-3 sm:mt-4 w-full py-3 rounded text-white font-semibold transition-opacity ${
-                      ageError
-                        ? "bg-gray-500 cursor-not-allowed"
-                        : "bg-[#2bb673] hover:opacity-90"
-                    }`}
+                    className={`mt-3 sm:mt-4 w-full py-3 rounded text-white font-semibold transition-opacity ${ageError
+                      ? "bg-gray-500 cursor-not-allowed"
+                      : "bg-[#2bb673] hover:opacity-90"
+                      }`}
                   >
                     {loading ? "Submitting..." : "Submit Details"}
                   </button>
@@ -1600,21 +1601,19 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
                   <div className="flex gap-3 justify-center mb-4">
                     <button
                       onClick={() => handleExistingTypeSelect("prepaid")}
-                      className={`px-4 py-2 rounded ${
-                        existingNumberType === "prepaid"
-                          ? "bg-[#2bb673]"
-                          : "bg-gray-600"
-                      } text-white`}
+                      className={`px-4 py-2 rounded ${existingNumberType === "prepaid"
+                        ? "bg-[#2bb673]"
+                        : "bg-gray-600"
+                        } text-white`}
                     >
                       Prepaid
                     </button>
                     <button
                       onClick={() => handleExistingTypeSelect("postpaid")}
-                      className={`px-4 py-2 rounded ${
-                        existingNumberType === "postpaid"
-                          ? "bg-[#2bb673]"
-                          : "bg-gray-600"
-                      } text-white`}
+                      className={`px-4 py-2 rounded ${existingNumberType === "postpaid"
+                        ? "bg-[#2bb673]"
+                        : "bg-gray-600"
+                        } text-white`}
                     >
                       Postpaid
                     </button>
@@ -1769,7 +1768,7 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
                     if (success) handleActivateOrder();
                   }}
                 />
-              ) : showInitialOptions ? (
+              ) : showInitialOptions && !flowCompleted ? (
                 <div className="flex flex-col items-center gap-3 p-4 bg-white/10 backdrop-blur-sm rounded-lg border border-white/30 text-white">
                   <p className="text-sm sm:text-base text-center">
                     How can I help you today?
