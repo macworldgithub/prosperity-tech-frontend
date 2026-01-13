@@ -921,23 +921,6 @@ const ChatWindow = () => {
       return;
     }
 
-    if (otpCode === "123456") {
-      setOtpVerified(true);
-      setShowOtpInput(false);
-      addBotMessage(
-        "OTP verified successfully! Please choose a plan to continue."
-      );
-
-      if (!selectedPlan) {
-        setShowPlans(true);
-      } else {
-        setShowPayment(true);
-      }
-
-      setOtpCode("");
-      return; // ⛔ stop here, do NOT call API
-    }
-
     try {
       setLoading(true);
 
