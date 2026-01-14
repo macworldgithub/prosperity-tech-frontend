@@ -1490,9 +1490,6 @@ No worries — you can try again or choose one of the options below, and I’ll 
                         >
                           ID Type
                         </option>
-                        <option value="" className="text-black">
-                          Customer Authority Type
-                        </option>
                         <option value="DL" className="text-black">
                           Driver License
                         </option>
