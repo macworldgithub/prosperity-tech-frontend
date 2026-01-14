@@ -3,8 +3,8 @@ import React, { useState, useEffect } from "react";
 import { PaymentCard } from "./PaymentCard";
 import { useRouter, useSearchParams } from "next/navigation";
 import { formatDob, formatDobToISO, isDeleteIntent } from "@/lib/utils";
-import Flatpickr from "react-flatpickr";
-import "flatpickr/dist/themes/dark.css";
+// import Flatpickr from "react-flatpickr";
+// import "flatpickr/dist/themes/dark.css";
 import sessionStorage from "redux-persist/es/storage/session";
 
 interface Plan {
@@ -214,22 +214,68 @@ const ChatWindow = () => {
     if (!formData.custAuthorityType) {
       errors.custAuthorityType = "Please select a Customer Authority Type";
     }
-    if (formData.dob) {
-      const [day, month, year] = formData.dob.split("/").map(Number);
-      const birthDate = new Date(year, month - 1, day);
-      const today = new Date();
-      let age = today.getFullYear() - birthDate.getFullYear();
-      const m = today.getMonth() - birthDate.getMonth();
-      if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
-        age--;
-      }
+    // if (formData.dob) {
+    //   const [day, month, year] = formData.dob.split("/").map(Number);
+    //   const birthDate = new Date(year, month - 1, day);
+    //   const today = new Date();
+    //   let age = today.getFullYear() - birthDate.getFullYear();
+    //   const m = today.getMonth() - birthDate.getMonth();
+    //   if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+    //     age--;
+    //   }
 
-      if (age < 18) {
-        setAgeError("You must be at least 18 years old to sign up.");
+    //   if (age < 18) {
+    //     setAgeError("You must be at least 18 years old to sign up.");
+    //     ok = false;
+    //   } else {
+    //     setAgeError(""); // clear error if age is ok
+    //   }
+    // }
+    if (formData.dob) {
+      const match = formData.dob.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+      if (!match) {
+        errors.dob = "Please enter date in dd/mm/yyyy format";
         ok = false;
       } else {
-        setAgeError(""); // clear error if age is ok
+        const [, day, month, year] = match;
+        const birthDate = new Date(
+          Number(year),
+          Number(month) - 1,
+          Number(day)
+        );
+
+        // Invalid date check (e.g. 31/02/2000, 00/01/2000 etc.)
+        if (
+          isNaN(birthDate.getTime()) ||
+          Number(day) < 1 ||
+          Number(day) > 31 ||
+          Number(month) < 1 ||
+          Number(month) > 12 ||
+          Number(year) < 1900 ||
+          Number(year) > new Date().getFullYear()
+        ) {
+          errors.dob = "Invalid date";
+          ok = false;
+        } else {
+          // Age calculation only when date is valid
+          const today = new Date();
+          let age = today.getFullYear() - birthDate.getFullYear();
+          const m = today.getMonth() - birthDate.getMonth();
+          if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+            age--;
+          }
+
+          if (age < 18) {
+            setAgeError("You must be at least 18 years old to sign up.");
+            ok = false;
+          } else {
+            setAgeError("");
+          }
+        }
       }
+    } else {
+      errors.dob = "Date of birth is required";
+      ok = false;
     }
     setFormErrors(errors);
     return ok;
@@ -244,10 +290,39 @@ const ChatWindow = () => {
       [name]: value,
     }));
     setFormErrors((prev: any) => ({ ...prev, [name]: "" }));
-    if (name === "dob" && value.trim()) {
-      const match = value.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
-      if (match) {
-        const [_, day, month, year] = match.map(Number);
+    // if (name === "dob" && value.trim()) {
+    //   const match = value.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+    //   if (match) {
+    //     const [_, day, month, year] = match.map(Number);
+    //     const birthDate = new Date(year, month - 1, day);
+    //     const today = new Date();
+    //     let age = today.getFullYear() - birthDate.getFullYear();
+    //     const m = today.getMonth() - birthDate.getMonth();
+    //     if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+    //       age--;
+    //     }
+
+    //     if (age < 18) {
+    //       setAgeError("You must be at least 18 years old to sign up.");
+    //     } else {
+    //       setAgeError("");
+    //     }
+    //   }
+    // }
+    if (name === "dob") {
+      const value = e.target.value;
+      // Allow only digits and one '/'
+      if (
+        value.length <= 10 &&
+        (/\d/.test(value.slice(-1)) || value.endsWith("/"))
+      ) {
+        setFormData((prev) => ({ ...prev, [name]: value }));
+        setFormErrors((prev: any) => ({ ...prev, [name]: "" }));
+      }
+
+      // Real-time age check only when format is complete
+      if (value.match(/^(\d{2})\/(\d{2})\/(\d{4})$/)) {
+        const [, day, month, year] = value.split("/").map(Number);
         const birthDate = new Date(year, month - 1, day);
         const today = new Date();
         let age = today.getFullYear() - birthDate.getFullYear();
@@ -255,12 +330,13 @@ const ChatWindow = () => {
         if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
           age--;
         }
-
         if (age < 18) {
           setAgeError("You must be at least 18 years old to sign up.");
         } else {
           setAgeError("");
         }
+      } else {
+        setAgeError(""); // Clear error if incomplete
       }
     }
   };
@@ -1187,8 +1263,9 @@ No worries — you can try again or choose one of the options below, and I’ll 
             {chat.map((msg) => (
               <div
                 key={msg.id}
-                className={`flex items-start gap-2 sm:gap-3 mb-3 sm:mb-4 md:mb-6 ${msg.type === "user" ? "justify-end" : "justify-start"
-                  }`}
+                className={`flex items-start gap-2 sm:gap-3 mb-3 sm:mb-4 md:mb-6 ${
+                  msg.type === "user" ? "justify-end" : "justify-start"
+                }`}
               >
                 {msg.type === "bot" && (
                   <div className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 bg-yellow-400 rounded-full flex-shrink-0 flex items-center justify-center overflow-hidden">
@@ -1201,10 +1278,11 @@ No worries — you can try again or choose one of the options below, and I’ll 
                 )}
 
                 <div
-                  className={`${msg.type === "user"
-                    ? "bg-white text-[#0E3B5C]"
-                    : "bg-white text-[#0E3B5C]"
-                    } rounded-2xl px-3 py-1.5 sm:px-4 sm:py-2 md:px-6 md:py-2 shadow-md max-w-[90%] sm:max-w-[80%] md:max-w-[70%]`}
+                  className={`${
+                    msg.type === "user"
+                      ? "bg-white text-[#0E3B5C]"
+                      : "bg-white text-[#0E3B5C]"
+                  } rounded-2xl px-3 py-1.5 sm:px-4 sm:py-2 md:px-6 md:py-2 shadow-md max-w-[90%] sm:max-w-[80%] md:max-w-[70%]`}
                 >
                   <p className="text-xs sm:text-xs md:text-sm leading-relaxed break-words">
                     {msg.text}
@@ -1234,8 +1312,6 @@ No worries — you can try again or choose one of the options below, and I’ll 
                 </div>
               </div>
             )}
-
-
 
             {/* Input Bar */}
             <div className="mt-auto">
@@ -1306,7 +1382,7 @@ No worries — you can try again or choose one of the options below, and I’ll 
                         </p>
                       )}
                     </div>
-                    <Flatpickr
+                    {/* <Flatpickr
                       placeholder="dd/mm/yyyy"
                       value={formData.dob}
                       options={{
@@ -1347,17 +1423,34 @@ No worries — you can try again or choose one of the options below, and I’ll 
                             "You must be at least 18 years old to sign up."
                           );
                         } else {
-                          setAgeError(""); // Clear error if now 18+
+                          setAgeError("");
                         }
                         setFormErrors((prev: any) => ({ ...prev, dob: "" }));
                       }}
                       className="w-full p-2 rounded bg-transparent text-white border border-white/50 text-xs sm:text-sm"
-                    />
-                    {formErrors.dob && (
+                    /> */}
+                    <div>
+                      <input
+                        type="text"
+                        name="dob"
+                        value={formData.dob}
+                        onChange={handleFormChange}
+                        placeholder="dd/mm/yyyy"
+                        maxLength={10}
+                        className="w-full p-1.5 sm:p-2 rounded bg-transparent text-white border border-white/50 text-xs sm:text-sm"
+                        required
+                      />
+                      {formErrors.dob && (
+                        <p className="text-red-300 text-xs mt-0.5">
+                          {formErrors.dob}
+                        </p>
+                      )}
+                    </div>
+                    {/* {formErrors.dob && (
                       <p className="text-red-300 text-xs mt-1">
                         {formErrors.dob}
                       </p>
-                    )}
+                    )} */}
 
                     <div>
                       <input
@@ -1542,10 +1635,11 @@ No worries — you can try again or choose one of the options below, and I’ll 
                   <button
                     type="submit"
                     disabled={loading || ageError !== ""} // ← YEH ADD KARO
-                    className={`mt-3 sm:mt-4 w-full py-3 rounded text-white font-semibold transition-opacity ${ageError
-                      ? "bg-gray-500 cursor-not-allowed"
-                      : "bg-[#2bb673] hover:opacity-90"
-                      }`}
+                    className={`mt-3 sm:mt-4 w-full py-3 rounded text-white font-semibold transition-opacity ${
+                      ageError
+                        ? "bg-gray-500 cursor-not-allowed"
+                        : "bg-[#2bb673] hover:opacity-90"
+                    }`}
                   >
                     {loading ? "Submitting..." : "Submit Details"}
                   </button>
@@ -1649,19 +1743,21 @@ No worries — you can try again or choose one of the options below, and I’ll 
                   <div className="flex gap-3 justify-center mb-4">
                     <button
                       onClick={() => handleExistingTypeSelect("prepaid")}
-                      className={`px-4 py-2 rounded ${existingNumberType === "prepaid"
-                        ? "bg-[#2bb673]"
-                        : "bg-gray-600"
-                        } text-white`}
+                      className={`px-4 py-2 rounded ${
+                        existingNumberType === "prepaid"
+                          ? "bg-[#2bb673]"
+                          : "bg-gray-600"
+                      } text-white`}
                     >
                       Prepaid
                     </button>
                     <button
                       onClick={() => handleExistingTypeSelect("postpaid")}
-                      className={`px-4 py-2 rounded ${existingNumberType === "postpaid"
-                        ? "bg-[#2bb673]"
-                        : "bg-gray-600"
-                        } text-white`}
+                      className={`px-4 py-2 rounded ${
+                        existingNumberType === "postpaid"
+                          ? "bg-[#2bb673]"
+                          : "bg-gray-600"
+                      } text-white`}
                     >
                       Postpaid
                     </button>
