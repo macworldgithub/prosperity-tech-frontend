@@ -1,9 +1,10 @@
 @import "tailwindcss";
 
-  :root {
-    --background: #1D5E8E; /* Primary color */
-    --foreground: #171717;
-  }
+:root {
+  --background: #1D5E8E;
+  /* Primary color */
+  --foreground: #171717;
+}
 
 @theme inline {
   --color-background: var(--background);
@@ -12,12 +13,13 @@
   --font-mono: var(--font-geist-mono);
 }
 
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --background: #1D5E8E; /* Primary color for dark mode */
-      --foreground: #ededed;
-    }
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #1D5E8E;
+    /* Primary color for dark mode */
+    --foreground: #ededed;
   }
+}
 
 body {
   background: var(--background);
@@ -30,6 +32,7 @@ body {
     opacity: 0;
     transform: translateY(4px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -38,4 +41,28 @@ body {
 
 .animate-fade-in {
   animation: fade-in 0.25s ease-out;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
 }

@@ -1263,9 +1263,8 @@ No worries — you can try again or choose one of the options below, and I’ll 
             {chat.map((msg) => (
               <div
                 key={msg.id}
-                className={`flex items-start gap-2 sm:gap-3 mb-3 sm:mb-4 md:mb-6 ${
-                  msg.type === "user" ? "justify-end" : "justify-start"
-                }`}
+                className={`flex items-start gap-2 sm:gap-3 mb-3 sm:mb-4 md:mb-6 ${msg.type === "user" ? "justify-end" : "justify-start"
+                  }`}
               >
                 {msg.type === "bot" && (
                   <div className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 bg-yellow-400 rounded-full flex-shrink-0 flex items-center justify-center overflow-hidden">
@@ -1278,11 +1277,10 @@ No worries — you can try again or choose one of the options below, and I’ll 
                 )}
 
                 <div
-                  className={`${
-                    msg.type === "user"
-                      ? "bg-white text-[#0E3B5C]"
-                      : "bg-white text-[#0E3B5C]"
-                  } rounded-2xl px-3 py-1.5 sm:px-4 sm:py-2 md:px-6 md:py-2 shadow-md max-w-[90%] sm:max-w-[80%] md:max-w-[70%]`}
+                  className={`${msg.type === "user"
+                    ? "bg-white text-[#0E3B5C]"
+                    : "bg-white text-[#0E3B5C]"
+                    } rounded-2xl px-3 py-1.5 sm:px-4 sm:py-2 md:px-6 md:py-2 shadow-md max-w-[90%] sm:max-w-[80%] md:max-w-[70%]`}
                 >
                   <p className="text-xs sm:text-xs md:text-sm leading-relaxed break-words">
                     {msg.text}
@@ -1318,7 +1316,7 @@ No worries — you can try again or choose one of the options below, and I’ll 
               {showDetailsForm ? (
                 <form
                   onSubmit={handleFormSubmit}
-                  className="bg-white/10 backdrop-blur-sm p-3 sm:p-4 rounded-lg border border-white/30 overflow-y-auto max-h-[40vh] sm:max-h-[50vh]"
+                  className="bg-white/10 backdrop-blur-sm p-3 sm:p-4 rounded-lg border border-white/30"
                 >
                   <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
                     <div>
@@ -1635,11 +1633,10 @@ No worries — you can try again or choose one of the options below, and I’ll 
                   <button
                     type="submit"
                     disabled={loading || ageError !== ""} // ← YEH ADD KARO
-                    className={`mt-3 sm:mt-4 w-full py-3 rounded text-white font-semibold transition-opacity ${
-                      ageError
-                        ? "bg-gray-500 cursor-not-allowed"
-                        : "bg-[#2bb673] hover:opacity-90"
-                    }`}
+                    className={`mt-3 sm:mt-4 w-full py-3 rounded text-white font-semibold transition-opacity ${ageError
+                      ? "bg-gray-500 cursor-not-allowed"
+                      : "bg-[#2bb673] hover:opacity-90"
+                      }`}
                   >
                     {loading ? "Submitting..." : "Submit Details"}
                   </button>
@@ -1743,21 +1740,19 @@ No worries — you can try again or choose one of the options below, and I’ll 
                   <div className="flex gap-3 justify-center mb-4">
                     <button
                       onClick={() => handleExistingTypeSelect("prepaid")}
-                      className={`px-4 py-2 rounded ${
-                        existingNumberType === "prepaid"
-                          ? "bg-[#2bb673]"
-                          : "bg-gray-600"
-                      } text-white`}
+                      className={`px-4 py-2 rounded ${existingNumberType === "prepaid"
+                        ? "bg-[#2bb673]"
+                        : "bg-gray-600"
+                        } text-white`}
                     >
                       Prepaid
                     </button>
                     <button
                       onClick={() => handleExistingTypeSelect("postpaid")}
-                      className={`px-4 py-2 rounded ${
-                        existingNumberType === "postpaid"
-                          ? "bg-[#2bb673]"
-                          : "bg-gray-600"
-                      } text-white`}
+                      className={`px-4 py-2 rounded ${existingNumberType === "postpaid"
+                        ? "bg-[#2bb673]"
+                        : "bg-gray-600"
+                        } text-white`}
                     >
                       Postpaid
                     </button>
@@ -1939,7 +1934,7 @@ No worries — you can try again or choose one of the options below, and I’ll 
                       onClick={() => handleInitialOption("transfer-number")}
                       className="bg-white text-[#0E3B5C] border border-gray-300 px-4 py-3 rounded-lg hover:bg-gray-50 text-xs sm:text-sm font-medium transition-colors"
                     >
-                      Transfer my number
+                      Transfer My Number
                     </button>
                   </div>
                 </div>
