@@ -1840,14 +1840,32 @@ No worries — you can try again or choose one of the options below, and I’ll 
                   ))}
                 </div>
               ) : showPlans && !selectedPlan && plans.length > 0 ? (
-                <div className="flex flex-wrap gap-1 sm:gap-2 p-3 sm:p-4 bg-white/10 backdrop-blur-sm rounded-lg border border-white/30 justify-center">
+                <div className="flex flex-wrap justify-center gap-4 p-4">
                   {plans.map((plan, index) => (
                     <button
                       key={index}
                       onClick={() => handlePlanSelect(plan)}
-                      className="bg-[#2bb673] text-white px-2 py-1 sm:px-3 sm:py-1 md:px-4 md:py-2 rounded hover:opacity-90 text-xs sm:text-xs md:text-sm"
+                      className="
+          w-26 sm:w-24 md:w-28
+          h-15
+          flex flex-col items-center justify-center
+          bg-gradient-to-br from-emerald-500 to-green-600
+          border border-white/20 backdrop-blur-md
+          text-white
+          rounded-xl
+          shadow-md
+          hover:shadow-lg
+          hover:scale-105
+          transition-all duration-200 ease-in-out
+          text-sm font-medium
+        "
                     >
-                      {plan.planName} - ${plan.price}
+                      <span className="truncate w-full text-center">
+                        {plan.planName}
+                      </span>
+                      <span className="text-base font-semibold">
+                        ${plan.price}
+                      </span>
                     </button>
                   ))}
                 </div>
