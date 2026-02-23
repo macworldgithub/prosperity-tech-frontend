@@ -115,7 +115,7 @@ const ChatWindow = () => {
     const loadPlans = async () => {
       try {
         const res = await fetch(
-          "https://prosperity.omnisuiteai.com/api/v1/plans"
+          "https://prosperity.omnisuiteai.com/api/v1/plans",
         );
         const data = await res.json();
         const list: Plan[] = data.data || [];
@@ -241,7 +241,7 @@ const ChatWindow = () => {
         const birthDate = new Date(
           Number(year),
           Number(month) - 1,
-          Number(day)
+          Number(day),
         );
 
         // Invalid date check (e.g. 31/02/2000, 00/01/2000 etc.)
@@ -419,7 +419,7 @@ const ChatWindow = () => {
     setNumberDecisionMade(false);
 
     addBotMessage(
-      "Thanks, now it's time to choose a number from the selection below."
+      "Thanks, now it's time to choose a number from the selection below.",
     );
 
     await handleSend("new number");
@@ -455,7 +455,7 @@ const ChatWindow = () => {
   const handleExistingNumberSubmit = async () => {
     if (!existingPhone.match(/^04\d{8}$/)) {
       alert(
-        "Please enter a valid 10-digit Australian mobile number starting with 04"
+        "Please enter a valid 10-digit Australian mobile number starting with 04",
       );
       return;
     }
@@ -478,7 +478,7 @@ const ChatWindow = () => {
 
       if (!custNo) {
         addBotMessage(
-          "We're having trouble fetching your customer ID. Please try again in a moment."
+          "We're having trouble fetching your customer ID. Please try again in a moment.",
         );
         return;
       }
@@ -492,7 +492,7 @@ const ChatWindow = () => {
             custNo,
             destination: existingPhone,
           }),
-        }
+        },
       );
 
       const data = await res.json();
@@ -530,7 +530,7 @@ const ChatWindow = () => {
             custNo,
             destination: existingPhone,
           }),
-        }
+        },
       );
 
       const data = await res.json();
@@ -577,7 +577,7 @@ const ChatWindow = () => {
       }
 
       addBotMessage(
-        `Great! We'll port your existing number ${existingPhone}. Now please choose a plan.`
+        `Great! We'll port your existing number ${existingPhone}. Now please choose a plan.`,
       );
     } else {
       setShowExistingNumberOptions(true);
@@ -655,7 +655,7 @@ const ChatWindow = () => {
       // Enable typing for user to enter their query
       setIsTypingEnabled(true);
       addBotMessage(
-        "Please describe your account, billing, or technical problem:"
+        "Please describe your account, billing, or technical problem:",
       );
     } else if (option === "transfer-number") {
       // Set transfer flow flag and call API with "signup" query
@@ -848,7 +848,7 @@ const ChatWindow = () => {
       const isReservedNumbersMessage =
         botText.includes("reserved") && botText.includes("phone numbers");
       const isESimMessage = botText.includes(
-        "Before we continue, please choose whether you want an eSIM"
+        "Before we continue, please choose whether you want an eSIM",
       );
 
       if (
@@ -970,7 +970,7 @@ const ChatWindow = () => {
           headers: {
             "Content-Type": "application/json",
           },
-        }
+        },
       );
 
       const result = await response.json();
@@ -1009,7 +1009,7 @@ const ChatWindow = () => {
             code: otpCode,
             transactionId: otpTransactionId,
           }),
-        }
+        },
       );
 
       const data = await res.json();
@@ -1021,7 +1021,7 @@ const ChatWindow = () => {
         setOtpVerified(true);
         setShowOtpInput(false);
         addBotMessage(
-          "OTP verified successfully! Please choose a plan to continue."
+          "OTP verified successfully! Please choose a plan to continue.",
         );
 
         if (!selectedPlan) {
@@ -1039,7 +1039,7 @@ const ChatWindow = () => {
         addBotMessage(`${msg}. You have ${remaining} attempt left.`);
       } else {
         addBotMessage(
-          `${msg}. No attempts remaining. Please request a new OTP.`
+          `${msg}. No attempts remaining. Please request a new OTP.`,
         );
       }
 
@@ -1047,7 +1047,7 @@ const ChatWindow = () => {
     } catch (err) {
       console.error("OTP verification error:", err);
       addBotMessage(
-        "Failed to verify OTP. Please check your connection and try again."
+        "Failed to verify OTP. Please check your connection and try again.",
       );
       setOtpCode("");
     } finally {
@@ -1075,7 +1075,7 @@ const ChatWindow = () => {
 
     if (!storedCustNo) {
       addBotMessage(
-        "You need to sign up or log in first before deleting your account."
+        "You need to sign up or log in first before deleting your account.",
       );
       return;
     }
@@ -1263,8 +1263,9 @@ No worries — you can try again or choose one of the options below, and I’ll 
             {chat.map((msg) => (
               <div
                 key={msg.id}
-                className={`flex items-start gap-2 sm:gap-3 mb-3 sm:mb-4 md:mb-6 ${msg.type === "user" ? "justify-end" : "justify-start"
-                  }`}
+                className={`flex items-start gap-2 sm:gap-3 mb-3 sm:mb-4 md:mb-6 ${
+                  msg.type === "user" ? "justify-end" : "justify-start"
+                }`}
               >
                 {msg.type === "bot" && (
                   <div className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 bg-yellow-400 rounded-full flex-shrink-0 flex items-center justify-center overflow-hidden">
@@ -1277,10 +1278,11 @@ No worries — you can try again or choose one of the options below, and I’ll 
                 )}
 
                 <div
-                  className={`${msg.type === "user"
-                    ? "bg-white text-[#0E3B5C]"
-                    : "bg-white text-[#0E3B5C]"
-                    } rounded-2xl px-3 py-1.5 sm:px-4 sm:py-2 md:px-6 md:py-2 shadow-md max-w-[90%] sm:max-w-[80%] md:max-w-[70%]`}
+                  className={`${
+                    msg.type === "user"
+                      ? "bg-white text-[#0E3B5C]"
+                      : "bg-white text-[#0E3B5C]"
+                  } rounded-2xl px-3 py-1.5 sm:px-4 sm:py-2 md:px-6 md:py-2 shadow-md max-w-[90%] sm:max-w-[80%] md:max-w-[70%]`}
                 >
                   <p className="text-xs sm:text-xs md:text-sm leading-relaxed break-words">
                     {msg.text}
@@ -1633,10 +1635,11 @@ No worries — you can try again or choose one of the options below, and I’ll 
                   <button
                     type="submit"
                     disabled={loading || ageError !== ""} // ← YEH ADD KARO
-                    className={`mt-3 sm:mt-4 w-full py-3 rounded text-white font-semibold transition-opacity ${ageError
-                      ? "bg-gray-500 cursor-not-allowed"
-                      : "bg-[#2bb673] hover:opacity-90"
-                      }`}
+                    className={`mt-3 sm:mt-4 w-full py-3 rounded text-white font-semibold transition-opacity ${
+                      ageError
+                        ? "bg-gray-500 cursor-not-allowed"
+                        : "bg-[#2bb673] hover:opacity-90"
+                    }`}
                   >
                     {loading ? "Submitting..." : "Submit Details"}
                   </button>
@@ -1740,19 +1743,21 @@ No worries — you can try again or choose one of the options below, and I’ll 
                   <div className="flex gap-3 justify-center mb-4">
                     <button
                       onClick={() => handleExistingTypeSelect("prepaid")}
-                      className={`px-4 py-2 rounded ${existingNumberType === "prepaid"
-                        ? "bg-[#2bb673]"
-                        : "bg-gray-600"
-                        } text-white`}
+                      className={`px-4 py-2 rounded ${
+                        existingNumberType === "prepaid"
+                          ? "bg-[#2bb673]"
+                          : "bg-gray-600"
+                      } text-white`}
                     >
                       Prepaid
                     </button>
                     <button
                       onClick={() => handleExistingTypeSelect("postpaid")}
-                      className={`px-4 py-2 rounded ${existingNumberType === "postpaid"
-                        ? "bg-[#2bb673]"
-                        : "bg-gray-600"
-                        } text-white`}
+                      className={`px-4 py-2 rounded ${
+                        existingNumberType === "postpaid"
+                          ? "bg-[#2bb673]"
+                          : "bg-gray-600"
+                      } text-white`}
                     >
                       Postpaid
                     </button>
@@ -1764,7 +1769,7 @@ No worries — you can try again or choose one of the options below, and I’ll 
                       value={existingPhone}
                       onChange={(e) =>
                         setExistingPhone(
-                          e.target.value.replace(/\D/g, "").substring(0, 10)
+                          e.target.value.replace(/\D/g, "").substring(0, 10),
                         )
                       }
                       placeholder="Enter your 10-digit mobile number (04xxxxxxxx)"

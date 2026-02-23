@@ -16,13 +16,13 @@ export const fetchCustomerServices = createAsyncThunk<
       }
 
       const res = await axios.get(
-        `https://prosperity.omnisuiteai.com/api/v1/customers/${custNo}/services`
+        `https://prosperity.omnisuiteai.com/api/v1/customers/${custNo}/services`,
       );
       return res.data;
     } catch (error: any) {
       return rejectWithValue(
-        error.response?.data || { message: "Failed to fetch services" }
+        error.response?.data || { message: "Failed to fetch services" },
       );
     }
-  }
+  },
 );

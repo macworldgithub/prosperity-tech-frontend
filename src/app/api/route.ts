@@ -19,13 +19,13 @@ export async function POST(request: NextRequest) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(proxiedBody),
-      }
+      },
     );
 
     if (!response.ok) {
       return NextResponse.json(
         { error: "API error" },
-        { status: response.status }
+        { status: response.status },
       );
     }
 

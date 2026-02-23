@@ -35,7 +35,7 @@ const Navbar = () => {
   const [newPin, setNewPin] = useState("");
   const [pinLoading, setPinLoading] = useState(false);
   const [pinStatus, setPinStatus] = useState<"idle" | "success" | "error">(
-    "idle"
+    "idle",
   );
   const [pinMessage, setPinMessage] = useState("");
 
@@ -109,7 +109,7 @@ const Navbar = () => {
               accept: "application/json",
               Authorization: `Bearer ${token}`,
             },
-          }
+          },
         ),
         fetch(
           `https://prosperity.omnisuiteai.com/api/v1/customers/${custNo}/balance/mobile?lineSeqNo=1`,
@@ -117,7 +117,7 @@ const Navbar = () => {
             headers: {
               Authorization: `Bearer ${token}`,
             },
-          }
+          },
         ),
         fetch(
           `https://prosperity.omnisuiteai.com/api/v1/customers/${custNo}/unbilled-summary`,
@@ -125,7 +125,7 @@ const Navbar = () => {
             headers: {
               Authorization: `Bearer ${token}`,
             },
-          }
+          },
         ),
       ]);
 
@@ -140,7 +140,7 @@ const Navbar = () => {
         !serviceData.data?.services?.serviceDetails?.length
       ) {
         setUsageError(
-          "You don't have an active plan yet. Please choose a plan first!"
+          "You don't have an active plan yet. Please choose a plan first!",
         );
         setUsageLoading(false);
         return;
@@ -216,7 +216,7 @@ const Navbar = () => {
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({ oldPin, newPin }),
-        }
+        },
       );
 
       const data = await res.json();

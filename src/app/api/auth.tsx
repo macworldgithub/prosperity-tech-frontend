@@ -12,7 +12,10 @@ export const LoginApi = createAsyncThunk<
 
     const loginRes = await axios.post(
       `https://prosperity.omnisuiteai.com/auth/login`,
-      { identifier: email, pin }
+      {
+        identifier: email,
+        pin,
+      },
     );
     console.log(loginRes);
     const { access_token } = loginRes.data;
@@ -22,10 +25,13 @@ export const LoginApi = createAsyncThunk<
       return rejectWithValue({ message: "Login failed: No access token" });
     }
 
-    const meRes = await axios.get(`https://prosperity.omnisuiteai.com/user/me`, {
-      headers: { Authorization: `Bearer ${access_token}` },
-    });
-    console.log(meRes)
+    const meRes = await axios.get(
+      `https://prosperity.omnisuiteai.com/user/me`,
+      {
+        headers: { Authorization: `Bearer ${access_token}` },
+      },
+    );
+    console.log(meRes);
     const custNo = meRes.data?.user?.custNo;
 
     if (custNo) {
@@ -38,7 +44,7 @@ export const LoginApi = createAsyncThunk<
     };
   } catch (error: any) {
     return rejectWithValue(
-      error.response?.data || { message: "Something went wrong" }
+      error.response?.data || { message: "Something went wrong" },
     );
   }
 });

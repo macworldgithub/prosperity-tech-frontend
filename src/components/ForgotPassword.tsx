@@ -41,7 +41,7 @@ export default function ForgotPassword() {
           body: JSON.stringify({
             identifier: email.trim(),
           }),
-        }
+        },
       );
 
       const data = await res.json();

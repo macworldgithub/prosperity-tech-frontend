@@ -55,7 +55,7 @@ export const PaymentCard = ({
 
       let trustedFrame: any = null;
       const submitBtn = document.getElementById(
-        "submitBtn"
+        "submitBtn",
       ) as HTMLButtonElement;
       const form = document.getElementById("payment-form") as HTMLFormElement;
 
@@ -87,7 +87,7 @@ export const PaymentCard = ({
           }
           trustedFrame = data.trustedFrame;
           submitBtn.disabled = false;
-        }
+        },
       );
 
       form.onsubmit = async (e) => {
@@ -119,7 +119,7 @@ export const PaymentCard = ({
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ custNo, paymentTokenId: token }),
-              }
+              },
             );
 
             const result = await response.json();
@@ -166,7 +166,7 @@ export const PaymentCard = ({
                   method: "PATCH",
                   headers: { "Content-Type": "application/json" },
                   body: JSON.stringify({ planNo: String(planNo) }),
-                }
+                },
               );
 
               const updateData = await updateResponse.json();
