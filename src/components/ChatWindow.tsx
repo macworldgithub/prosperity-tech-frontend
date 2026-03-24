@@ -92,7 +92,7 @@ const ChatWindow = () => {
     const loadPlans = async () => {
       try {
         const res = await fetch(
-          "https://prosperity.omnisuiteai.com/api/v1/plans"
+          "https://prosperity.omnisuiteai.com/api/v1/plans",
         );
         const data = await res.json();
         const list: Plan[] = data.data || [];
@@ -256,7 +256,7 @@ const ChatWindow = () => {
       setHasSelectedNumber(false);
 
       addBotMessage(
-        "Thanks, now it's time to choose a number from the selection below"
+        "Thanks, now it's time to choose a number from the selection below",
       );
 
       if (numberOptions.length > 0) {
@@ -288,7 +288,7 @@ const ChatWindow = () => {
   const handleExistingNumberSubmit = async () => {
     if (!existingPhone.match(/^04\d{8}$/)) {
       alert(
-        "Please enter a valid 10-digit Australian mobile number starting with 04"
+        "Please enter a valid 10-digit Australian mobile number starting with 04",
       );
       return;
     }
@@ -307,7 +307,7 @@ const ChatWindow = () => {
             custNo,
             destination: existingPhone,
           }),
-        }
+        },
       );
 
       const data = await res.json();
@@ -345,7 +345,7 @@ const ChatWindow = () => {
       }
 
       addBotMessage(
-        `Great! We'll port your existing number ${existingPhone}. Now please choose a plan.`
+        `Great! We'll port your existing number ${existingPhone}. Now please choose a plan.`,
       );
     } else {
       setShowExistingNumberOptions(true);
@@ -423,7 +423,7 @@ const ChatWindow = () => {
       // Enable typing for user to enter their query
       setIsTypingEnabled(true);
       addBotMessage(
-        "Please describe your account, billing, or technical problem:"
+        "Please describe your account, billing, or technical problem:",
       );
     } else if (option === "transfer-number") {
       // Set transfer flow flag and call API with "signup" query
@@ -619,7 +619,7 @@ const ChatWindow = () => {
       const isReservedNumbersMessage =
         botText.includes("reserved") && botText.includes("phone numbers");
       const isESimMessage = botText.includes(
-        "Before we continue, please choose whether you want an eSIM"
+        "Before we continue, please choose whether you want an eSIM",
       );
 
       if (
@@ -679,7 +679,7 @@ const ChatWindow = () => {
           ? "Perfect! Let's continue with payment."
           : "Choose one of the plans below:",
         time: new Date().toLocaleTimeString([], {
-          hour: "2-digit",  
+          hour: "2-digit",
           minute: "2-digit",
         }),
       },
@@ -750,7 +750,7 @@ const ChatWindow = () => {
             code: otpCode,
             transactionId: otpTransactionId,
           }),
-        }
+        },
       );
 
       const data = await res.json();
@@ -760,7 +760,7 @@ const ChatWindow = () => {
       setOtpVerified(true);
       setShowOtpInput(false);
       addBotMessage(
-        "OTP verified successfully! You can now proceed to payment."
+        "OTP verified successfully! You can now proceed to payment.",
       );
     } catch (err) {
       console.error(err);
@@ -788,7 +788,7 @@ const ChatWindow = () => {
 
     if (!storedCustNo) {
       addBotMessage(
-        "You need to sign up or log in first before deleting your account."
+        "You need to sign up or log in first before deleting your account.",
       );
       return;
     }
@@ -1072,7 +1072,7 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
                           const day = String(date.getDate()).padStart(2, "0");
                           const month = String(date.getMonth() + 1).padStart(
                             2,
-                            "0"
+                            "0",
                           );
                           const year = date.getFullYear();
                           setFormData((prev) => ({
@@ -1333,7 +1333,7 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
                       value={existingPhone}
                       onChange={(e) =>
                         setExistingPhone(
-                          e.target.value.replace(/\D/g, "").substring(0, 10)
+                          e.target.value.replace(/\D/g, "").substring(0, 10),
                         )
                       }
                       placeholder="Enter your 10-digit mobile number (04xxxxxxxx)"
