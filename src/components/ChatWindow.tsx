@@ -717,33 +717,9 @@ const ChatWindow = () => {
       }
     }
   };
-  // const callAPI = async (text: string) => {
-  //   const payload = sessionId
-  //     ? { query: text, session_id: sessionId, brand: "flying-kiwi" }
-  //     : { query: text, brand: "prosperity-tech" };
 
-  //   try {
-  //     const res = await fetch("/api", {
-  //       method: "POST",
-  //       headers: { "Content-Type": "application/json" },
-  //       body: JSON.stringify(payload),
-  //     });
-
-  //     if (!res.ok) return null;
-  //     const data = await res.json();
-
-  //     if (!sessionId && data.session_id) setSessionId(data.session_id);
-  //     if (data.custNo) setCustNo(data.custNo);
-  //     if (data.custNo) sessionStorage.setItem("custNo", data.custNo);
-
-  //     return data;
-  //   } catch (e) {
-  //     console.error("API error:", e);
-  //     return null;
-  //   }
-  // };
   const callAPI = async (text: string) => {
-    const brand = "prosperity-tech"; // or "prosperity-tech" when ready
+    const brand = "prosperity-tech";
 
     // Force fresh session for signup flows (remove this later if you want continuity)
     const isSignupRelated =
