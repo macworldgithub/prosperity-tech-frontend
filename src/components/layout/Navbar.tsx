@@ -35,7 +35,7 @@ const Navbar = () => {
   const [newPin, setNewPin] = useState("");
   const [pinLoading, setPinLoading] = useState(false);
   const [pinStatus, setPinStatus] = useState<"idle" | "success" | "error">(
-    "idle"
+    "idle",
   );
   const [pinMessage, setPinMessage] = useState("");
 
@@ -109,7 +109,7 @@ const Navbar = () => {
               accept: "application/json",
               Authorization: `Bearer ${token}`,
             },
-          }
+          },
         ),
         fetch(
           `https://prosperity.omnisuiteai.com/api/v1/customers/${custNo}/balance/mobile?lineSeqNo=1`,
@@ -117,7 +117,7 @@ const Navbar = () => {
             headers: {
               Authorization: `Bearer ${token}`,
             },
-          }
+          },
         ),
         fetch(
           `https://prosperity.omnisuiteai.com/api/v1/customers/${custNo}/unbilled-summary`,
@@ -125,7 +125,7 @@ const Navbar = () => {
             headers: {
               Authorization: `Bearer ${token}`,
             },
-          }
+          },
         ),
       ]);
 
@@ -140,7 +140,7 @@ const Navbar = () => {
         !serviceData.data?.services?.serviceDetails?.length
       ) {
         setUsageError(
-          "You don't have an active plan yet. Please choose a plan first!"
+          "You don't have an active plan yet. Please choose a plan first!",
         );
         setUsageLoading(false);
         return;
@@ -216,7 +216,7 @@ const Navbar = () => {
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({ oldPin, newPin }),
-        }
+        },
       );
 
       const data = await res.json();
@@ -243,11 +243,11 @@ const Navbar = () => {
   };
 
   const navLinks = [
-    { name: "Home", href: "/" },
-    { name: "About", href: "/about" },
-    { name: "Services", href: "/services" },
-    { name: "Support", href: "/support" },
-    { name: "Partners", href: "/partners" },
+    { name: "", href: "/" },
+    { name: "", href: "/about" },
+    { name: "", href: "/services" },
+    { name: "", href: "/support" },
+    { name: "", href: "/partners" },
   ];
 
   return (
@@ -292,9 +292,9 @@ const Navbar = () => {
             </Link>
           </div>
           {/* Right Side - Clean & Responsive */}
-          <div className="flex items-center gap-4">
+          <div className="hidden md:flex items-center gap-4">
             {isLoggedIn && (
-              <div className="hidden lg:flex items-center gap-3">
+              <div className="hidden xl:flex items-center gap-3">
                 <Button
                   variant="primary"
                   size="md"
@@ -315,6 +315,14 @@ const Navbar = () => {
               </div>
             )}
 
+            <Button
+              variant="outline"
+              size="md"
+              onClick={() => router.push("/chat-window")}
+              className="border-white text-black hover:bg-white hover:text-[#1d5e8e] whitespace-nowrap"
+            >
+              Chat with AI
+            </Button>
             {!isLoggedIn ? (
               <Button variant="outline" size="md" onClick={handleLogin}>
                 Login
@@ -383,13 +391,28 @@ const Navbar = () => {
                 </Button>
               </>
             )}
+            <Button
+              variant="outline"
+              size="lg"
+              className="w-full max-w-xs"
+              onClick={() => {
+                router.push("/chat-window");
+                setMenuOpen(false);
+              }}
+            >
+              Chat with AI
+            </Button>
 
             {!isLoggedIn ? (
               <Button
-                variant="gradient"
+                variant="outline"
                 size="lg"
                 className="w-full max-w-xs"
-                onClick={handleLogin}
+                // onClick={handleLogin}
+                onClick={() => {
+                  router.push("/login");
+                  setMenuOpen(false);
+                }}
               >
                 Login
               </Button>
@@ -463,6 +486,7 @@ const Navbar = () => {
                     <h3 className="text-xl font-bold mb-4 text-indigo-800">
                       Current Plan
                     </h3>
+
                     <div className="space-y-3 text-gray-700">
                       <p>
                         <span className="font-semibold">Plan Name:</span>{" "}

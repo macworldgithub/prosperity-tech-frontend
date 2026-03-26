@@ -61,13 +61,13 @@ const Features = () => {
                   <span className="underline">customer number</span>, if you are
                   transferring your number and let’s go!
                 </p>
-
+                {/* 
                 <button
                   className="mt-8 px-6 py-3 rounded-xl bg-white border border-gray-200 shadow-[0_6px_24px_rgba(43,182,115,0.25)] text-gray-900 font-semibold hover:bg-gray-50"
                   onClick={handleSwitchToEsim}
                 >
                   Get your E-sim
-                </button>
+                </button> */}
               </div>
 
               {/* Image side */}

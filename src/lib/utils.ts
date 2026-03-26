@@ -20,3 +20,10 @@ export const isDeleteIntent = (text: string) => {
     t.includes("close account")
   );
 };
+
+export const formatDobToISO = (dob: string) => {
+  // expects dd/mm/yyyy
+  if (!dob) return "";
+  const [day, month, year] = dob.split("/");
+  return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
+};

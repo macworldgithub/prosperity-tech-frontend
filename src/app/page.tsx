@@ -10,13 +10,14 @@ import Small from "@/components/sections/Small";
 export default function HomePage() {
   return (
     <main className="relative">
-      <HeroSection />
-      <Features />
+      {/* <HeroSection /> */}
       <Small />
+      <Features />
       <Productive />
-      <Kind />
-      <FAQSection />
-      <Contact />
+
+      {/* <Kind /> */}
+      {/* <FAQSection /> */}
+      {/* <Contact /> */}
     </main>
   );
 }

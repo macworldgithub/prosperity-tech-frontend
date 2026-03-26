@@ -47,7 +47,7 @@ const PlansSection: React.FC = () => {
     const fetchPlans = async () => {
       try {
         const response = await fetch(
-          "https://prosperity.omnisuiteai.com/api/v1/plans"
+          "https://prosperity.omnisuiteai.com/api/v1/plans",
         );
         if (!response.ok) throw new Error("Failed to fetch plans");
         const data = await response.json();
@@ -127,7 +127,8 @@ const PlansSection: React.FC = () => {
                       "Unlimited SMS",
                       "Auto recharge enabled",
                     ]}
-                    highlight={plan.network === "5G"}
+                    // highlight={plan.network === "5G"}
+                    highlight={false}
                   />
                 );
               })}
@@ -139,7 +140,7 @@ const PlansSection: React.FC = () => {
       {/* Big Plans Section */}
       {bigPlans.length > 0 && (
         <section className="w-full py-16 sm:py-20 bg-[#f2f7fb]">
-          <div className="mx-auto px-6">
+          <div className="max-w-5xl mx-auto px-6">
             <div className="text-center mb-10">
               <h2 className="text-3xl sm:text-4xl font-semibold text-[#1D5E8E]">
                 Big Plans
@@ -150,7 +151,7 @@ const PlansSection: React.FC = () => {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 place-items-center">
               {bigPlans.map((plan) => {
                 const dataMatch = plan.planName.match(/(\d+GB)/i);
                 const dataAmount = dataMatch ? dataMatch[0] : "N/A";
@@ -167,7 +168,8 @@ const PlansSection: React.FC = () => {
                       "Unlimited SMS",
                       "5G network access",
                     ]}
-                    highlight={plan.network === "5G"}
+                    // highlight={plan.network === "5G"}
+                    highlight={true}
                   />
                 );
               })}

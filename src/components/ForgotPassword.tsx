@@ -41,23 +41,20 @@ export default function ForgotPassword() {
           body: JSON.stringify({
             identifier: email.trim(),
           }),
-        }
+        },
       );
 
       const data = await res.json();
 
-      // Agar backend error deta hai (jaise user not found)
       if (!res.ok) {
         setStatus("error");
         setMessage(data.message || "This email is not registered");
         return;
       }
 
-      // Agar success hai, lekin message mein kuch suspicious hai (optional extra check)
       if (data.message && typeof data.message === "string") {
         const msg = data.message.toLowerCase();
 
-        // Agar backend galat message deta hai jaise "user not found" but status 200
         if (
           msg.includes("not found") ||
           msg.includes("exist") ||

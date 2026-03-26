@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import sessionStorage from "redux-persist/es/storage/session";
 
 interface PaymentCardProps {
   custNo: string;
@@ -54,7 +55,7 @@ export const PaymentCard = ({
 
       let trustedFrame: any = null;
       const submitBtn = document.getElementById(
-        "submitBtn"
+        "submitBtn",
       ) as HTMLButtonElement;
       const form = document.getElementById("payment-form") as HTMLFormElement;
 
@@ -86,7 +87,7 @@ export const PaymentCard = ({
           }
           trustedFrame = data.trustedFrame;
           submitBtn.disabled = false;
-        }
+        },
       );
 
       form.onsubmit = async (e) => {
@@ -118,44 +119,45 @@ export const PaymentCard = ({
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ custNo, paymentTokenId: token }),
-              }
+              },
             );
 
             const result = await response.json();
             if (!response.ok)
               throw new Error(result.message || "Payment method failed");
 
-            const paymentId = result.data.paymentId;
-            const email = propEmail || localStorage.getItem("userEmail") || "";
+            // const paymentId = result.data.paymentId;
+            const rawEmail = await sessionStorage.getItem("userEmail");
+            const email = propEmail || rawEmail || "";
+            console.log(email, "email");
+            // const amount = "0.1";
+            // String(planPrice) ||
+            // String(localStorage.getItem("planPrice") || 0);
+            // const comment = `Ref-${Math.random().toString(36).substring(2, 8)}`;
 
-            const amount =
-              String(planPrice) ||
-              String(localStorage.getItem("planPrice") || 0);
-            const comment = `Ref-${Math.random().toString(36).substring(2, 8)}`;
+            // const processPayload = {
+            //   custNo,
+            //   amount,
+            //   paymentId,
+            //   email,
+            //   comment,
+            // };
 
-            const processPayload = {
-              custNo,
-              amount,
-              paymentId,
-              email,
-              comment,
-            };
+            // const processResponse = await fetch(
+            //   "https://prosperity.omnisuiteai.com/api/v1/payments/process",
+            //   {
+            //     method: "POST",
+            //     headers: { "Content-Type": "application/json" },
+            //     body: JSON.stringify(processPayload),
+            //   }
+            // );
 
-            const processResponse = await fetch(
-              "https://prosperity.omnisuiteai.com/api/v1/payments/process",
-              {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(processPayload),
-              }
-            );
-
-            const processData = await processResponse.json();
-            if (!processResponse.ok)
-              throw new Error(processData.message || "Payment failed");
+            // const processData = await processResponse.json();
+            // if (!processResponse.ok)
+            //   throw new Error(processData.message || "Payment failed");
 
             if (fromChangePlan) {
-              const storedCustNo = localStorage.getItem("custNo");
+              const storedCustNo = sessionStorage.getItem("custNo");
               if (!storedCustNo) throw new Error("Customer number missing");
 
               const updateResponse = await fetch(
@@ -164,7 +166,7 @@ export const PaymentCard = ({
                   method: "PATCH",
                   headers: { "Content-Type": "application/json" },
                   body: JSON.stringify({ planNo: String(planNo) }),
-                }
+                },
               );
 
               const updateData = await updateResponse.json();

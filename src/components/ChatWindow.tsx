@@ -2,8 +2,10 @@
 import React, { useState, useEffect } from "react";
 import { PaymentCard } from "./PaymentCard";
 import { useRouter, useSearchParams } from "next/navigation";
-import { formatDob, isDeleteIntent } from "@/lib/utils";
-import DatePicker from "react-datepicker";
+import { formatDob, formatDobToISO, isDeleteIntent } from "@/lib/utils";
+// import Flatpickr from "react-flatpickr";
+// import "flatpickr/dist/themes/dark.css";
+import sessionStorage from "redux-persist/es/storage/session";
 
 interface Plan {
   _id: string;
@@ -67,6 +69,27 @@ const ChatWindow = () => {
 
   const [states, setStates] = useState([]);
   const [loadingStates, setLoadingStates] = useState(false);
+  const [numberDecisionMade, setNumberDecisionMade] = useState(false);
+  const [ageError, setAgeError] = useState("");
+  const [showNumberConfirmation, setShowNumberConfirmation] = useState(false);
+  const [confirmationType, setConfirmationType] = useState<
+    "new" | "existing" | null
+  >(null);
+  const [flowCompleted, setFlowCompleted] = useState(false);
+  const [typingDots, setTypingDots] = useState("");
+
+  useEffect(() => {
+    if (!loading) {
+      setTypingDots("");
+      return;
+    }
+
+    const interval = setInterval(() => {
+      setTypingDots((prev) => (prev.length < 3 ? prev + "." : ""));
+    }, 500);
+
+    return () => clearInterval(interval);
+  }, [loading]);
 
   useEffect(() => {
     const fromBanner = searchParams.get("fromBanner");
@@ -137,6 +160,8 @@ const ChatWindow = () => {
     state: "",
     postcode: "",
     pin: "",
+    custAuthorityNo: "",
+    custAuthorityType: "",
   });
   const [formErrors, setFormErrors] = useState<any>({});
 
@@ -155,6 +180,8 @@ const ChatWindow = () => {
       "state",
       "postcode",
       "pin",
+      "custAuthorityNo",
+      "custAuthorityType",
     ];
 
     for (let field of requiredFields) {
@@ -180,7 +207,76 @@ const ChatWindow = () => {
       errors.pin = "PIN must be 4 digits";
       ok = false;
     }
+    if (!formData.custAuthorityNo.trim()) {
+      errors.custAuthorityNo = "Customer Authority Number is required";
+    }
 
+    if (!formData.custAuthorityType) {
+      errors.custAuthorityType = "Please select a Customer Authority Type";
+    }
+    // if (formData.dob) {
+    //   const [day, month, year] = formData.dob.split("/").map(Number);
+    //   const birthDate = new Date(year, month - 1, day);
+    //   const today = new Date();
+    //   let age = today.getFullYear() - birthDate.getFullYear();
+    //   const m = today.getMonth() - birthDate.getMonth();
+    //   if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+    //     age--;
+    //   }
+
+    //   if (age < 18) {
+    //     setAgeError("You must be at least 18 years old to sign up.");
+    //     ok = false;
+    //   } else {
+    //     setAgeError(""); // clear error if age is ok
+    //   }
+    // }
+    if (formData.dob) {
+      const match = formData.dob.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+      if (!match) {
+        errors.dob = "Please enter date in dd/mm/yyyy format";
+        ok = false;
+      } else {
+        const [, day, month, year] = match;
+        const birthDate = new Date(
+          Number(year),
+          Number(month) - 1,
+          Number(day),
+        );
+
+        // Invalid date check (e.g. 31/02/2000, 00/01/2000 etc.)
+        if (
+          isNaN(birthDate.getTime()) ||
+          Number(day) < 1 ||
+          Number(day) > 31 ||
+          Number(month) < 1 ||
+          Number(month) > 12 ||
+          Number(year) < 1900 ||
+          Number(year) > new Date().getFullYear()
+        ) {
+          errors.dob = "Invalid date";
+          ok = false;
+        } else {
+          // Age calculation only when date is valid
+          const today = new Date();
+          let age = today.getFullYear() - birthDate.getFullYear();
+          const m = today.getMonth() - birthDate.getMonth();
+          if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+            age--;
+          }
+
+          if (age < 18) {
+            setAgeError("You must be at least 18 years old to sign up.");
+            ok = false;
+          } else {
+            setAgeError("");
+          }
+        }
+      }
+    } else {
+      errors.dob = "Date of birth is required";
+      ok = false;
+    }
     setFormErrors(errors);
     return ok;
   };
@@ -194,6 +290,55 @@ const ChatWindow = () => {
       [name]: value,
     }));
     setFormErrors((prev: any) => ({ ...prev, [name]: "" }));
+    // if (name === "dob" && value.trim()) {
+    //   const match = value.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+    //   if (match) {
+    //     const [_, day, month, year] = match.map(Number);
+    //     const birthDate = new Date(year, month - 1, day);
+    //     const today = new Date();
+    //     let age = today.getFullYear() - birthDate.getFullYear();
+    //     const m = today.getMonth() - birthDate.getMonth();
+    //     if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+    //       age--;
+    //     }
+
+    //     if (age < 18) {
+    //       setAgeError("You must be at least 18 years old to sign up.");
+    //     } else {
+    //       setAgeError("");
+    //     }
+    //   }
+    // }
+    if (name === "dob") {
+      const value = e.target.value;
+      // Allow only digits and one '/'
+      if (
+        value.length <= 10 &&
+        (/\d/.test(value.slice(-1)) || value.endsWith("/"))
+      ) {
+        setFormData((prev) => ({ ...prev, [name]: value }));
+        setFormErrors((prev: any) => ({ ...prev, [name]: "" }));
+      }
+
+      // Real-time age check only when format is complete
+      if (value.match(/^(\d{2})\/(\d{2})\/(\d{4})$/)) {
+        const [, day, month, year] = value.split("/").map(Number);
+        const birthDate = new Date(year, month - 1, day);
+        const today = new Date();
+        let age = today.getFullYear() - birthDate.getFullYear();
+        const m = today.getMonth() - birthDate.getMonth();
+        if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+          age--;
+        }
+        if (age < 18) {
+          setAgeError("You must be at least 18 years old to sign up.");
+        } else {
+          setAgeError("");
+        }
+      } else {
+        setAgeError(""); // Clear error if incomplete
+      }
+    }
   };
 
   // Convert "dd/mm/yyyy" string to JS Date object
@@ -208,10 +353,15 @@ const ChatWindow = () => {
     if (!validateForm()) return;
 
     try {
+      setLoading(true);
+      setShowInitialOptions(false);
+      setIsTypingEnabled(false);
       // Save DOB to localStorage
-      localStorage.setItem("userDOB", formData.dob);
+      const isoDob = formatDobToISO(formData.dob);
+
+      sessionStorage.setItem("userDOB", isoDob);
       setUserEmail(formData.email);
-      localStorage.setItem("userEmail", formData.email);
+      sessionStorage.setItem("userEmail", formData.email);
 
       const formatted = Object.entries(formData)
         .map(([k, v]) => `${k}: ${v}`)
@@ -219,9 +369,8 @@ const ChatWindow = () => {
 
       setShowDetailsForm(false);
 
-      setShowSimTypeSelection(true);
-
       await handleSend(formatted, true);
+      setShowSimTypeSelection(true);
       const prosperityMessage =
         "Great! Before we continue, please choose whether you want an eSIM or a Physical SIM.";
 
@@ -239,8 +388,23 @@ const ChatWindow = () => {
       ]);
     } catch (error) {
       console.error("Error during form submission:", error);
+    } finally {
+      setLoading(false);
     }
   };
+
+  // useEffect(() => {
+  //   sessionStorage.removeItem("custNo");
+  //   sessionStorage.removeItem("userEmail");
+  //   sessionStorage.removeItem("userDOB");
+  // }, []);
+  useEffect(() => {
+    sessionStorage.removeItem("custNo");
+    sessionStorage.removeItem("userEmail");
+    sessionStorage.removeItem("userDOB");
+    setSessionId(null); // ← Add this
+    setCustNo(null);
+  }, []);
 
   const handleNewNumber = () => {
     setSelectedOption("new");
@@ -248,38 +412,48 @@ const ChatWindow = () => {
     setShowConfirmNewNumber(true);
   };
 
-  const confirmNewNumber = (yes: boolean) => {
-    setSelectedOption("existing");
+  const confirmNewNumber = async (yes: boolean) => {
     setShowConfirmNewNumber(false);
-    if (yes) {
-      setIsPorting(false);
-      setHasSelectedNumber(false);
 
-      addBotMessage(
-        "Thanks, now it's time to choose a number from the selection below",
-      );
-
-      if (numberOptions.length > 0) {
-        setShowNumberButtons(true);
-      } else {
-        handleSend("new number");
-      }
-    } else {
+    if (!yes) {
       setShowNumberTypeSelection(true);
+      return;
     }
+
+    setSelectedOption("new");
+    setIsPorting(false);
+    setHasSelectedNumber(false);
+    setNumberDecisionMade(false);
+
+    addBotMessage(
+      "Thanks, now it's time to choose a number from the selection below.",
+    );
+
+    await handleSend("new number");
   };
+
+  // const handleExistingNumber = () => {
+  //   setShowNumberTypeSelection(false);
+  //   setShowConfirmNewNumber(true);
+  //   setExistingNumberType(null);
+  //   setShowArnInput(false);
+  //   setArn("");
+  //   setExistingPhone("");
+  //   setShowConfirmExistingNumber(false);
+
+  //   setShowExistingNumberOptions(true);
+  // };
   const handleExistingNumber = () => {
     setShowNumberTypeSelection(false);
-    setShowConfirmNewNumber(true);
+    setConfirmationType("existing");
+    setShowNumberConfirmation(true);
     setExistingNumberType(null);
     setShowArnInput(false);
     setArn("");
     setExistingPhone("");
     setShowConfirmExistingNumber(false);
-
     setShowExistingNumberOptions(true);
   };
-
   const handleExistingTypeSelect = (type: "prepaid" | "postpaid") => {
     setExistingNumberType(type);
     setShowArnInput(type === "postpaid");
@@ -292,12 +466,68 @@ const ChatWindow = () => {
       );
       return;
     }
+
     if (existingNumberType === "postpaid" && !arn.trim()) {
       alert("Please enter your ARN (Account Reference Number)");
       return;
     }
 
+    setLoading(true);
+
     try {
+      localStorage.setItem("portingNumber", existingPhone);
+
+      setIsPorting(true);
+      setHasSelectedNumber(true);
+      setShowNumberButtons(false);
+
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+
+      if (!custNo) {
+        addBotMessage(
+          "We're having trouble fetching your customer ID. Please try again in a moment.",
+        );
+        return;
+      }
+
+      const res = await fetch(
+        "https://prosperity.omnisuiteai.com/api/v1/auth/otp",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            custNo,
+            destination: existingPhone,
+          }),
+        },
+      );
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "OTP request failed");
+
+      setOtpTransactionId(data.data.getOtp.transactionId);
+      setShowExistingNumberOptions(false);
+      setShowOtpInput(true);
+
+      addBotMessage("OTP has been sent. Please enter it to proceed.");
+    } catch (err) {
+      console.error(err);
+      addBotMessage("Failed to send OTP. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResendOtp = async () => {
+    // Basic validation
+    if (!existingPhone || !existingPhone.match(/^04\d{8}$/)) {
+      addBotMessage("Cannot resend OTP: Invalid phone number.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+
       const res = await fetch(
         "https://prosperity.omnisuiteai.com/api/v1/auth/otp",
         {
@@ -312,15 +542,23 @@ const ChatWindow = () => {
 
       const data = await res.json();
 
-      if (!res.ok) throw new Error(data.message || "OTP request failed");
+      if (!res.ok) {
+        throw new Error(data.message || "Failed to resend OTP");
+      }
 
-      setOtpTransactionId(data.transactionId);
-      setShowExistingNumberOptions(false);
-      setShowOtpInput(true);
-      addBotMessage("OTP has been sent. Please enter it to proceed.");
+      // Update transaction ID for the new OTP
+      setOtpTransactionId(data.data.getOtp.transactionId);
+
+      // Clear the previous OTP input
+      setOtpCode("");
+
+      // Inform user
+      addBotMessage("A new OTP has been sent to your number.");
     } catch (err) {
       console.error(err);
-      addBotMessage("Failed to send OTP. Please try again.");
+      addBotMessage("Failed to resend OTP. Please try again later.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -335,6 +573,7 @@ const ChatWindow = () => {
       setIsPorting(true);
       setHasSelectedNumber(true);
       setSelectedSim(existingPhone);
+      setNumberDecisionMade(true);
 
       setShowNumberButtons(false);
       if (selectedPlan) {
@@ -478,10 +717,49 @@ const ChatWindow = () => {
       }
     }
   };
+  // const callAPI = async (text: string) => {
+  //   const payload = sessionId
+  //     ? { query: text, session_id: sessionId, brand: "flying-kiwi" }
+  //     : { query: text, brand: "prosperity-tech" };
+
+  //   try {
+  //     const res = await fetch("/api", {
+  //       method: "POST",
+  //       headers: { "Content-Type": "application/json" },
+  //       body: JSON.stringify(payload),
+  //     });
+
+  //     if (!res.ok) return null;
+  //     const data = await res.json();
+
+  //     if (!sessionId && data.session_id) setSessionId(data.session_id);
+  //     if (data.custNo) setCustNo(data.custNo);
+  //     if (data.custNo) sessionStorage.setItem("custNo", data.custNo);
+
+  //     return data;
+  //   } catch (e) {
+  //     console.error("API error:", e);
+  //     return null;
+  //   }
+  // };
   const callAPI = async (text: string) => {
-    const payload = sessionId
-      ? { query: text, session_id: sessionId, brand: "prosperity-tech" }
-      : { query: text, brand: "prosperity-tech" };
+    const brand = "prosperity-tech"; // or "prosperity-tech" when ready
+
+    // Force fresh session for signup flows (remove this later if you want continuity)
+    const isSignupRelated =
+      text.includes("firstName:") ||
+      text.toLowerCase().includes("signup") ||
+      text.includes("surname:");
+
+    const payload: any = {
+      query: text,
+      brand,
+    };
+
+    // Only add session_id if NOT doing signup/details
+    if (sessionId && !isSignupRelated) {
+      payload.session_id = sessionId;
+    }
 
     try {
       const res = await fetch("/api", {
@@ -491,11 +769,25 @@ const ChatWindow = () => {
       });
 
       if (!res.ok) return null;
+
       const data = await res.json();
 
-      if (!sessionId && data.session_id) setSessionId(data.session_id);
-      if (data.custNo) setCustNo(data.custNo);
-      if (data.custNo) localStorage.setItem("custNo", data.custNo);
+      // Update session_id only from fresh responses
+      if (data.session_id) {
+        setSessionId(data.session_id);
+      }
+
+      // Improved custNo with fallback + logging
+      if (data.custNo) {
+        console.log("✅ custNo received:", data.custNo);
+        setCustNo(data.custNo);
+        sessionStorage.setItem("custNo", data.custNo);
+      } else {
+        console.warn("❌ No custNo in response. Full response:", data);
+        // Optional: clear old session if creation failed
+        // sessionStorage.removeItem("custNo");
+        // setSessionId(null);
+      }
 
       return data;
     } catch (e) {
@@ -503,7 +795,6 @@ const ChatWindow = () => {
       return null;
     }
   };
-
   const handleSend = async (text: string, skipUserDisplay = false) => {
     if (!text.trim() || loading) return;
 
@@ -602,14 +893,11 @@ const ChatWindow = () => {
       matches?.length === 5 &&
       !isPorting &&
       !hasSelectedNumber &&
-      !showExistingNumberOptions &&
       !showOtpInput &&
       !isTransferFlow
     ) {
       setNumberOptions(matches);
       setShowNumberButtons(true);
-      // Override bot message
-      addBotMessage("Please choose a number from the selection below");
       return;
     }
 
@@ -651,7 +939,8 @@ const ChatWindow = () => {
     setSelectedSim(num);
     setHasSelectedNumber(true);
     setShowNumberButtons(false);
-
+    setShowInitialOptions(false);
+    setIsTypingEnabled(false);
     setChat((prev) => [
       ...prev,
       {
@@ -686,7 +975,7 @@ const ChatWindow = () => {
     ]);
 
     if (selectedPlan) {
-      setShowSimTypeSelection(true);
+      setShowPayment(true);
     } else {
       setShowPlans(true);
     }
@@ -724,16 +1013,43 @@ const ChatWindow = () => {
     addBotMessage("Would you like a new number or use your existing number?");
   };
 
-  const handleSimNumberContinue = () => {
-    if (simNumber.trim().length !== 13) {
+  const handleSimNumberContinue = async () => {
+    const trimmedSim = simNumber.trim();
+
+    if (trimmedSim.length !== 13) {
       alert("SIM number must be exactly 13 digits.");
       return;
     }
-    localStorage.setItem("physicalSimNumber", simNumber.trim());
-    setShowSimNumberInput(false);
-    setShowPayment(true);
+
+    try {
+      const response = await fetch(
+        `https://prosperity.omnisuiteai.com/api/v1/numbers/check/${trimmedSim}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        },
+      );
+
+      const result = await response.json();
+
+      if (!result?.data?.success) {
+        alert("SIM number is not valid.");
+        setShowSimNumberInput(true);
+        return;
+      }
+
+      localStorage.setItem("physicalSimNumber", trimmedSim);
+      setShowSimNumberInput(false);
+      setShowPayment(true);
+    } catch (error) {
+      console.error("SIM check failed:", error);
+      alert("Unable to verify SIM number. Please try again.");
+      setShowSimNumberInput(true);
+    }
   };
-  console.log("OTP CODE:", otpCode);
+
   const handleOtpVerify = async () => {
     if (otpCode.length !== 6) {
       alert("Please enter a 6-digit OTP");
@@ -741,6 +1057,8 @@ const ChatWindow = () => {
     }
 
     try {
+      setLoading(true);
+
       const res = await fetch(
         "https://prosperity.omnisuiteai.com/api/v1/auth/otp/verify",
         {
@@ -754,17 +1072,45 @@ const ChatWindow = () => {
       );
 
       const data = await res.json();
+      console.log("OTP Verify Response:", data);
 
-      if (!res.ok) throw new Error(data.message || "OTP verification failed");
+      const isValid = data?.data?.verifyOtp?.valid === true;
 
-      setOtpVerified(true);
-      setShowOtpInput(false);
-      addBotMessage(
-        "OTP verified successfully! You can now proceed to payment.",
-      );
+      if (isValid) {
+        setOtpVerified(true);
+        setShowOtpInput(false);
+        addBotMessage(
+          "OTP verified successfully! Please choose a plan to continue.",
+        );
+
+        if (!selectedPlan) {
+          setShowPlans(true);
+        } else {
+          setShowPayment(true);
+        }
+        return;
+      }
+
+      const remaining = data?.data?.verifyOtp?.remainingAttempts ?? 0;
+      const msg = data?.data?.verifyOtp?.message || "Invalid OTP";
+
+      if (remaining > 0) {
+        addBotMessage(`${msg}. You have ${remaining} attempt left.`);
+      } else {
+        addBotMessage(
+          `${msg}. No attempts remaining. Please request a new OTP.`,
+        );
+      }
+
+      setOtpCode("");
     } catch (err) {
-      console.error(err);
-      addBotMessage("OTP verification failed. Please try again.");
+      console.error("OTP verification error:", err);
+      addBotMessage(
+        "Failed to verify OTP. Please check your connection and try again.",
+      );
+      setOtpCode("");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -811,9 +1157,11 @@ const ChatWindow = () => {
       const existingType = existingNumberType;
       const arn = localStorage.getItem("arn") || "";
       const dob = formData.dob || "";
+      const portingNo = localStorage.getItem("portingNumber") || "";
+      const activationNumber = isPorting ? portingNo : selectedSim || "";
 
       let body: any = {
-        number: selectedSim,
+        number: activationNumber,
         cust: {
           custNo,
           suburb: formData.suburb,
@@ -827,7 +1175,6 @@ const ChatWindow = () => {
             ? localStorage.getItem("physicalSimNumber") || ""
             : "",
       };
-
       if (isPorting) {
         body.numType = existingType;
 
@@ -877,8 +1224,37 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
           }),
         },
       ]);
+      setFlowCompleted(true);
+      setShowInitialOptions(false);
+      setIsTypingEnabled(false);
     } catch (err) {
-      handleSend("Activation failed. Please try again.");
+      console.error("Activation error:", err);
+
+      const failureMessage = `Unfortunately, we couldn't complete your SIM activation.
+
+This can sometimes happen if:
+• Some of the details provided were incorrect
+• There was a temporary system issue
+• The selected number or SIM could not be validated
+
+No worries — you can try again or choose one of the options below, and I’ll help you from there.`;
+
+      setChat((prev) => [
+        ...prev,
+        {
+          id: prev.length + 1,
+          type: "bot",
+          text: failureMessage,
+          time: new Date().toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+        },
+      ]);
+
+      setFlowCompleted(false);
+      setShowInitialOptions(true);
+      setIsTypingEnabled(false);
     }
   };
 
@@ -890,7 +1266,7 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
     <>
       {/* Background with image */}
       <div
-        className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 bg-cover bg-center"
+        className="fixed inset-0 bg-black/40 z-40 bg-cover bg-center "
         style={{
           backgroundImage: "url('/images/bg.png')",
         }}
@@ -898,7 +1274,7 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
 
       {/* Chat Modal */}
       <div className="fixed inset-0 flex items-center justify-center z-50 p-2 sm:p-4 md:p-0 overflow-y-auto">
-        <div className="w-full sm:w-[50%] h-[80vh] sm:h-[75vh] md:max-h-[600px] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden">
+        <div className="w-full sm:w-[50%] h-[70vh] sm:h-[65vh] md:max-h-[600px] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden">
           {/* Header */}
           <div className="flex justify-between items-center p-2 sm:p-3 bg-[#215988] rounded-t-2xl">
             <div className="flex items-center gap-1 sm:gap-2">
@@ -976,17 +1352,21 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
 
             {/* Loading indicator */}
             {loading && (
-              <div className="flex items-start gap-2 sm:gap-3 mb-3 sm:mb-4 md:mb-6">
-                <div className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 bg-yellow-400 rounded-full flex items-center justify-center overflow-hidden">
+              <div className="flex items-start gap-2 sm:gap-3 mb-3 sm:mb-4 md:mb-6 animate-fade-in">
+                <div className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 bg-yellow-400 rounded-full flex items-center justify-center overflow-hidden shadow-sm">
                   <img
                     src="/images/bot.png"
                     alt="Loading Avatar"
                     className="w-full h-full rounded-full object-cover"
                   />
                 </div>
-                <div className="bg-white rounded-2xl px-3 py-1.5 sm:px-4 sm:py-2 md:px-6 md:py-2 shadow-md max-w-[90%] sm:max-w-[80%] md:max-w-[70%]">
-                  <p className="text-[#0E3B5C] text-xs sm:text-xs md:text-sm leading-relaxed">
-                    Typing...
+
+                <div className="bg-white rounded-2xl px-4 py-2 shadow-md max-w-[90%] sm:max-w-[80%] md:max-w-[70%]">
+                  <p className="text-[#0E3B5C] text-xs sm:text-sm font-medium">
+                    Prosperity Assistant
+                  </p>
+                  <p className="text-[#0E3B5C] text-xs sm:text-sm leading-relaxed">
+                    Preparing the next step{typingDots}
                   </p>
                 </div>
               </div>
@@ -997,7 +1377,7 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
               {showDetailsForm ? (
                 <form
                   onSubmit={handleFormSubmit}
-                  className="bg-white/10 backdrop-blur-sm p-3 sm:p-4 rounded-lg border border-white/30 overflow-y-auto max-h-[40vh] sm:max-h-[50vh]"
+                  className="bg-white/10 backdrop-blur-sm p-3 sm:p-4 rounded-lg border border-white/30"
                 >
                   <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
                     <div>
@@ -1061,38 +1441,75 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
                         </p>
                       )}
                     </div>
-                    <DatePicker
-                      selected={
-                        formData.dob
-                          ? parseDateFromDDMMYYYY(formData.dob)
-                          : null
-                      }
-                      onChange={(date: Date | null) => {
-                        if (date) {
-                          const day = String(date.getDate()).padStart(2, "0");
-                          const month = String(date.getMonth() + 1).padStart(
-                            2,
-                            "0",
-                          );
-                          const year = date.getFullYear();
-                          setFormData((prev) => ({
-                            ...prev,
-                            dob: `${day}/${month}/${year}`,
-                          }));
-                          setFormErrors((prev: any) => ({ ...prev, dob: "" }));
-                        } else {
-                          setFormData((prev) => ({ ...prev, dob: "" }));
-                        }
+                    {/* <Flatpickr
+                      placeholder="dd/mm/yyyy"
+                      value={formData.dob}
+                      options={{
+                        dateFormat: "d/m/Y",
+                        maxDate: "today",
                       }}
-                      placeholderText="dd/mm/yyyy"
-                      dateFormat="dd/MM/yyyy"
-                      className="w-full p-2 rounded bg-transparent text-white border border-white/50 text-xs sm:text-sm focus:outline-none"
-                    />
-                    {formErrors.dob && (
+                      onChange={([date]) => {
+                        if (!date) return;
+
+                        const day = String(date.getDate()).padStart(2, "0");
+                        const month = String(date.getMonth() + 1).padStart(
+                          2,
+                          "0"
+                        );
+                        const year = date.getFullYear();
+                        const newDob = `${day}/${month}/${year}`;
+
+                        setFormData((prev) => ({
+                          ...prev,
+                          dob: newDob,
+                        }));
+                        const birthDate = new Date(
+                          year,
+                          date.getMonth(),
+                          date.getDate()
+                        );
+                        const today = new Date();
+                        let age = today.getFullYear() - birthDate.getFullYear();
+                        const m = today.getMonth() - birthDate.getMonth();
+                        if (
+                          m < 0 ||
+                          (m === 0 && today.getDate() < birthDate.getDate())
+                        ) {
+                          age--;
+                        }
+                        if (age < 18) {
+                          setAgeError(
+                            "You must be at least 18 years old to sign up."
+                          );
+                        } else {
+                          setAgeError("");
+                        }
+                        setFormErrors((prev: any) => ({ ...prev, dob: "" }));
+                      }}
+                      className="w-full p-2 rounded bg-transparent text-white border border-white/50 text-xs sm:text-sm"
+                    /> */}
+                    <div>
+                      <input
+                        type="text"
+                        name="dob"
+                        value={formData.dob}
+                        onChange={handleFormChange}
+                        placeholder="dd/mm/yyyy"
+                        maxLength={10}
+                        className="w-full p-1.5 sm:p-2 rounded bg-transparent text-white border border-white/50 text-xs sm:text-sm"
+                        required
+                      />
+                      {formErrors.dob && (
+                        <p className="text-red-300 text-xs mt-0.5">
+                          {formErrors.dob}
+                        </p>
+                      )}
+                    </div>
+                    {/* {formErrors.dob && (
                       <p className="text-red-300 text-xs mt-1">
                         {formErrors.dob}
                       </p>
-                    )}
+                    )} */}
 
                     <div>
                       <input
@@ -1200,13 +1617,90 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
                         </p>
                       )}
                     </div>
+                    <div>
+                      <select
+                        name="custAuthorityType"
+                        value={formData.custAuthorityType}
+                        onChange={(e) => {
+                          setFormData((prev) => ({
+                            ...prev,
+                            custAuthorityType: e.target.value,
+                          }));
+                          setFormErrors((prev: any) => ({
+                            ...prev,
+                            custAuthorityType: "",
+                          }));
+                        }}
+                        className="w-full p-1.5 sm:p-2 rounded bg-transparent text-white border border-white/50 text-xs sm:text-sm focus:outline-none"
+                        required
+                      >
+                        <option
+                          value=""
+                          disabled
+                          hidden
+                          className="text-gray-400"
+                        >
+                          ID Type
+                        </option>
+                        <option value="DL" className="text-black">
+                          Driver License
+                        </option>
+                        <option value="PA" className="text-black">
+                          Passport
+                        </option>
+                        <option value="PI" className="text-black">
+                          Proof of age Card
+                        </option>
+                      </select>
+
+                      {formErrors.custAuthorityType && (
+                        <p className="text-red-300 text-xs mt-0.5 sm:mt-1">
+                          {formErrors.custAuthorityType}
+                        </p>
+                      )}
+                    </div>
+                    <div>
+                      <input
+                        name="custAuthorityNo"
+                        value={formData.custAuthorityNo}
+                        onChange={(e) => {
+                          const value = e.target.value.substring(0, 20);
+                          setFormData((prev) => ({
+                            ...prev,
+                            custAuthorityNo: String(value),
+                          }));
+                          setFormErrors((prev: any) => ({
+                            ...prev,
+                            custAuthorityNo: "",
+                          }));
+                        }}
+                        placeholder="Your ID Number"
+                        maxLength={20}
+                        className="w-full p-1.5 sm:p-2 rounded bg-transparent text-white border border-white/50 text-xs sm:text-sm"
+                        required
+                      />
+                      {formErrors.custAuthorityNo && (
+                        <p className="text-red-300 text-xs mt-0.5 sm:mt-1">
+                          {formErrors.custAuthorityNo}
+                        </p>
+                      )}
+                    </div>
                   </div>
+                  {ageError && (
+                    <p className="text-red-400 font-semibold text-sm mt-2 col-span-2 text-center">
+                      {ageError}
+                    </p>
+                  )}
                   <button
                     type="submit"
-                    disabled={loading}
-                    className="mt-3 sm:mt-4 w-full bg-[#2bb673] text-white py-1.5 sm:py-2 rounded hover:opacity-90 text-xs sm:text-sm"
+                    disabled={loading || ageError !== ""} // ← YEH ADD KARO
+                    className={`mt-3 sm:mt-4 w-full py-3 rounded text-white font-semibold transition-opacity ${
+                      ageError
+                        ? "bg-gray-500 cursor-not-allowed"
+                        : "bg-[#2bb673] hover:opacity-90"
+                    }`}
                   >
-                    Submit Details
+                    {loading ? "Submitting..." : "Submit Details"}
                   </button>
                 </form>
               ) : showSimTypeSelection ? (
@@ -1246,9 +1740,10 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
                   />
                   <button
                     onClick={handleSimNumberContinue}
+                    disabled={loading}
                     className="bg-[#2bb673] text-white px-4 py-1 rounded hover:opacity-90 text-xs sm:text-sm"
                   >
-                    Continue
+                    {loading ? "Checking..." : "Continue"}
                   </button>
                 </div>
               ) : showNumberTypeSelection ? (
@@ -1352,7 +1847,11 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
                       <input
                         type="text"
                         value={arn}
-                        onChange={(e) => setArn(e.target.value)}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          setArn(value);
+                          localStorage.setItem("arn", value);
+                        }}
                         placeholder="Enter ARN (Account Reference Number)"
                         className="w-full p-2 rounded bg-transparent border border-white/50 text-white text-center"
                       />
@@ -1362,12 +1861,13 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
                   <button
                     onClick={handleExistingNumberSubmit}
                     disabled={
+                      loading ||
                       !existingPhone.match(/^04\d{8}$/) ||
                       (existingNumberType === "postpaid" && !arn.trim())
                     }
                     className="w-full bg-[#2bb673] text-white py-2 rounded hover:opacity-90 disabled:opacity-50"
                   >
-                    Continue
+                    {loading ? "Processing..." : "Continue"}
                   </button>
                 </div>
               ) : showConfirmExistingNumber ? (
@@ -1404,14 +1904,32 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
                   ))}
                 </div>
               ) : showPlans && !selectedPlan && plans.length > 0 ? (
-                <div className="flex flex-wrap gap-1 sm:gap-2 p-3 sm:p-4 bg-white/10 backdrop-blur-sm rounded-lg border border-white/30 justify-center">
+                <div className="flex flex-wrap justify-center gap-4 p-4">
                   {plans.map((plan, index) => (
                     <button
                       key={index}
                       onClick={() => handlePlanSelect(plan)}
-                      className="bg-[#2bb673] text-white px-2 py-1 sm:px-3 sm:py-1 md:px-4 md:py-2 rounded hover:opacity-90 text-xs sm:text-xs md:text-sm"
+                      className="
+          w-26 sm:w-24 md:w-28
+          h-15
+          flex flex-col items-center justify-center
+          bg-gradient-to-br from-emerald-500 to-green-600
+          border border-white/20 backdrop-blur-md
+          text-white
+          rounded-xl
+          shadow-md
+          hover:shadow-lg
+          hover:scale-105
+          transition-all duration-200 ease-in-out
+          text-sm font-medium
+        "
                     >
-                      {plan.planName} - ${plan.price}
+                      <span className="truncate w-full text-center">
+                        {plan.planName}
+                      </span>
+                      <span className="text-base font-semibold">
+                        ${plan.price}
+                      </span>
                     </button>
                   ))}
                 </div>
@@ -1429,12 +1947,23 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
                     }
                     className="w-full p-2 rounded bg-transparent border border-white/50 text-center text-white text-sm sm:text-base"
                     placeholder="Enter 6-digit OTP"
+                    autoFocus
                   />
                   <button
                     onClick={handleOtpVerify}
+                    disabled={otpCode.length !== 6}
                     className="bg-[#2bb673] text-white px-4 py-1 rounded hover:opacity-90 text-xs sm:text-sm"
                   >
-                    Verify OTP
+                    {loading ? "Verifying..." : "Verify OTP"}
+                  </button>
+
+                  {/* Resend OTP Link */}
+                  <button
+                    onClick={handleResendOtp}
+                    disabled={loading}
+                    className="text-white/80 hover:text-white underline text-sm mt-4 transition-colors disabled:opacity-50"
+                  >
+                    Resend OTP
                   </button>
                 </div>
               ) : showPayment &&
@@ -1465,7 +1994,7 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
                     if (success) handleActivateOrder();
                   }}
                 />
-              ) : showInitialOptions ? (
+              ) : showInitialOptions && !flowCompleted ? (
                 <div className="flex flex-col items-center gap-3 p-4 bg-white/10 backdrop-blur-sm rounded-lg border border-white/30 text-white">
                   <p className="text-sm sm:text-base text-center">
                     How can I help you today?
@@ -1487,7 +2016,7 @@ Make sure to check your junk mail if it hasn't arrived in the next 5 to 10 minut
                       onClick={() => handleInitialOption("transfer-number")}
                       className="bg-white text-[#0E3B5C] border border-gray-300 px-4 py-3 rounded-lg hover:bg-gray-50 text-xs sm:text-sm font-medium transition-colors"
                     >
-                      Transfer my number
+                      Transfer My Number
                     </button>
                   </div>
                 </div>
