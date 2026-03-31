@@ -672,7 +672,7 @@ const ChatWindow = () => {
 
       const data = await callAPI("signup");
       setLoading(false);
-
+      // data
       if (!data) {
         return setChat((prev) => [
           ...prev,
