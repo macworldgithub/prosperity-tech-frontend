@@ -1146,6 +1146,9 @@ const ChatWindow = () => {
           email: formData.email,
         },
         planNo: String(selectedPlan?.planNo),
+
+        // planNo: "23989",
+
         simNo:
           simType === "physical"
             ? localStorage.getItem("physicalSimNumber") || ""
@@ -1249,10 +1252,10 @@ No worries — you can try again or choose one of the options below, and I’ll 
       />
 
       {/* Chat Modal */}
-      <div className="fixed inset-0 flex items-center justify-center z-50 p-2 sm:p-4 md:p-0 overflow-y-auto">
-        <div className="w-full sm:w-[50%] h-[70vh] sm:h-[65vh] md:max-h-[600px] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden">
+      <div className="fixed inset-0 flex items-center justify-center z-50 p-2 sm:p-4 md:p-0 overflow-y-auto ">
+        <div className="w-full sm:w-[50%] h-[70vh] sm:h-[65vh] md:max-h-[600px] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden ">
           {/* Header */}
-          <div className="flex justify-between items-center p-2 sm:p-3 bg-[#215988] rounded-t-2xl">
+          <div className="flex justify-between items-center p-2 sm:p-3 bg-[#215988] rounded-t-2xl ">
             <div className="flex items-center gap-1 sm:gap-2">
               <div className="relative w-8 h-8 sm:w-12 sm:h-12">
                 <img
@@ -1333,7 +1336,7 @@ No worries — you can try again or choose one of the options below, and I’ll 
                   <img
                     src="/images/bot.png"
                     alt="Loading Avatar"
-                    className="w-full h-full rounded-full object-cover"
+                    className="w-full h-full rounded-full object-cover "
                   />
                 </div>
 
