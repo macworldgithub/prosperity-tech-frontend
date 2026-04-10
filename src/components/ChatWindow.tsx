@@ -1261,7 +1261,6 @@ Please check your details and try again, or contact support if the issue persist
         <div className="w-full h-full bg-white flex flex-col overflow-hidden shadow-2xl">
           {/* Chat Body */}
           <div className="flex-1 flex flex-col bg-gradient-to-b from-[#33a748] via-[#257773] to-[#1e608c] p-2 sm:p-4 md:p-6 overflow-y-auto ring-1 ring-white/20 shadow-[inset_0_8px_24px_rgba(0,0,0,0.25)]">
-            
             {/* Close Button Header (No Blue Background) */}
             <div className="flex justify-end w-full mb-1 sm:mb-2">
               <button
@@ -1340,7 +1339,13 @@ Please check your details and try again, or contact support if the issue persist
             )}
 
             {/* Input Bar */}
-            <div className={showInitialOptions && !flowCompleted ? "flex-1 flex flex-col items-center justify-center w-full" : "mt-auto w-full"}>
+            <div
+              className={
+                showInitialOptions && !flowCompleted
+                  ? "mt-6 sm:mt-10 md:mt-16 lg:mt-20 w-full"
+                  : "mt-auto w-full"
+              }
+            >
               {showDetailsForm ? (
                 <form
                   onSubmit={handleFormSubmit}
@@ -1671,20 +1676,20 @@ Please check your details and try again, or contact support if the issue persist
                   </button>
                 </form>
               ) : showSimTypeSelection ? (
-                <div className="flex flex-col items-center gap-3 p-4 bg-white/10 rounded-lg border border-white/30 text-white">
-                  <p className="text-sm sm:text-base">
+                <div className="flex flex-col items-center gap-4 p-6 bg-white/10 rounded-xl border border-white/30 text-white w-full max-w-2xl md:max-w-3xl mx-auto">
+                  <p className="text-base sm:text-lg font-medium">
                     Please choose SIM type:
                   </p>
-                  <div className="flex flex-col sm:flex-row items-center justify-center gap-2 w-full max-w-md mx-auto">
+                  <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full max-w-3xl mx-auto">
                     <button
                       onClick={() => handleSimTypeSelect("esim")}
-                      className="w-full sm:w-auto min-w-[140px] bg-[#2bb673] text-white px-3 py-2 rounded hover:opacity-90 text-xs sm:text-sm"
+                      className="w-full sm:w-auto min-w-[170px] md:min-w-[190px] bg-[#2bb673] text-white px-5 py-3 rounded-xl hover:opacity-90 text-sm sm:text-base"
                     >
                       E-SIM
                     </button>
                     <button
                       onClick={() => handleSimTypeSelect("physical")}
-                      className="w-full sm:w-auto min-w-[140px] bg-[#215988] text-white px-3 py-2 rounded hover:opacity-90 text-xs sm:text-sm"
+                      className="w-full sm:w-auto min-w-[170px] md:min-w-[190px] bg-[#215988] text-white px-5 py-3 rounded-xl hover:opacity-90 text-sm sm:text-base"
                     >
                       Physical SIM
                     </button>
@@ -1714,76 +1719,76 @@ Please check your details and try again, or contact support if the issue persist
                   </button>
                 </div>
               ) : showNumberTypeSelection ? (
-                <div className="bg-white/10 backdrop-blur-sm p-4 rounded-lg border border-white/30 text-center w-full max-w-md mx-auto">
-                  <p className="text-white mb-3">
+                <div className="bg-white/10 backdrop-blur-sm p-6 rounded-xl border border-white/30 text-center w-full max-w-2xl md:max-w-3xl mx-auto">
+                  <p className="text-white mb-4 text-base sm:text-lg font-medium">
                     {isTransferFlow
                       ? "Since you're transferring your number, we'll use your existing number."
                       : "Do you want a new number or keep your existing one?"}
                   </p>
-                  <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                  <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                     {!isTransferFlow && (
                       <button
                         onClick={handleNewNumber}
-                        className="w-full sm:w-auto min-w-[160px] bg-[#2bb673] text-white px-4 py-2 rounded"
+                        className="w-full sm:w-auto min-w-[190px] md:min-w-[220px] bg-[#2bb673] text-white px-5 py-3 rounded-xl text-sm sm:text-base"
                       >
                         New Number
                       </button>
                     )}
                     <button
                       onClick={handleExistingNumber}
-                      className="w-full sm:w-auto min-w-[160px] bg-[#215988] text-white px-4 py-2 rounded"
+                      className="w-full sm:w-auto min-w-[190px] md:min-w-[220px] bg-[#215988] text-white px-5 py-3 rounded-xl text-sm sm:text-base"
                     >
                       Existing Number
                     </button>
                   </div>
                 </div>
               ) : showConfirmNewNumber ? (
-                <div className="bg-white/10 backdrop-blur-sm p-4 rounded-lg border border-white/30 text-center w-full max-w-md mx-auto">
-                  <p className="text-white mb-3">
+                <div className="bg-white/10 backdrop-blur-sm p-6 rounded-xl border border-white/30 text-center w-full max-w-2xl md:max-w-3xl mx-auto">
+                  <p className="text-white mb-4 text-base sm:text-lg font-medium">
                     Are you sure you want a{" "}
                     {selectedOption === "new"
                       ? "new number"
                       : "existing number"}
                     ?
                   </p>
-                  <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                  <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                     <button
                       onClick={() => confirmNewNumber(true)}
-                      className="w-full sm:w-auto min-w-[140px] bg-green-600 text-white px-4 py-2 rounded"
+                      className="w-full sm:w-auto min-w-[170px] md:min-w-[200px] bg-green-600 text-white px-5 py-3 rounded-xl text-sm sm:text-base"
                     >
                       Yes
                     </button>
                     <button
                       onClick={() => confirmNewNumber(false)}
-                      className="w-full sm:w-auto min-w-[140px] bg-red-600 text-white px-4 py-2 rounded"
+                      className="w-full sm:w-auto min-w-[170px] md:min-w-[200px] bg-red-600 text-white px-5 py-3 rounded-xl text-sm sm:text-base"
                     >
                       No
                     </button>
                   </div>
                 </div>
               ) : showExistingNumberOptions ? (
-                <div className="bg-white/10 backdrop-blur-sm p-4 rounded-lg border border-white/30 w-full max-w-md mx-auto">
-                  <p className="text-white mb-3 text-center">
+                <div className="bg-white/10 backdrop-blur-sm p-6 rounded-xl border border-white/30 w-full max-w-2xl md:max-w-3xl mx-auto">
+                  <p className="text-white mb-4 text-center text-base sm:text-lg font-medium">
                     Is your existing number Prepaid or Postpaid?
                   </p>
-                  <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-4">
+                  <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-4">
                     <button
                       onClick={() => handleExistingTypeSelect("prepaid")}
-                      className={`w-full sm:w-auto min-w-[150px] px-4 py-2 rounded ${
+                      className={`w-full sm:w-auto min-w-[170px] md:min-w-[200px] px-5 py-3 rounded-xl ${
                         existingNumberType === "prepaid"
                           ? "bg-[#2bb673]"
                           : "bg-gray-600"
-                      } text-white`}
+                      } text-white text-sm sm:text-base`}
                     >
                       Prepaid
                     </button>
                     <button
                       onClick={() => handleExistingTypeSelect("postpaid")}
-                      className={`w-full sm:w-auto min-w-[150px] px-4 py-2 rounded ${
+                      className={`w-full sm:w-auto min-w-[170px] md:min-w-[200px] px-5 py-3 rounded-xl ${
                         existingNumberType === "postpaid"
                           ? "bg-[#2bb673]"
                           : "bg-gray-600"
-                      } text-white`}
+                      } text-white text-sm sm:text-base`}
                     >
                       Postpaid
                     </button>
@@ -1838,63 +1843,63 @@ Please check your details and try again, or contact support if the issue persist
                   </button>
                 </div>
               ) : showConfirmExistingNumber ? (
-                <div className="bg-white/10 backdrop-blur-sm p-4 rounded-lg border border-white/30 text-center w-full max-w-md mx-auto">
-                  <p className="text-white mb-3">
+                <div className="bg-white/10 backdrop-blur-sm p-6 rounded-xl border border-white/30 text-center w-full max-w-2xl md:max-w-3xl mx-auto">
+                  <p className="text-white mb-4 text-base sm:text-lg font-medium">
                     Are you sure you want to port {existingPhone}?
                   </p>
-                  <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                  <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                     <button
                       onClick={() => confirmExistingNumber(true)}
-                      className="w-full sm:w-auto min-w-[140px] bg-green-600 text-white px-4 py-2 rounded"
+                      className="w-full sm:w-auto min-w-[170px] md:min-w-[200px] bg-green-600 text-white px-5 py-3 rounded-xl text-sm sm:text-base"
                     >
                       Yes
                     </button>
                     <button
                       onClick={() => confirmExistingNumber(false)}
-                      className="w-full sm:w-auto min-w-[140px] bg-red-600 text-white px-4 py-2 rounded"
+                      className="w-full sm:w-auto min-w-[170px] md:min-w-[200px] bg-red-600 text-white px-5 py-3 rounded-xl text-sm sm:text-base"
                     >
                       No
                     </button>
                   </div>
                 </div>
               ) : showNumberButtons && numberOptions.length > 0 ? (
-                <div className="flex flex-wrap gap-1 sm:gap-2 p-3 sm:p-4 bg-white/10 backdrop-blur-sm rounded-lg border border-white/30 justify-center">
+                <div className="flex flex-wrap gap-4 p-5 bg-white/10 backdrop-blur-sm rounded-xl border border-white/30 justify-center w-full max-w-3xl md:max-w-4xl mx-auto">
                   {numberOptions.map((num, index) => (
                     <button
                       key={index}
                       onClick={() => handleNumberSelect(num)}
                       disabled={loading}
-                      className="w-full sm:w-auto min-w-[140px] bg-[#2bb673] text-white px-2 py-2 sm:px-3 sm:py-2 md:px-4 md:py-2 rounded hover:opacity-90 text-xs sm:text-sm md:text-sm"
+                      className="w-full sm:w-auto min-w-[160px] md:min-w-[180px] bg-[#2bb673] text-white px-4 py-3 sm:px-5 sm:py-3 rounded-xl hover:opacity-90 text-sm sm:text-base"
                     >
                       {num}
                     </button>
                   ))}
                 </div>
               ) : showPlans && !selectedPlan && plans.length > 0 ? (
-                <div className="flex flex-wrap justify-center gap-4 p-4">
+                <div className="flex flex-wrap justify-center gap-4 p-6 w-full max-w-4xl md:max-w-5xl mx-auto">
                   {plans.map((plan, index) => (
                     <button
                       key={index}
                       onClick={() => handlePlanSelect(plan)}
                       className="
-          w-full sm:w-40 md:w-36 lg:w-32
-          min-h-[90px]
+          w-full sm:w-44 md:w-48 lg:w-44 xl:w-40
+          min-h-[110px]
           flex flex-col items-center justify-center
           bg-gradient-to-br from-emerald-500 to-green-600
           border border-white/20 backdrop-blur-md
           text-white
-          rounded-xl
+          rounded-2xl
           shadow-md
           hover:shadow-lg
           hover:scale-105
           transition-all duration-200 ease-in-out
-          text-sm font-medium
+          text-sm sm:text-base font-medium
         "
                     >
                       <span className="truncate w-full text-center">
                         {plan.planName}
                       </span>
-                      <span className="text-base font-semibold">
+                      <span className="text-lg font-semibold">
                         ${plan.price}
                       </span>
                     </button>
@@ -1964,26 +1969,26 @@ Please check your details and try again, or contact support if the issue persist
                   }}
                 />
               ) : showInitialOptions && !flowCompleted ? (
-                <div className="flex flex-col items-center gap-3 p-4 bg-white/10 backdrop-blur-sm rounded-lg border border-white/30 text-white">
-                  <p className="text-sm sm:text-base text-center">
+                <div className="flex flex-col items-center gap-4 sm:gap-5 md:gap-6 p-6 sm:p-8 md:p-10 bg-white/10 backdrop-blur-sm rounded-xl border border-white/30 text-white w-full max-w-xl md:max-w-3xl lg:max-w-4xl mx-auto">
+                  <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-center font-semibold">
                     How can I help you today?
                   </p>
-                  <div className="flex flex-col gap-2 w-full max-w-sm mx-auto">
+                  <div className="flex flex-col gap-3 md:gap-4 w-full">
                     <button
                       onClick={() => handleInitialOption("buy-esim")}
-                      className="w-full bg-white text-[#0E3B5C] border border-gray-300 px-4 py-3 rounded-lg hover:bg-gray-50 text-xs sm:text-sm font-medium transition-colors"
+                      className="w-full bg-white text-[#0E3B5C] border border-gray-300 px-5 py-4 md:px-6 md:py-5 lg:py-6 rounded-2xl hover:bg-gray-50 hover:shadow-lg text-sm sm:text-base md:text-lg font-semibold transition-all"
                     >
                       Buy an eSIM / Physical SIM
                     </button>
                     <button
                       onClick={() => handleInitialOption("account-problem")}
-                      className="bg-white text-[#0E3B5C] border border-gray-300 px-4 py-3 rounded-lg hover:bg-gray-50 text-xs sm:text-sm font-medium transition-colors"
+                      className="w-full bg-white text-[#0E3B5C] border border-gray-300 px-5 py-4 md:px-6 md:py-5 lg:py-6 rounded-2xl hover:bg-gray-50 hover:shadow-lg text-sm sm:text-base md:text-lg font-semibold transition-all"
                     >
                       Account, billing or Technical Problem
                     </button>
                     <button
                       onClick={() => handleInitialOption("transfer-number")}
-                      className="bg-white text-[#0E3B5C] border border-gray-300 px-4 py-3 rounded-lg hover:bg-gray-50 text-xs sm:text-sm font-medium transition-colors"
+                      className="w-full bg-white text-[#0E3B5C] border border-gray-300 px-5 py-4 md:px-6 md:py-5 lg:py-6 rounded-2xl hover:bg-gray-50 hover:shadow-lg text-sm sm:text-base md:text-lg font-semibold transition-all"
                     >
                       Transfer My Number
                     </button>
