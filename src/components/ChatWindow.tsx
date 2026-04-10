@@ -362,7 +362,7 @@ const ChatWindow = () => {
       setLoading(true);
       setShowInitialOptions(false);
       setIsTypingEnabled(false);
-      // Save DOB to localStorage 
+      // Save DOB to localStorage
       const isoDob = formatDobToISO(formData.dob);
 
       sessionStorage.setItem("userDOB", isoDob);
@@ -1219,7 +1219,7 @@ This can sometimes happen if:
 • There was a temporary system issue
 • The selected number or SIM could not be validated
 
-No worries — you can try again or choose one of the options below, and I’ll help you from there.`;
+Please check your details and try again, or contact support if the issue persists.`;
 
       setChat((prev) => [
         ...prev,
@@ -1234,8 +1234,10 @@ No worries — you can try again or choose one of the options below, and I’ll 
         },
       ]);
 
+      // Don't show payment again since payment was successful
+      // Just show error message and let user contact support
       setFlowCompleted(false);
-      setShowInitialOptions(true);
+      setShowInitialOptions(false);
       setIsTypingEnabled(false);
     }
   };
@@ -1956,8 +1958,6 @@ No worries — you can try again or choose one of the options below, and I’ll 
                   planName={selectedPlan.planName}
                   planPrice={selectedPlan.price}
                   onPaymentComplete={(success, msg) => {
-                    setShowPayment(false);
-
                     if (msg) {
                       setChat((prev) => [
                         ...prev,
@@ -1973,7 +1973,11 @@ No worries — you can try again or choose one of the options below, and I’ll 
                       ]);
                     }
 
-                    if (success) handleActivateOrder();
+                    if (success) {
+                      setShowPayment(false);
+                      handleActivateOrder();
+                    }
+                    // Don't hide payment component on failure - let user try again
                   }}
                 />
               ) : showInitialOptions && !flowCompleted ? (
