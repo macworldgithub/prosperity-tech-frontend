@@ -1340,7 +1340,7 @@ Please check your details and try again, or contact support if the issue persist
             )}
 
             {/* Input Bar */}
-            <div className={showInitialOptions && !flowCompleted ? "flex-1 flex flex-col items-center justify-center w-full sm:flex-none sm:mt-auto" : "mt-auto w-full"}>
+            <div className={showInitialOptions && !flowCompleted ? "flex-1 flex flex-col items-center justify-center w-full" : "mt-auto w-full"}>
               {showDetailsForm ? (
                 <form
                   onSubmit={handleFormSubmit}
@@ -1675,16 +1675,16 @@ Please check your details and try again, or contact support if the issue persist
                   <p className="text-sm sm:text-base">
                     Please choose SIM type:
                   </p>
-                  <div className="flex gap-2">
+                  <div className="flex flex-col sm:flex-row items-center justify-center gap-2 w-full max-w-md mx-auto">
                     <button
                       onClick={() => handleSimTypeSelect("esim")}
-                      className="bg-[#2bb673] text-white px-3 py-1 rounded hover:opacity-90 text-xs sm:text-sm"
+                      className="w-full sm:w-auto min-w-[140px] bg-[#2bb673] text-white px-3 py-2 rounded hover:opacity-90 text-xs sm:text-sm"
                     >
                       E-SIM
                     </button>
                     <button
                       onClick={() => handleSimTypeSelect("physical")}
-                      className="bg-[#215988] text-white px-3 py-1 rounded hover:opacity-90 text-xs sm:text-sm"
+                      className="w-full sm:w-auto min-w-[140px] bg-[#215988] text-white px-3 py-2 rounded hover:opacity-90 text-xs sm:text-sm"
                     >
                       Physical SIM
                     </button>
@@ -1714,31 +1714,31 @@ Please check your details and try again, or contact support if the issue persist
                   </button>
                 </div>
               ) : showNumberTypeSelection ? (
-                <div className="bg-white/10 backdrop-blur-sm p-4 rounded-lg border border-white/30 text-center">
+                <div className="bg-white/10 backdrop-blur-sm p-4 rounded-lg border border-white/30 text-center w-full max-w-md mx-auto">
                   <p className="text-white mb-3">
                     {isTransferFlow
                       ? "Since you're transferring your number, we'll use your existing number."
                       : "Do you want a new number or keep your existing one?"}
                   </p>
-                  <div className="flex gap-3 justify-center">
+                  <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
                     {!isTransferFlow && (
                       <button
                         onClick={handleNewNumber}
-                        className="bg-[#2bb673] text-white px-4 py-2 rounded"
+                        className="w-full sm:w-auto min-w-[160px] bg-[#2bb673] text-white px-4 py-2 rounded"
                       >
                         New Number
                       </button>
                     )}
                     <button
                       onClick={handleExistingNumber}
-                      className="bg-[#215988] text-white px-4 py-2 rounded"
+                      className="w-full sm:w-auto min-w-[160px] bg-[#215988] text-white px-4 py-2 rounded"
                     >
                       Existing Number
                     </button>
                   </div>
                 </div>
               ) : showConfirmNewNumber ? (
-                <div className="bg-white/10 backdrop-blur-sm p-4 rounded-lg border border-white/30 text-center">
+                <div className="bg-white/10 backdrop-blur-sm p-4 rounded-lg border border-white/30 text-center w-full max-w-md mx-auto">
                   <p className="text-white mb-3">
                     Are you sure you want a{" "}
                     {selectedOption === "new"
@@ -1746,30 +1746,30 @@ Please check your details and try again, or contact support if the issue persist
                       : "existing number"}
                     ?
                   </p>
-                  <div className="flex gap-3 justify-center">
+                  <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
                     <button
                       onClick={() => confirmNewNumber(true)}
-                      className="bg-green-600 text-white px-4 py-2 rounded"
+                      className="w-full sm:w-auto min-w-[140px] bg-green-600 text-white px-4 py-2 rounded"
                     >
                       Yes
                     </button>
                     <button
                       onClick={() => confirmNewNumber(false)}
-                      className="bg-red-600 text-white px-4 py-2 rounded"
+                      className="w-full sm:w-auto min-w-[140px] bg-red-600 text-white px-4 py-2 rounded"
                     >
                       No
                     </button>
                   </div>
                 </div>
               ) : showExistingNumberOptions ? (
-                <div className="bg-white/10 backdrop-blur-sm p-4 rounded-lg border border-white/30">
+                <div className="bg-white/10 backdrop-blur-sm p-4 rounded-lg border border-white/30 w-full max-w-md mx-auto">
                   <p className="text-white mb-3 text-center">
                     Is your existing number Prepaid or Postpaid?
                   </p>
-                  <div className="flex gap-3 justify-center mb-4">
+                  <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-4">
                     <button
                       onClick={() => handleExistingTypeSelect("prepaid")}
-                      className={`px-4 py-2 rounded ${
+                      className={`w-full sm:w-auto min-w-[150px] px-4 py-2 rounded ${
                         existingNumberType === "prepaid"
                           ? "bg-[#2bb673]"
                           : "bg-gray-600"
@@ -1779,7 +1779,7 @@ Please check your details and try again, or contact support if the issue persist
                     </button>
                     <button
                       onClick={() => handleExistingTypeSelect("postpaid")}
-                      className={`px-4 py-2 rounded ${
+                      className={`w-full sm:w-auto min-w-[150px] px-4 py-2 rounded ${
                         existingNumberType === "postpaid"
                           ? "bg-[#2bb673]"
                           : "bg-gray-600"
@@ -1838,20 +1838,20 @@ Please check your details and try again, or contact support if the issue persist
                   </button>
                 </div>
               ) : showConfirmExistingNumber ? (
-                <div className="bg-white/10 backdrop-blur-sm p-4 rounded-lg border border-white/30 text-center">
+                <div className="bg-white/10 backdrop-blur-sm p-4 rounded-lg border border-white/30 text-center w-full max-w-md mx-auto">
                   <p className="text-white mb-3">
                     Are you sure you want to port {existingPhone}?
                   </p>
-                  <div className="flex gap-3 justify-center">
+                  <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
                     <button
                       onClick={() => confirmExistingNumber(true)}
-                      className="bg-green-600 text-white px-4 py-2 rounded"
+                      className="w-full sm:w-auto min-w-[140px] bg-green-600 text-white px-4 py-2 rounded"
                     >
                       Yes
                     </button>
                     <button
                       onClick={() => confirmExistingNumber(false)}
-                      className="bg-red-600 text-white px-4 py-2 rounded"
+                      className="w-full sm:w-auto min-w-[140px] bg-red-600 text-white px-4 py-2 rounded"
                     >
                       No
                     </button>
@@ -1864,7 +1864,7 @@ Please check your details and try again, or contact support if the issue persist
                       key={index}
                       onClick={() => handleNumberSelect(num)}
                       disabled={loading}
-                      className="bg-[#2bb673] text-white px-2 py-1 sm:px-3 sm:py-1 md:px-4 md:py-2 rounded hover:opacity-90 text-xs sm:text-xs md:text-sm"
+                      className="w-full sm:w-auto min-w-[140px] bg-[#2bb673] text-white px-2 py-2 sm:px-3 sm:py-2 md:px-4 md:py-2 rounded hover:opacity-90 text-xs sm:text-sm md:text-sm"
                     >
                       {num}
                     </button>
@@ -1877,8 +1877,8 @@ Please check your details and try again, or contact support if the issue persist
                       key={index}
                       onClick={() => handlePlanSelect(plan)}
                       className="
-          w-26 sm:w-24 md:w-28
-          h-15
+          w-full sm:w-40 md:w-36 lg:w-32
+          min-h-[90px]
           flex flex-col items-center justify-center
           bg-gradient-to-br from-emerald-500 to-green-600
           border border-white/20 backdrop-blur-md
@@ -1968,10 +1968,10 @@ Please check your details and try again, or contact support if the issue persist
                   <p className="text-sm sm:text-base text-center">
                     How can I help you today?
                   </p>
-                  <div className="flex flex-col gap-2 w-full max-w-sm">
+                  <div className="flex flex-col gap-2 w-full max-w-sm mx-auto">
                     <button
                       onClick={() => handleInitialOption("buy-esim")}
-                      className="bg-white text-[#0E3B5C] border border-gray-300 px-4 py-3 rounded-lg hover:bg-gray-50 text-xs sm:text-sm font-medium transition-colors"
+                      className="w-full bg-white text-[#0E3B5C] border border-gray-300 px-4 py-3 rounded-lg hover:bg-gray-50 text-xs sm:text-sm font-medium transition-colors"
                     >
                       Buy an eSIM / Physical SIM
                     </button>
