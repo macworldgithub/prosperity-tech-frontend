@@ -362,7 +362,7 @@ const ChatWindow = () => {
       setLoading(true);
       setShowInitialOptions(false);
       setIsTypingEnabled(false);
-      // Save DOB to localStorage 
+      // Save DOB to localStorage
       const isoDob = formatDobToISO(formData.dob);
 
       sessionStorage.setItem("userDOB", isoDob);
@@ -1152,9 +1152,6 @@ const ChatWindow = () => {
           email: formData.email,
         },
         planNo: String(selectedPlan?.planNo),
-
-        // planNo: "23989",
-
         simNo:
           simType === "physical"
             ? localStorage.getItem("physicalSimNumber") || ""
@@ -1251,47 +1248,30 @@ No worries — you can try again or choose one of the options below, and I’ll 
     <>
       {/* Background with image */}
       <div
-        className="fixed inset-0 bg-black/40 z-40 bg-cover bg-center "
+        className="fixed inset-x-0 bottom-0 top-[112px] bg-black/40 z-40 bg-cover bg-center"
         style={{
           backgroundImage: "url('/images/bg.png')",
         }}
       />
 
-      {/* Chat Modal */}
-      <div className="fixed inset-0 flex items-center justify-center z-50 p-2 sm:p-4 md:p-0 overflow-y-auto ">
-        <div className="w-full sm:w-[50%] h-[70vh] sm:h-[65vh] md:max-h-[600px] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden ">
-          {/* Header */}
-          <div className="flex justify-between items-center p-2 sm:p-3 bg-[#215988] rounded-t-2xl ">
-            <div className="flex items-center gap-1 sm:gap-2">
-              <div className="relative w-8 h-8 sm:w-12 sm:h-12">
-                <img
-                  src="/images/logo.png"
-                  alt="Prosperity Tech Logo"
-                  className="w-full h-full object-contain"
-                />
-              </div>
-            </div>
-            <button
-              onClick={() => router.push("/")}
-              className="text-white text-lg sm:text-xl font-bold hover:text-gray-200 transition-colors"
-            >
-              ×
-            </button>
-          </div>
-
-          <div className="h-0.5 sm:h-1 w-full bg-gradient-to-r from-[#215988] via-[#2bb673] to-[#215988]" />
-
+      {/* Chat Modal - Full screen below navbar */}
+      <div className="fixed inset-x-0 bottom-0 top-[112px] z-50 flex flex-col">
+        <div className="w-full h-full bg-white flex flex-col overflow-hidden shadow-2xl">
           {/* Chat Body */}
-          <div className="flex-1 flex flex-col bg-gradient-to-b from-[#33a748] via-[#257773] to-[#1e608c] p-2 sm:p-4 md:p-6 overflow-y-auto rounded-b-2xl ring-1 ring-white/20 shadow-[inset_0_8px_24px_rgba(0,0,0,0.25)]">
-            <div className="text-center mb-2 sm:mb-4 md:mb-6 mt-2 sm:mt-4 md:mt-8">
-              <div className="mx-auto mb-1 sm:mb-2 w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20">
-                <img
-                  src="/images/logo.png"
-                  alt="Prosperity Tech Logo"
-                  className="w-full h-full object-contain"
-                />
-              </div>
-              <h2 className="text-white font-bold text-sm sm:text-base md:text-lg mb-0.5 sm:mb-1">
+          <div className="flex-1 flex flex-col bg-gradient-to-b from-[#33a748] via-[#257773] to-[#1e608c] p-2 sm:p-4 md:p-6 overflow-y-auto ring-1 ring-white/20 shadow-[inset_0_8px_24px_rgba(0,0,0,0.25)]">
+            
+            {/* Close Button Header (No Blue Background) */}
+            <div className="flex justify-end w-full mb-1 sm:mb-2">
+              <button
+                onClick={() => router.push("/")}
+                className="text-white text-2xl sm:text-3xl font-bold bg-black/10 hover:bg-black/30 rounded-full w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center transition-colors"
+                aria-label="Close Chat"
+              >
+                ×
+              </button>
+            </div>
+            <div className="text-center mb-4 sm:mb-6 md:mb-8 mt-2 sm:mt-4 md:mt-6">
+              <h2 className="text-white font-bold text-xl sm:text-2xl md:text-3xl tracking-wide drop-shadow-md">
                 How can I help you today?
               </h2>
             </div>
@@ -1342,7 +1322,7 @@ No worries — you can try again or choose one of the options below, and I’ll 
                   <img
                     src="/images/bot.png"
                     alt="Loading Avatar"
-                    className="w-full h-full rounded-full object-cover "
+                    className="w-full h-full rounded-full object-cover"
                   />
                 </div>
 
@@ -1358,7 +1338,7 @@ No worries — you can try again or choose one of the options below, and I’ll 
             )}
 
             {/* Input Bar */}
-            <div className="mt-auto">
+            <div className={showInitialOptions && !flowCompleted ? "my-auto sm:mt-auto sm:mb-0 w-full" : "mt-auto w-full"}>
               {showDetailsForm ? (
                 <form
                   onSubmit={handleFormSubmit}
