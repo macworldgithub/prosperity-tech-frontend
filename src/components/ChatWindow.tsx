@@ -1340,7 +1340,7 @@ Please check your details and try again, or contact support if the issue persist
             )}
 
             {/* Input Bar */}
-            <div className={showInitialOptions && !flowCompleted ? "my-auto sm:mt-auto sm:mb-0 w-full" : "mt-auto w-full"}>
+            <div className={showInitialOptions && !flowCompleted ? "flex-1 flex flex-col items-center justify-center w-full sm:flex-none sm:mt-auto" : "mt-auto w-full"}>
               {showDetailsForm ? (
                 <form
                   onSubmit={handleFormSubmit}
