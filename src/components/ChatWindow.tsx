@@ -66,6 +66,7 @@ const ChatWindow = () => {
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [pendingDeleteIntent, setPendingDeleteIntent] = useState(false);
+  const [showSubmitConfirmModal, setShowSubmitConfirmModal] = useState(false);
 
   const [states, setStates] = useState([]);
   const [loadingStates, setLoadingStates] = useState(false);
@@ -351,12 +352,17 @@ const ChatWindow = () => {
   const handleFormSubmit = async (e: any) => {
     e.preventDefault();
     if (!validateForm()) return;
+    setShowSubmitConfirmModal(true);
+  };
+
+  const handleConfirmSubmit = async () => {
+    setShowSubmitConfirmModal(false);
 
     try {
       setLoading(true);
       setShowInitialOptions(false);
       setIsTypingEnabled(false);
-      // Save DOB to localStorage
+      // Save DOB to localStorage 
       const isoDob = formatDobToISO(formData.dob);
 
       sessionStorage.setItem("userDOB", isoDob);
@@ -2057,6 +2063,34 @@ No worries — you can try again or choose one of the options below, and I’ll 
                 <button
                   onClick={handleConfirmDelete}
                   className="px-4 py-2 rounded bg-red-600 text-white hover:bg-red-700"
+                >
+                  Yes
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+        {showSubmitConfirmModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+            <div className="bg-white rounded-xl p-6 w-[90%] max-w-sm shadow-2xl text-center">
+              <h3 className="text-lg font-semibold text-gray-800 mb-3">
+                Confirm Submission
+              </h3>
+              <p className="text-sm text-gray-600 mb-6">
+                Are you sure you want to submit all these details?
+              </p>
+
+              <div className="flex justify-center gap-4">
+                <button
+                  onClick={() => setShowSubmitConfirmModal(false)}
+                  className="px-4 py-2 rounded bg-gray-300 hover:bg-gray-400"
+                >
+                  No
+                </button>
+
+                <button
+                  onClick={handleConfirmSubmit}
+                  className="px-4 py-2 rounded bg-green-600 text-white hover:bg-green-700"
                 >
                   Yes
                 </button>
