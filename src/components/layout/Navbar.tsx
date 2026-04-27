@@ -318,7 +318,7 @@ const Navbar = () => {
             <Button
               variant="outline"
               size="md"
-              onClick={() => router.push("/chat-window")}
+              onClick={() => router.push(`/chat-window?reset=${Date.now()}`)}
               className="border-white text-black hover:bg-white hover:text-[#1d5e8e] whitespace-nowrap"
             >
               Chat with AI
@@ -396,7 +396,7 @@ const Navbar = () => {
               size="lg"
               className="w-full max-w-xs"
               onClick={() => {
-                router.push("/chat-window");
+                router.push(`/chat-window?reset=${Date.now()}`);
                 setMenuOpen(false);
               }}
             >

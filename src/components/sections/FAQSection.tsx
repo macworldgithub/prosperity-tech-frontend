@@ -72,7 +72,7 @@ const FAQSection = () => {
     },
   ];
   const handleChatClick = () => {
-    router.push("/chat-window"); // Modified route path to follow convention
+    router.push(`/chat-window?reset=${Date.now()}`); // Added unique reset trigger
   };
 
   return (

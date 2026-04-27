@@ -79,21 +79,80 @@ const ChatWindow = () => {
   const [flowCompleted, setFlowCompleted] = useState(false);
   const [typingDots, setTypingDots] = useState("");
 
-  useEffect(() => {
-    if (!loading) {
-      setTypingDots("");
-      return;
-    }
-
-    const interval = setInterval(() => {
-      setTypingDots((prev) => (prev.length < 3 ? prev + "." : ""));
-    }, 500);
-
-    return () => clearInterval(interval);
-  }, [loading]);
+  // Reset all states to initial values
+  const resetAllStates = () => {
+    setChat([]);
+    setShowExistingNumberOptions(false);
+    setShowNumberTypeSelection(false);
+    setShowConfirmNewNumber(false);
+    setExistingNumberType(null);
+    setShowArnInput(false);
+    setArn("");
+    setExistingPhone("");
+    setShowConfirmExistingNumber(false);
+    setShowPlans(false);
+    setMessage("");
+    setLoading(false);
+    setSessionId(null);
+    setCustNo(null);
+    setShowDetailsForm(false);
+    setShowNumberButtons(false);
+    setNumberOptions([]);
+    setShowPayment(false);
+    setSelectedPlan(null);
+    setSelectedSim(null);
+    setShowSimTypeSelection(false);
+    setSimType(null);
+    setSimNumber("");
+    setShowSimNumberInput(false);
+    setUserEmail("");
+    setIsPorting(false);
+    setHasSelectedNumber(false);
+    setSelectedOption("");
+    setShowInitialOptions(true);
+    setIsTypingEnabled(false);
+    setIsTransferFlow(false);
+    setShowOtpInput(false);
+    setOtpCode("");
+    setOtpTransactionId("");
+    setOtpVerified(false);
+    setShowDeleteModal(false);
+    setPendingDeleteIntent(false);
+    setShowSubmitConfirmModal(false);
+    setNumberDecisionMade(false);
+    setAgeError("");
+    setShowNumberConfirmation(false);
+    setConfirmationType(null);
+    setFlowCompleted(false);
+    setFormData({
+      firstName: "",
+      surname: "",
+      email: "",
+      phone: "",
+      dob: "",
+      address: "",
+      suburb: "",
+      state: "",
+      postcode: "",
+      pin: "",
+      custAuthorityNo: "",
+      custAuthorityType: "",
+    });
+    setFormErrors({});
+  };
 
   useEffect(() => {
     const fromBanner = searchParams.get("fromBanner");
+    const planParam = searchParams.get("plan");
+    const reset = searchParams.get("reset");
+
+    if (reset || (!fromBanner && !planParam)) {
+      resetAllStates();
+      // If it was just a reset, we can clear the URL param if desired, 
+      // but usually just resetting the state is enough.
+      if (!fromBanner && !planParam) return; 
+    }
+
     if (fromBanner) {
       setChat([
         {
@@ -129,6 +188,7 @@ const ChatWindow = () => {
           if (match) {
             setSelectedPlan(match);
             setShowDetailsForm(true);
+            setShowInitialOptions(false);
           }
         }
       } catch (e) {

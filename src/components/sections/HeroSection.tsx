@@ -10,7 +10,7 @@ const HeroSection = () => {
   const router = useRouter(); 
 
   const handleChatClick = () => {
-    router.push("/chat-window"); 
+    router.push(`/chat-window?reset=${Date.now()}`); 
   };
 
   return (
