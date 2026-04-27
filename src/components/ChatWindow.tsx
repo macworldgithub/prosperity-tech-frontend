@@ -150,7 +150,7 @@ const ChatWindow = () => {
       resetAllStates();
       // If it was just a reset, we can clear the URL param if desired, 
       // but usually just resetting the state is enough.
-      if (!fromBanner && !planParam) return; 
+      if (!fromBanner && !planParam) return;
     }
 
     if (fromBanner) {
@@ -1318,7 +1318,7 @@ Please check your details and try again, or contact support if the issue persist
 
       {/* Chat Modal */}
       <div className="fixed inset-0 flex items-center justify-center z-50 p-2 sm:p-4 md:p-0 overflow-y-auto">
-        <div className="w-full sm:w-[50%] h-[70vh] sm:h-[65vh] md:max-h-[600px] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden">
+        <div className="lg:mt-28 max-lg:mt-20 max-md:mt-6 max-sm:mt-3 w-full lg:w-[90%] h-[70vh] sm:h-[65vh] md:h-[80vh] lg:h-[85vh] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden">
           {/* Header */}
           <div className="flex justify-between items-center p-2 sm:p-3 bg-[#215988] rounded-t-2xl">
             <div className="flex items-center gap-1 sm:gap-2">
@@ -1366,9 +1366,8 @@ Please check your details and try again, or contact support if the issue persist
             {chat.map((msg) => (
               <div
                 key={msg.id}
-                className={`flex items-start gap-2 sm:gap-3 mb-3 sm:mb-4 md:mb-6 ${
-                  msg.type === "user" ? "justify-end" : "justify-start"
-                }`}
+                className={`flex items-start gap-2 sm:gap-3 mb-3 sm:mb-4 md:mb-6 ${msg.type === "user" ? "justify-end" : "justify-start"
+                  }`}
               >
                 {msg.type === "bot" && (
                   <div className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 bg-yellow-400 rounded-full flex-shrink-0 flex items-center justify-center overflow-hidden">
@@ -1381,11 +1380,10 @@ Please check your details and try again, or contact support if the issue persist
                 )}
 
                 <div
-                  className={`${
-                    msg.type === "user"
-                      ? "bg-white text-[#0E3B5C]"
-                      : "bg-white text-[#0E3B5C]"
-                  } rounded-2xl px-3 py-1.5 sm:px-4 sm:py-2 md:px-6 md:py-2 shadow-md max-w-[90%] sm:max-w-[80%] md:max-w-[70%]`}
+                  className={`${msg.type === "user"
+                    ? "bg-white text-[#0E3B5C]"
+                    : "bg-white text-[#0E3B5C]"
+                    } rounded-2xl px-3 py-1.5 sm:px-4 sm:py-2 md:px-6 md:py-2 shadow-md max-w-[90%] sm:max-w-[80%] md:max-w-[70%]`}
                 >
                   <p className="text-xs sm:text-xs md:text-sm leading-relaxed break-words">
                     {msg.text}
@@ -1738,11 +1736,10 @@ Please check your details and try again, or contact support if the issue persist
                   <button
                     type="submit"
                     disabled={loading || ageError !== ""} // ← YEH ADD KARO
-                    className={`mt-3 sm:mt-4 w-full py-3 rounded text-white font-semibold transition-opacity ${
-                      ageError
-                        ? "bg-gray-500 cursor-not-allowed"
-                        : "bg-[#2bb673] hover:opacity-90"
-                    }`}
+                    className={`mt-3 sm:mt-4 w-full py-3 rounded text-white font-semibold transition-opacity ${ageError
+                      ? "bg-gray-500 cursor-not-allowed"
+                      : "bg-[#2bb673] hover:opacity-90"
+                      }`}
                   >
                     {loading ? "Submitting..." : "Submit Details"}
                   </button>
@@ -1846,21 +1843,19 @@ Please check your details and try again, or contact support if the issue persist
                   <div className="flex gap-3 justify-center mb-4">
                     <button
                       onClick={() => handleExistingTypeSelect("prepaid")}
-                      className={`px-4 py-2 rounded ${
-                        existingNumberType === "prepaid"
-                          ? "bg-[#2bb673]"
-                          : "bg-gray-600"
-                      } text-white`}
+                      className={`px-4 py-2 rounded ${existingNumberType === "prepaid"
+                        ? "bg-[#2bb673]"
+                        : "bg-gray-600"
+                        } text-white`}
                     >
                       Prepaid
                     </button>
                     <button
                       onClick={() => handleExistingTypeSelect("postpaid")}
-                      className={`px-4 py-2 rounded ${
-                        existingNumberType === "postpaid"
-                          ? "bg-[#2bb673]"
-                          : "bg-gray-600"
-                      } text-white`}
+                      className={`px-4 py-2 rounded ${existingNumberType === "postpaid"
+                        ? "bg-[#2bb673]"
+                        : "bg-gray-600"
+                        } text-white`}
                     >
                       Postpaid
                     </button>
