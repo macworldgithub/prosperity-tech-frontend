@@ -75,14 +75,12 @@ const Features = () => {
                 <div className="relative">
                   {/* Phone image – responsive */}
                   <Image
-                    src="/images/Iphone15.png"
+                    src="/images/Iphone16.png"
                     alt="App chat preview on phone"
                     width={520}
                     height={1040}
                     className="w-full max-w-[260px] sm:max-w-[300px] lg:max-w-[320px] drop-shadow-[0_60px_100px_rgba(43,182,115,0.35)] rounded-[42px] object-contain"
                     priority
-                      unoptimized
-
                   />
                   {/* Glow background */}
                   <div className="absolute -z-10 inset-0 mx-auto blur-3xl rounded-full bg-[#2bb673]/30 translate-y-24 w-64 h-64" />
