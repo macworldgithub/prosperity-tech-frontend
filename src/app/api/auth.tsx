@@ -37,6 +37,14 @@ export const LoginApi = createAsyncThunk<
     if (custNo) {
       localStorage.setItem("custNo", custNo);
     }
+    // Save full user data for manage-account/chatbot features
+    if (meRes.data) {
+      try {
+        localStorage.setItem("userData", JSON.stringify(meRes.data));
+      } catch (e) {
+        console.warn("Failed to persist userData to localStorage", e);
+      }
+    }
 
     return {
       ...loginRes.data,
@@ -45,6 +53,33 @@ export const LoginApi = createAsyncThunk<
   } catch (error: any) {
     return rejectWithValue(
       error.response?.data || { message: "Something went wrong" },
+    );
+  }
+});
+
+export const DeleteCustomerApi = createAsyncThunk<
+  any,
+  void,
+  { rejectValue: { message: string } }
+>("customer/delete", async (_, { getState, rejectWithValue }) => {
+  try {
+    const custNo = localStorage.getItem("custNo");
+
+    if (!custNo) {
+      return rejectWithValue({ message: "Customer number not found" });
+    }
+
+    await axios.delete(
+      `https://prosperity.omnisuiteai.com/api/v1/customers/${custNo}`,
+    );
+
+    localStorage.removeItem("custNo");
+    localStorage.removeItem("userData");
+
+    return { custNo };
+  } catch (error: any) {
+    return rejectWithValue(
+      error.response?.data || { message: "Failed to delete customer" },
     );
   }
 });

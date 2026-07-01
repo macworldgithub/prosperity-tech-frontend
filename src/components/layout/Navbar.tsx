@@ -11,6 +11,8 @@ import {
   Phone,
   Key,
   CheckCircle,
+  User,
+  ChevronDown,
 } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import logo from "../../../public/images/logo.png";
@@ -46,8 +48,8 @@ const Navbar = () => {
   const { access_token } = useSelector((state: RootState) => state.login);
 
   const token = access_token || localStorage.getItem("access_token");
-  const custNo = localStorage.getItem("custNo") || "528031";
-
+  const custNo = localStorage.getItem("custNo") || "";
+  const [profileOpen, setProfileOpen] = useState(false);
   useEffect(() => {
     setIsLoggedIn(!!token);
   }, [token]);
@@ -92,6 +94,11 @@ const Navbar = () => {
   const checkUsage = async () => {
     if (!token) {
       setUsageError("Please login first.");
+      return;
+    }
+
+    if (!custNo) {
+      setUsageError("Customer number missing. Please login.");
       return;
     }
 
@@ -292,45 +299,90 @@ const Navbar = () => {
             </Link>
           </div>
           {/* Right Side - Clean & Responsive */}
-          <div className="hidden md:flex items-center gap-4">
-            {isLoggedIn && (
-              <div className="hidden xl:flex items-center gap-3">
-                <Button
-                  variant="primary"
-                  size="md"
-                  onClick={handleCheckUsage}
-                  className="bg-green-500 hover:bg-green-600 text-white flex items-center gap-2 whitespace-nowrap"
-                >
-                  Check Usage
-                </Button>
-
-                <Button
-                  variant="primary"
-                  size="md"
-                  onClick={() => setShowChangePin(true)}
-                  className="bg-green-500 hover:bg-green-700 text-white flex items-center gap-2 whitespace-nowrap"
-                >
-                  Change PIN
-                </Button>
-              </div>
-            )}
-
-            <Button
-              variant="outline"
-              size="md"
-              onClick={() => router.push(`/chat-window?reset=${Date.now()}`)}
-              className="border-white text-black hover:bg-white hover:text-[#1d5e8e] whitespace-nowrap"
+          <div className="hidden lg:flex items-center relative text-black">
+            <button
+              onClick={() => setProfileOpen(!profileOpen)}
+              className="flex items-center gap-2 bg-white rounded-full px-4 py-2 shadow hover:bg-gray-200 transition"
             >
-              Chat with AI
-            </Button>
-            {!isLoggedIn ? (
-              <Button variant="outline" size="md" onClick={handleLogin}>
-                Login
-              </Button>
-            ) : (
-              <Button variant="outline" size="md" onClick={handleLogout}>
-                Logout
-              </Button>
+              <User size={22} />
+              <ChevronDown
+                size={18}
+                className={`transition-transform ${
+                  profileOpen ? "rotate-180" : ""
+                }`}
+              />
+            </button>
+
+            {profileOpen && (
+              <div className="absolute right-0 top-14 w-64 rounded-xl bg-white shadow-2xl border overflow-hidden z-50">
+                {isLoggedIn && (
+                  <>
+                    <button
+                      onClick={() => {
+                        handleCheckUsage();
+                        setProfileOpen(false);
+                      }}
+                      className="w-full text-left px-5 py-3 hover:bg-gray-100"
+                    >
+                      Check Usage
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setShowChangePin(true);
+                        setProfileOpen(false);
+                      }}
+                      className="w-full text-left px-5 py-3 hover:bg-gray-100"
+                    >
+                      Change PIN
+                    </button>
+                  </>
+                )}
+
+                <button
+                  onClick={() => {
+                    router.push(`/chat-window?reset=${Date.now()}`);
+                    setProfileOpen(false);
+                  }}
+                  className="w-full text-left px-5 py-3 hover:bg-gray-100"
+                >
+                  Chat with AI
+                </button>
+
+                {isLoggedIn && (
+                  <button
+                    onClick={() => {
+                      router.push(`/chat-window?manageAccount=true`);
+                      setProfileOpen(false);
+                    }}
+                    className="w-full text-left px-5 py-3 hover:bg-gray-100"
+                  >
+                    Manage Account
+                  </button>
+                )}
+
+                {!isLoggedIn ? (
+                  <button
+                    onClick={() => {
+                      handleLogin();
+                      setProfileOpen(false);
+                    }}
+                    className="w-full text-left px-5 py-3 hover:bg-gray-100"
+                  >
+                    Login
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => {
+                      handleLogout();
+                      setProfileOpen(false);
+                    }}
+                    className="w-full text-left px-5 py-3 text-red-600 hover:bg-red-50"
+                  >
+                    Logout
+                  </button>
+                )}
+              </div>
             )}
           </div>
           {/* Mobile Menu Button */}
@@ -390,6 +442,20 @@ const Navbar = () => {
                   Change PIN
                 </Button>
               </>
+            )}
+
+            {isLoggedIn && (
+              <Button
+                variant="primary"
+                size="lg"
+                className="w-full max-w-xs bg-green-500 hover:bg-green-700"
+                onClick={() => {
+                  router.push(`/chat-window?manageAccount=true`);
+                  setMenuOpen(false);
+                }}
+              >
+                Manage Account
+              </Button>
             )}
             <Button
               variant="outline"

@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { PaymentCard } from "./PaymentCard";
 import { useRouter, useSearchParams } from "next/navigation";
 import { formatDob, formatDobToISO, isDeleteIntent } from "@/lib/utils";
@@ -22,6 +22,7 @@ const ChatWindow = () => {
   >([]);
   const router = useRouter();
   const searchParams = useSearchParams();
+  const hasShownManageWelcome = useRef(false);
   const [showExistingNumberOptions, setShowExistingNumberOptions] =
     useState(false);
   const [showNumberTypeSelection, setShowNumberTypeSelection] = useState(false);
@@ -148,7 +149,7 @@ const ChatWindow = () => {
 
     if (reset || (!fromBanner && !planParam)) {
       resetAllStates();
-      // If it was just a reset, we can clear the URL param if desired, 
+      // If it was just a reset, we can clear the URL param if desired,
       // but usually just resetting the state is enough.
       if (!fromBanner && !planParam) return;
     }
@@ -180,6 +181,44 @@ const ChatWindow = () => {
         const data = await res.json();
         const list: Plan[] = data.data || [];
         setPlans(list);
+
+        // Check for manageAccount in URL and show local account UI if present
+        const manageAccountParam = searchParams.get("manageAccount");
+        if (manageAccountParam) {
+          const userDataStr = localStorage.getItem("userData");
+          if (userDataStr) {
+            try {
+              const userData = JSON.parse(userDataStr);
+              // Avoid adding the welcome message multiple times (StrictMode/dev double render)
+              if (!hasShownManageWelcome.current) {
+                addBotMessage(
+                  `Welcome back, ${userData.user?.name || "User"}! What data would you like to retrieve? (e.g. User Details, Plans, Status, etc.)`,
+                );
+                hasShownManageWelcome.current = true;
+              }
+              setIsTypingEnabled(true);
+              setShowInitialOptions(false);
+            } catch (e) {
+              if (!hasShownManageWelcome.current) {
+                addBotMessage(
+                  "Welcome back! What data would you like to retrieve?",
+                );
+                hasShownManageWelcome.current = true;
+              }
+              setIsTypingEnabled(true);
+              setShowInitialOptions(false);
+            }
+          } else {
+            if (!hasShownManageWelcome.current) {
+              addBotMessage("Please login first to manage your account.");
+              hasShownManageWelcome.current = true;
+            }
+            setShowInitialOptions(false);
+          }
+
+          // If manageAccount is present we don't need to run the plan preselect below
+          return;
+        }
 
         // Preselect plan from URL
         const planParam = searchParams.get("plan");
@@ -855,6 +894,45 @@ const ChatWindow = () => {
     }
     setMessage("");
     setLoading(true);
+
+    // If URL contains manageAccount, respond from local stored `userData` instead of calling backend
+    const manageAccountParam = searchParams.get("manageAccount");
+    if (manageAccountParam) {
+      const userDataStr = localStorage.getItem("userData");
+      if (userDataStr) {
+        try {
+          const userData = JSON.parse(userDataStr);
+          const lowerText = text.toLowerCase();
+          let responseText =
+            "I'm not sure how to answer that from your account details. You can ask about your User Details, Plan, or Status.";
+
+          if (
+            lowerText.includes("user") ||
+            lowerText.includes("detail") ||
+            lowerText.includes("profile")
+          ) {
+            responseText = `User Details:\nName: ${userData.user?.name}\nEmail: ${userData.user?.email}\nAddress: ${userData.user?.street || ""}, ${userData.user?.suburb || ""}, ${userData.user?.state || ""} ${userData.user?.postcode || ""}`;
+          } else if (lowerText.includes("plan")) {
+            responseText = `Your Plan: ${userData.user?.plan || "N/A"}\nSpeed: ${userData.user?.speed || "N/A"}\nData Limit: ${userData.user?.dataLimit || "N/A"}GB\nUsed: ${userData.user?.dataUsed || "N/A"}GB\nExpiry: ${userData.user?.expiry || "N/A"}`;
+          } else if (
+            lowerText.includes("status") ||
+            lowerText.includes("account")
+          ) {
+            responseText = `Account Status: ${userData.user?.status || "N/A"}\nCustomer No: ${userData.user?.custNo || "N/A"}`;
+          }
+
+          addBotMessage(responseText);
+          setLoading(false);
+          return;
+        } catch (e) {
+          console.error("manageAccount parse error:", e);
+        }
+      } else {
+        addBotMessage("Please log in first to manage your account.");
+        setLoading(false);
+        return;
+      }
+    }
     if (isDeleteIntent(text)) {
       try {
         const data = await callDeleteIntentAPI(text);
@@ -1366,8 +1444,9 @@ Please check your details and try again, or contact support if the issue persist
             {chat.map((msg) => (
               <div
                 key={msg.id}
-                className={`flex items-start gap-2 sm:gap-3 mb-3 sm:mb-4 md:mb-6 ${msg.type === "user" ? "justify-end" : "justify-start"
-                  }`}
+                className={`flex items-start gap-2 sm:gap-3 mb-3 sm:mb-4 md:mb-6 ${
+                  msg.type === "user" ? "justify-end" : "justify-start"
+                }`}
               >
                 {msg.type === "bot" && (
                   <div className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 bg-yellow-400 rounded-full flex-shrink-0 flex items-center justify-center overflow-hidden">
@@ -1380,12 +1459,13 @@ Please check your details and try again, or contact support if the issue persist
                 )}
 
                 <div
-                  className={`${msg.type === "user"
-                    ? "bg-white text-[#0E3B5C]"
-                    : "bg-white text-[#0E3B5C]"
-                    } rounded-2xl px-3 py-1.5 sm:px-4 sm:py-2 md:px-6 md:py-2 shadow-md max-w-[90%] sm:max-w-[80%] md:max-w-[70%]`}
+                  className={`${
+                    msg.type === "user"
+                      ? "bg-white text-[#0E3B5C]"
+                      : "bg-white text-[#0E3B5C]"
+                  } rounded-2xl px-3 py-1.5 sm:px-4 sm:py-2 md:px-6 md:py-2 shadow-md max-w-[90%] sm:max-w-[80%] md:max-w-[70%]`}
                 >
-                  <p className="text-xs sm:text-xs md:text-sm leading-relaxed break-words">
+                  <p className="text-xs sm:text-xs md:text-sm leading-relaxed break-words whitespace-pre-line">
                     {msg.text}
                   </p>
                 </div>
@@ -1736,10 +1816,11 @@ Please check your details and try again, or contact support if the issue persist
                   <button
                     type="submit"
                     disabled={loading || ageError !== ""} // ← YEH ADD KARO
-                    className={`mt-3 sm:mt-4 w-full py-3 rounded text-white font-semibold transition-opacity ${ageError
-                      ? "bg-gray-500 cursor-not-allowed"
-                      : "bg-[#2bb673] hover:opacity-90"
-                      }`}
+                    className={`mt-3 sm:mt-4 w-full py-3 rounded text-white font-semibold transition-opacity ${
+                      ageError
+                        ? "bg-gray-500 cursor-not-allowed"
+                        : "bg-[#2bb673] hover:opacity-90"
+                    }`}
                   >
                     {loading ? "Submitting..." : "Submit Details"}
                   </button>
@@ -1843,19 +1924,21 @@ Please check your details and try again, or contact support if the issue persist
                   <div className="flex gap-3 justify-center mb-4">
                     <button
                       onClick={() => handleExistingTypeSelect("prepaid")}
-                      className={`px-4 py-2 rounded ${existingNumberType === "prepaid"
-                        ? "bg-[#2bb673]"
-                        : "bg-gray-600"
-                        } text-white`}
+                      className={`px-4 py-2 rounded ${
+                        existingNumberType === "prepaid"
+                          ? "bg-[#2bb673]"
+                          : "bg-gray-600"
+                      } text-white`}
                     >
                       Prepaid
                     </button>
                     <button
                       onClick={() => handleExistingTypeSelect("postpaid")}
-                      className={`px-4 py-2 rounded ${existingNumberType === "postpaid"
-                        ? "bg-[#2bb673]"
-                        : "bg-gray-600"
-                        } text-white`}
+                      className={`px-4 py-2 rounded ${
+                        existingNumberType === "postpaid"
+                          ? "bg-[#2bb673]"
+                          : "bg-gray-600"
+                      } text-white`}
                     >
                       Postpaid
                     </button>
