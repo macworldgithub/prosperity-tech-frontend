@@ -626,6 +626,7 @@ const Navbar = () => {
                   placeholder="••••"
                   maxLength={6}
                   required
+                  className="text-black"
                 />
                 <FormInput
                   label="New PIN"
@@ -635,6 +636,7 @@ const Navbar = () => {
                   placeholder="••••"
                   maxLength={6}
                   required
+                  className="text-black"
                 />
 
                 {pinStatus !== "idle" && (
