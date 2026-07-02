@@ -23,6 +23,7 @@ const ChatWindow = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const hasShownManageWelcome = useRef(false);
+  const hasStartedPlanGuidedFlow = useRef(false);
   const [showExistingNumberOptions, setShowExistingNumberOptions] =
     useState(false);
   const [showNumberTypeSelection, setShowNumberTypeSelection] = useState(false);
@@ -131,6 +132,7 @@ const ChatWindow = () => {
     setFlowCompleted(false);
     setIsWaitingForName(false);
     setChatUserName("");
+    hasStartedPlanGuidedFlow.current = false;
     setFormData({
       firstName: "",
       surname: "",
@@ -226,14 +228,24 @@ const ChatWindow = () => {
           return;
         }
 
-        // Preselect plan from URL
+        // Preselect plan from URL and start the same guided chatbot flow
         const planParam = searchParams.get("plan");
-        if (planParam) {
+        if (planParam && !hasStartedPlanGuidedFlow.current) {
           const match = list.find((p) => p.planName === planParam);
           if (match) {
             setSelectedPlan(match);
-            setShowDetailsForm(true);
+            setShowDetailsForm(false);
+            setShowIdTypeSelection(false);
+            setShowSimTypeSelection(false);
+            setShowNumberButtons(false);
+            setShowPlans(false);
+            setShowPayment(false);
             setShowInitialOptions(false);
+            setForceSignupOnSimSelect(true);
+            setIsWaitingForName(true);
+            setIsTypingEnabled(true);
+            hasStartedPlanGuidedFlow.current = true;
+            addBotMessage("Could I start by asking your name please?");
           }
         }
       } catch (e) {
@@ -692,6 +704,14 @@ const ChatWindow = () => {
   };
 
   const handleIdTypeSelect = (type: "DL" | "PA" | "PI") => {
+    const label =
+      type === "DL"
+        ? "Driver License"
+        : type === "PA"
+          ? "Passport"
+          : "Proof of Age Card";
+
+    addUserMessage(`I selected ${label}.`);
     setFormData((prev) => ({
       ...prev,
       custAuthorityType: type,
@@ -738,6 +758,21 @@ const ChatWindow = () => {
       {
         id: prev.length + 1,
         type: "bot" as const,
+        text,
+        time: new Date().toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+      },
+    ]);
+  };
+
+  const addUserMessage = (text: string) => {
+    setChat((prev) => [
+      ...prev,
+      {
+        id: prev.length + 1,
+        type: "user" as const,
         text,
         time: new Date().toLocaleTimeString([], {
           hour: "2-digit",
@@ -1149,6 +1184,8 @@ const ChatWindow = () => {
   };
 
   const handleSimTypeSelect = (type: "esim" | "physical") => {
+    const label = type === "esim" ? "eSIM" : "Physical SIM";
+    addUserMessage(`I chose ${label}.`);
     setSimType(type);
     localStorage.setItem("chatSimType", type);
     setShowSimTypeSelection(false);
@@ -1501,8 +1538,9 @@ Please check your details and try again, or contact support if the issue persist
             {chat.map((msg) => (
               <div
                 key={msg.id}
-                className={`flex items-start gap-2 sm:gap-3 mb-3 sm:mb-4 md:mb-6 ${msg.type === "user" ? "justify-end" : "justify-start"
-                  }`}
+                className={`flex items-start gap-2 sm:gap-3 mb-3 sm:mb-4 md:mb-6 ${
+                  msg.type === "user" ? "justify-end" : "justify-start"
+                }`}
               >
                 {msg.type === "bot" && (
                   <div className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 bg-yellow-400 rounded-full flex-shrink-0 flex items-center justify-center overflow-hidden">
@@ -1515,10 +1553,11 @@ Please check your details and try again, or contact support if the issue persist
                 )}
 
                 <div
-                  className={`${msg.type === "user"
+                  className={`${
+                    msg.type === "user"
                       ? "bg-white text-[#0E3B5C]"
                       : "bg-white text-[#0E3B5C]"
-                    } rounded-2xl px-3 py-1.5 sm:px-4 sm:py-2 md:px-6 md:py-2 shadow-md max-w-[90%] sm:max-w-[80%] md:max-w-[70%]`}
+                  } rounded-2xl px-3 py-1.5 sm:px-4 sm:py-2 md:px-6 md:py-2 shadow-md max-w-[90%] sm:max-w-[80%] md:max-w-[70%]`}
                 >
                   <p className="text-xs sm:text-xs md:text-sm leading-relaxed break-words whitespace-pre-line">
                     {msg.text}
@@ -1871,10 +1910,11 @@ Please check your details and try again, or contact support if the issue persist
                   <button
                     type="submit"
                     disabled={loading || ageError !== ""} // ← YEH ADD KARO
-                    className={`mt-3 sm:mt-4 w-full py-3 rounded text-white font-semibold transition-opacity ${ageError
+                    className={`mt-3 sm:mt-4 w-full py-3 rounded text-white font-semibold transition-opacity ${
+                      ageError
                         ? "bg-gray-500 cursor-not-allowed"
                         : "bg-[#2bb673] hover:opacity-90"
-                      }`}
+                    }`}
                   >
                     {loading ? "Submitting..." : "Submit Details"}
                   </button>
@@ -2001,19 +2041,21 @@ Please check your details and try again, or contact support if the issue persist
                   <div className="flex gap-3 justify-center mb-4">
                     <button
                       onClick={() => handleExistingTypeSelect("prepaid")}
-                      className={`px-4 py-2 rounded ${existingNumberType === "prepaid"
+                      className={`px-4 py-2 rounded ${
+                        existingNumberType === "prepaid"
                           ? "bg-[#2bb673]"
                           : "bg-gray-600"
-                        } text-white`}
+                      } text-white`}
                     >
                       Prepaid
                     </button>
                     <button
                       onClick={() => handleExistingTypeSelect("postpaid")}
-                      className={`px-4 py-2 rounded ${existingNumberType === "postpaid"
+                      className={`px-4 py-2 rounded ${
+                        existingNumberType === "postpaid"
                           ? "bg-[#2bb673]"
                           : "bg-gray-600"
-                        } text-white`}
+                      } text-white`}
                     >
                       Postpaid
                     </button>
