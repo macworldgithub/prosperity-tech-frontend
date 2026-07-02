@@ -155,28 +155,14 @@ const ChatWindow = () => {
     const planParam = searchParams.get("plan");
     const reset = searchParams.get("reset");
 
-    if (reset || (!fromBanner && !planParam)) {
+    if (reset || fromBanner || planParam) {
       resetAllStates();
-      // If it was just a reset, we can clear the URL param if desired,
-      // but usually just resetting the state is enough.
+      // If this is just a reset without redirect params, stop early.
       if (!fromBanner && !planParam) return;
     }
 
     if (fromBanner) {
-      setChat([
-        {
-          id: 1,
-          type: "bot",
-          text: "Let me help you switch to an E-sim. Please fill the form below.",
-          time: new Date().toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-          }),
-        },
-      ]);
-      setShowDetailsForm(true);
-      setShowInitialOptions(false);
-      setIsTypingEnabled(false);
+      startBuyEsimFlow();
     }
   }, [searchParams]);
 
@@ -782,17 +768,20 @@ const ChatWindow = () => {
     ]);
   };
 
+  const startBuyEsimFlow = () => {
+    addBotMessage("Could I start by asking your name please?");
+    setForceSignupOnSimSelect(true);
+    setIsWaitingForName(true);
+    setIsTypingEnabled(true);
+    setShowInitialOptions(false);
+  };
+
   const handleInitialOption = async (option: string) => {
     setShowInitialOptions(false);
 
     if (option === "buy-esim") {
       // Local eSIM signup flow: ask name first, then number choice, then transfer prompt.
-      addBotMessage("Could I start by asking your name please?");
-      // Ensure signup form is shown after SIM choice in this chatbot flow
-      setForceSignupOnSimSelect(true);
-      setIsWaitingForName(true);
-      setIsTypingEnabled(true);
-      setShowInitialOptions(false);
+      startBuyEsimFlow();
       return;
     } else if (option === "account-problem") {
       // Enable typing for user to enter their query
