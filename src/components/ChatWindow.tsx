@@ -42,6 +42,7 @@ const ChatWindow = () => {
   const [loading, setLoading] = useState(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [showDetailsForm, setShowDetailsForm] = useState(false);
+  const [showIdTypeSelection, setShowIdTypeSelection] = useState(false);
   const [showNumberButtons, setShowNumberButtons] = useState(false);
   const [numberOptions, setNumberOptions] = useState<string[]>([]);
   const [showPayment, setShowPayment] = useState(false);
@@ -59,6 +60,9 @@ const ChatWindow = () => {
   const [showInitialOptions, setShowInitialOptions] = useState(true);
   const [isTypingEnabled, setIsTypingEnabled] = useState(false);
   const [isTransferFlow, setIsTransferFlow] = useState(false);
+  const [isWaitingForName, setIsWaitingForName] = useState(false);
+  const [chatUserName, setChatUserName] = useState("");
+  const [forceSignupOnSimSelect, setForceSignupOnSimSelect] = useState(false);
 
   const [showOtpInput, setShowOtpInput] = useState(false);
   const [otpCode, setOtpCode] = useState("");
@@ -125,6 +129,8 @@ const ChatWindow = () => {
     setShowNumberConfirmation(false);
     setConfirmationType(null);
     setFlowCompleted(false);
+    setIsWaitingForName(false);
+    setChatUserName("");
     setFormData({
       firstName: "",
       surname: "",
@@ -473,24 +479,35 @@ const ChatWindow = () => {
         .join(", ");
 
       setShowDetailsForm(false);
+      setShowIdTypeSelection(false);
+      const formPayload = {
+        ...formData,
+        simType: simType || localStorage.getItem("chatSimType") || "",
+        numberChoice:
+          selectedOption || localStorage.getItem("chatNumberChoice") || "",
+        userName: chatUserName || localStorage.getItem("chatUserName") || "",
+      };
+      localStorage.setItem("chatFormData", JSON.stringify(formPayload));
 
       await handleSend(formatted, true);
-      setShowSimTypeSelection(true);
-      const prosperityMessage =
-        "Great! Before we continue, please choose whether you want an eSIM or a Physical SIM.";
 
-      setChat((prev) => [
-        ...prev,
-        {
-          id: prev.length + 1,
-          type: "bot",
-          text: prosperityMessage,
-          time: new Date().toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-          }),
-        },
-      ]);
+      if (!simType) {
+        // If user hasn't selected SIM type yet, ask now (restores previous flow)
+        setShowSimTypeSelection(true);
+        addBotMessage(
+          "Great! Before we continue, please choose whether you want an eSIM or a Physical SIM.",
+        );
+      } else if (simType === "esim") {
+        setShowNumberTypeSelection(true);
+        addBotMessage("Do you want a new number or keep your existing one?");
+      } else if (simType === "physical") {
+        // After signup for physical SIM, ask for the 13-digit SIM number
+        setShowSimNumberInput(true);
+        addBotMessage("Enter your 13-digit SIM number to continue.");
+      } else {
+        setShowPlans(true);
+        addBotMessage("Great! Please choose a plan to continue.");
+      }
     } catch (error) {
       console.error("Error during form submission:", error);
     } finally {
@@ -511,10 +528,13 @@ const ChatWindow = () => {
     setCustNo(null);
   }, []);
 
-  const handleNewNumber = () => {
+  const handleNewNumber = async () => {
     setSelectedOption("new");
     setShowNumberTypeSelection(false);
-    setShowConfirmNewNumber(true);
+    localStorage.setItem("chatNumberChoice", "new");
+    addBotMessage("Great! I’ll find available new numbers for you now.");
+    setIsTypingEnabled(false);
+    await handleSend("new number", true);
   };
 
   const confirmNewNumber = async (yes: boolean) => {
@@ -550,14 +570,18 @@ const ChatWindow = () => {
   // };
   const handleExistingNumber = () => {
     setShowNumberTypeSelection(false);
-    setConfirmationType("existing");
-    setShowNumberConfirmation(true);
+    setSelectedOption("existing");
     setExistingNumberType(null);
     setShowArnInput(false);
     setArn("");
     setExistingPhone("");
     setShowConfirmExistingNumber(false);
+    localStorage.setItem("chatNumberChoice", "existing");
+    addBotMessage(
+      "Please choose whether your existing number is Prepaid or Postpaid, then provide your mobile details below.",
+    );
     setShowExistingNumberOptions(true);
+    setIsTypingEnabled(false);
   };
   const handleExistingTypeSelect = (type: "prepaid" | "postpaid") => {
     setExistingNumberType(type);
@@ -667,6 +691,19 @@ const ChatWindow = () => {
     }
   };
 
+  const handleIdTypeSelect = (type: "DL" | "PA" | "PI") => {
+    setFormData((prev) => ({
+      ...prev,
+      custAuthorityType: type,
+    }));
+    setShowIdTypeSelection(false);
+    setShowDetailsForm(true);
+    setIsTypingEnabled(false);
+    addBotMessage(
+      "Great choice. Now please complete the signup form below to continue.",
+    );
+  };
+
   const confirmExistingNumber = (yes: boolean) => {
     setShowConfirmExistingNumber(false);
     if (yes) {
@@ -683,7 +720,7 @@ const ChatWindow = () => {
       setShowNumberButtons(false);
       if (selectedPlan) {
         setShowPlans(false);
-        setShowSimTypeSelection(true);
+        setShowPayment(true);
       } else {
         setShowPlans(true);
       }
@@ -714,55 +751,14 @@ const ChatWindow = () => {
     setShowInitialOptions(false);
 
     if (option === "buy-esim") {
-      // Call API with "signup" query to open signup modal
-      setLoading(true);
-      await new Promise((res) => setTimeout(res, 50));
-
-      const data = await callAPI("signup");
-      setLoading(false);
-
-      if (!data) {
-        return setChat((prev) => [
-          ...prev,
-          {
-            id: prev.length + 1,
-            type: "bot",
-            text: "Oops! Something went wrong.",
-            time: new Date().toLocaleTimeString([], {
-              hour: "2-digit",
-              minute: "2-digit",
-            }),
-          },
-        ]);
-      }
-
-      const botText = data.message || data.response || "";
-
-      // Check if response contains signup form indicators
-      if (
-        botText.toLowerCase().includes("first name") ||
-        botText.toLowerCase().includes("surname")
-      ) {
-        addBotMessage("Please fill in the details in the given form below.");
-        setShowDetailsForm(true);
-        return;
-      }
-
-      // Add bot message if it's not empty
-      if (botText.trim()) {
-        setChat((prev) => [
-          ...prev,
-          {
-            id: prev.length + 1,
-            type: "bot",
-            text: botText,
-            time: new Date().toLocaleTimeString([], {
-              hour: "2-digit",
-              minute: "2-digit",
-            }),
-          },
-        ]);
-      }
+      // Local eSIM signup flow: ask name first, then number choice, then transfer prompt.
+      addBotMessage("Could I start by asking your name please?");
+      // Ensure signup form is shown after SIM choice in this chatbot flow
+      setForceSignupOnSimSelect(true);
+      setIsWaitingForName(true);
+      setIsTypingEnabled(true);
+      setShowInitialOptions(false);
+      return;
     } else if (option === "account-problem") {
       // Enable typing for user to enter their query
       setIsTypingEnabled(true);
@@ -878,6 +874,35 @@ const ChatWindow = () => {
   };
   const handleSend = async (text: string, skipUserDisplay = false) => {
     if (!text.trim() || loading) return;
+
+    if (isWaitingForName) {
+      const name = text.trim();
+      if (!skipUserDisplay) {
+        setChat((prev) => [
+          ...prev,
+          {
+            id: prev.length + 1,
+            type: "user",
+            text,
+            time: new Date().toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            }),
+          },
+        ]);
+      }
+      setMessage("");
+      setLoading(false);
+      setChatUserName(name);
+      localStorage.setItem("chatUserName", name);
+      setIsWaitingForName(false);
+      addBotMessage(
+        `Ok ${name}, let's get your eSIM setup. Would you like an eSIM or a Physical SIM?`,
+      );
+      setShowSimTypeSelection(true);
+      setIsTypingEnabled(false);
+      return;
+    }
 
     if (!skipUserDisplay) {
       const userMsg = {
@@ -1125,12 +1150,44 @@ const ChatWindow = () => {
 
   const handleSimTypeSelect = (type: "esim" | "physical") => {
     setSimType(type);
+    localStorage.setItem("chatSimType", type);
     setShowSimTypeSelection(false);
-    if (type === "physical") {
-      setShowSimNumberInput(true);
+    // If this flow was initiated via the Buy-eSIM chatbot prompt, force the
+    // signup form to open first so the chat sequence matches the expected order.
+    const formFilled = Boolean(formData.firstName?.trim());
+    const needsIdTypeSelection =
+      forceSignupOnSimSelect || !formFilled || !formData.custAuthorityType;
+
+    const idPromptMessage =
+      "Make sure you enter the phone number you want to port over and the Birth Date as per your current network. I won’t store any of this information, so don’t worry. Please select one of these ID types: Driver License, Passport, or Proof of Age Card.";
+
+    if (needsIdTypeSelection) {
+      setForceSignupOnSimSelect(false);
+      addBotMessage(idPromptMessage);
+      setShowDetailsForm(false);
+      setShowIdTypeSelection(true);
+      setIsTypingEnabled(false);
+      return;
     }
-    setShowNumberTypeSelection(true);
-    addBotMessage("Would you like a new number or use your existing number?");
+
+    // If the signup form was already completed, continue to the next step
+    if (formFilled) {
+      if (type === "physical") {
+        addBotMessage("Enter your 13-digit SIM number to continue.");
+        setShowSimNumberInput(true);
+        setIsTypingEnabled(false);
+      } else {
+        setShowNumberTypeSelection(true);
+        addBotMessage("Do you want a new number or keep your existing one?");
+        setIsTypingEnabled(false);
+      }
+      return;
+    }
+
+    // Otherwise ask for ID type before showing signup form
+    addBotMessage(idPromptMessage);
+    setShowIdTypeSelection(true);
+    setIsTypingEnabled(false);
   };
 
   const handleSimNumberContinue = async () => {
@@ -1444,9 +1501,8 @@ Please check your details and try again, or contact support if the issue persist
             {chat.map((msg) => (
               <div
                 key={msg.id}
-                className={`flex items-start gap-2 sm:gap-3 mb-3 sm:mb-4 md:mb-6 ${
-                  msg.type === "user" ? "justify-end" : "justify-start"
-                }`}
+                className={`flex items-start gap-2 sm:gap-3 mb-3 sm:mb-4 md:mb-6 ${msg.type === "user" ? "justify-end" : "justify-start"
+                  }`}
               >
                 {msg.type === "bot" && (
                   <div className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 bg-yellow-400 rounded-full flex-shrink-0 flex items-center justify-center overflow-hidden">
@@ -1459,11 +1515,10 @@ Please check your details and try again, or contact support if the issue persist
                 )}
 
                 <div
-                  className={`${
-                    msg.type === "user"
+                  className={`${msg.type === "user"
                       ? "bg-white text-[#0E3B5C]"
                       : "bg-white text-[#0E3B5C]"
-                  } rounded-2xl px-3 py-1.5 sm:px-4 sm:py-2 md:px-6 md:py-2 shadow-md max-w-[90%] sm:max-w-[80%] md:max-w-[70%]`}
+                    } rounded-2xl px-3 py-1.5 sm:px-4 sm:py-2 md:px-6 md:py-2 shadow-md max-w-[90%] sm:max-w-[80%] md:max-w-[70%]`}
                 >
                   <p className="text-xs sm:text-xs md:text-sm leading-relaxed break-words whitespace-pre-line">
                     {msg.text}
@@ -1816,15 +1871,37 @@ Please check your details and try again, or contact support if the issue persist
                   <button
                     type="submit"
                     disabled={loading || ageError !== ""} // ← YEH ADD KARO
-                    className={`mt-3 sm:mt-4 w-full py-3 rounded text-white font-semibold transition-opacity ${
-                      ageError
+                    className={`mt-3 sm:mt-4 w-full py-3 rounded text-white font-semibold transition-opacity ${ageError
                         ? "bg-gray-500 cursor-not-allowed"
                         : "bg-[#2bb673] hover:opacity-90"
-                    }`}
+                      }`}
                   >
                     {loading ? "Submitting..." : "Submit Details"}
                   </button>
                 </form>
+              ) : showIdTypeSelection ? (
+                <div className="flex flex-col items-center gap-3 p-4 bg-white/10 rounded-lg border border-white/30 text-white">
+                  <div className="flex flex-col gap-2 w-full">
+                    <button
+                      onClick={() => handleIdTypeSelect("DL")}
+                      className="w-full bg-[#2bb673] text-white px-3 py-2 rounded hover:opacity-90 text-xs sm:text-sm"
+                    >
+                      Driver License
+                    </button>
+                    <button
+                      onClick={() => handleIdTypeSelect("PA")}
+                      className="w-full bg-[#2bb673] text-white px-3 py-2 rounded hover:opacity-90 text-xs sm:text-sm"
+                    >
+                      Passport
+                    </button>
+                    <button
+                      onClick={() => handleIdTypeSelect("PI")}
+                      className="w-full bg-[#2bb673] text-white px-3 py-2 rounded hover:opacity-90 text-xs sm:text-sm"
+                    >
+                      Proof of Age Card
+                    </button>
+                  </div>
+                </div>
               ) : showSimTypeSelection ? (
                 <div className="flex flex-col items-center gap-3 p-4 bg-white/10 rounded-lg border border-white/30 text-white">
                   <p className="text-sm sm:text-base">
@@ -1924,21 +2001,19 @@ Please check your details and try again, or contact support if the issue persist
                   <div className="flex gap-3 justify-center mb-4">
                     <button
                       onClick={() => handleExistingTypeSelect("prepaid")}
-                      className={`px-4 py-2 rounded ${
-                        existingNumberType === "prepaid"
+                      className={`px-4 py-2 rounded ${existingNumberType === "prepaid"
                           ? "bg-[#2bb673]"
                           : "bg-gray-600"
-                      } text-white`}
+                        } text-white`}
                     >
                       Prepaid
                     </button>
                     <button
                       onClick={() => handleExistingTypeSelect("postpaid")}
-                      className={`px-4 py-2 rounded ${
-                        existingNumberType === "postpaid"
+                      className={`px-4 py-2 rounded ${existingNumberType === "postpaid"
                           ? "bg-[#2bb673]"
                           : "bg-gray-600"
-                      } text-white`}
+                        } text-white`}
                     >
                       Postpaid
                     </button>
